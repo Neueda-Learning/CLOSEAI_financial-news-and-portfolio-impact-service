@@ -1020,6 +1020,31 @@ Backlog          To Do           In Progress      Review           Done
 
 **Labels:** `backend`, `frontend`, `nlp`, `devops`, `docs`
 
+**Status Flow:**
+
+```
+To Do  →  In Progress  →  In Review  →  Done
+                ↕
+             Blocked
+```
+
+| Status | Meaning | Trigger |
+|--------|---------|---------|
+| **To Do** | Ready, waiting for someone to pick up | Default on issue creation |
+| **In Progress** | Actively being worked on | Assignee drags after claiming |
+| **Blocked** | Stuck — waiting on API key / teammate / environment | Anyone, any time |
+| **In Review** | PR opened, awaiting teammate review | Dragged when PR is created |
+| **Done** | Merged into `dev` | Dragged after PR merge |
+
+**Board Views:**
+
+| View | Purpose | Who |
+|------|---------|-----|
+| **Kanban Board** | Daily drag-and-drop, see progress at a glance | Everyone |
+| **By Assignee** | See each person's current workload | Individual |
+| **By Epic** | Check weekly alignment — are all Week N items on track? | Team lead / standup |
+| **Backlog** | Weekly grooming, prioritize next week's stories | Everyone |
+
 ### Suggested Task Breakdown (Minimal MVP)
 
 | Week | Tasks | Deliverable | Depends on |

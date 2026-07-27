@@ -621,6 +621,31 @@ chore: 升级 Docker Compose 至 PostgreSQL 16
 
 **标签：** `backend`、`frontend`、`nlp`、`devops`、`docs`
 
+**流转状态：**
+
+```
+To Do  →  In Progress  →  In Review  →  Done
+                ↕
+             Blocked
+```
+
+| 状态 | 含义 | 触发时机 |
+|------|------|----------|
+| **To Do** | 就绪，等待认领 | 创建 Issue 时默认 |
+| **In Progress** | 正在开发中 | 认领后自行拖拽 |
+| **Blocked** | 被外部阻塞（等 API Key / 等队友 / 环境问题） | 随时 |
+| **In Review** | PR 已开，等待队友审查 | 创建 PR 后拖拽 |
+| **Done** | 已合入 `dev` | PR 合并后拖拽 |
+
+**看板视图：**
+
+| 视图 | 用途 | 使用者 |
+|------|------|--------|
+| **Kanban Board** | 日常拖拽，一目了然看进度 | 全员 |
+| **By Assignee** | 查看每人当前工作负载 | 个人 |
+| **By Epic** | 按周检查进度 — 本周所有项是否在线？ | 组长 / 站会 |
+| **Backlog** | 每周 Grooming，排下一周 Story 优先级 | 全员 |
+
 ### 建议任务分解（最小 MVP）
 
 | 周次 | 任务 | 交付物 | 依赖 |
