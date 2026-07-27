@@ -1,6 +1,6 @@
 # Financial News & Portfolio Impact Service (FNPIS)
 
-> **Project #15** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with real-time price movements.
+> **Project #15** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with intraday price movements (5-min polling).
 
 ---
 
@@ -37,17 +37,17 @@ FNPIS is a full-stack web application that:
 
 1. **Aggregates** financial news for every company in a user's portfolio via the Finnhub API
 2. **Analyzes** each news article's sentiment (Positive / Negative / Neutral) using NLP
-3. **Correlates** news sentiment with real-time stock price movements
+3. **Correlates** news sentiment with intraday stock price movements (5-min polling)
 4. **Visualizes** the impact side-by-side — news on the left, price chart on the right
 
 ### Core Features (Priority Order)
 
-| Priority | Feature | Description |
-|----------|---------|-------------|
-| P0 | Browse Records | View portfolio holdings, news feed, and impact events |
-| P1 | View Metrics | Graphical dashboard: sentiment trends, price-impact correlations, allocation charts |
-| P2 | Add Items | Add holdings to portfolio, trigger news fetch |
-| P3 | Remove Items | Remove holdings, dismiss impact events, clear historical data |
+| Priority | Feature | Description | Acceptance Criteria |
+|----------|---------|-------------|---------------------|
+| P0 | Browse Records | View portfolio holdings, news feed, and impact events | User sees a list of all holdings with ticker, shares, and current price; news feed loads ≤3 seconds |
+| P1 | View Metrics | Graphical dashboard: sentiment trends, price-impact correlations, allocation charts | Dashboard renders ≥2 chart types with data from the last 30 days |
+| P2 | Add Items | Add holdings to portfolio, trigger news fetch | User enters ticker + shares → holding appears in portfolio → news fetched within 15 minutes |
+| P3 | Remove Items | Remove holdings, dismiss impact events, clear historical data | Removed holding disappears from dashboard; associated impact events are soft-deleted |
 
 ### Integration Requirement
 
@@ -55,7 +55,7 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 
 | API | Purpose | Auth |
 |-----|---------|------|
-| [Finnhub](https://finnhub.io/) | Financial news (1 year history) + Stock prices (real-time & historical) | Free API key |
+| [Finnhub](https://finnhub.io/) | Financial news (1 year history) + Stock prices (intraday & historical) | Free API key |
 | [Alpha Vantage](https://www.alphavantage.co/) | Supplementary stock prices (fallback) | Free API key |
 
 ---
@@ -83,12 +83,12 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| **Backend** | Java (Spring Boot) / TypeScript (Node.js + Express) | Training stack; to be confirmed with instructor |
+| **Backend** | Java 17 + Spring Boot 3 | Training stack |
 | **Frontend** | React + Chart.js / D3.js | SPA with rich interactive charts |
 | **Database** | PostgreSQL / MySQL | Persistent storage for holdings, news, prices, impact events |
 | **NLP** | finBERT (ProsusAI) via Python microservice, or LLM API | Financial-domain sentiment analysis; local-first for reliability |
 | **External APIs** | Finnhub (primary), Alpha Vantage (fallback) | News + stock prices |
-| **Scheduling** | Spring `@Scheduled` / node-cron | Periodic news fetch, price polling, impact correlation |
+| **Scheduling** | Spring `@Scheduled` | Periodic news fetch, price polling, impact correlation |
 | **API Docs** | Swagger / OpenAPI 3.0 | Auto-generated from annotations |
 | **CI/CD** | GitHub Actions | Build → Test → Lint on every PR |
 | **Container** | Docker + Docker Compose | One-command local setup; portable deployment |
@@ -103,7 +103,7 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 FNPIS/
 ├── backend/
 │   ├── src/
-│   │   ├── main/java/com/fnpis/    (or src/ for TypeScript)
+│   │   ├── main/java/com/fnpis/
 │   │   │   ├── controller/          # REST API endpoints
 │   │   │   │   ├── PortfolioController.java
 │   │   │   │   ├── HoldingController.java
@@ -130,7 +130,7 @@ FNPIS/
 │   │   └── resources/
 │   │       └── application.yml      # DB config, API keys (env vars)
 │   ├── Dockerfile
-│   └── pom.xml / package.json
+│   └── pom.xml
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -165,7 +165,7 @@ FNPIS/
 
 ### Prerequisites
 
-- **Java 17+** / **Node.js 18+** (depending on backend choice)
+- **Java 17+** + Maven
 - **Python 3.10+** (for NLP microservice)
 - **Docker & Docker Compose**
 - **PostgreSQL 15+** (or use Dockerized DB)
@@ -227,8 +227,7 @@ python app.py                        # Runs on :5001
 
 # Terminal 3 — Backend
 cd backend
-./mvnw spring-boot:run               # or: npm run dev
-# Runs on :8080
+./mvnw spring-boot:run               # Runs on :8080
 
 # Terminal 4 — Frontend
 cd frontend
@@ -664,7 +663,7 @@ public SentimentResult analyzeViaLLM(String headline, String summary) {
 ### Unit Tests
 
 ```
-Backend (JUnit / Jest):
+Backend (JUnit 5 + Mockito):
   - Service layer: PortfolioService, SentimentService, ImpactCorrelatorService
   - Impact correlation algorithm: edge cases (no price data, single-sided news)
   - Data validation: ticker format, share amounts, percentage ranges
@@ -764,7 +763,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run backend tests
-        run: cd backend && ./mvnw test  # or: npm test
+        run: cd backend && ./mvnw test
 
   frontend-test:
     runs-on: ubuntu-latest
@@ -785,7 +784,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Lint backend
-        run: cd backend && npm run lint
+        run: cd backend && ./mvnw checkstyle:check
       - name: Lint frontend
         run: cd frontend && npm run lint
 ```
@@ -999,14 +998,14 @@ Backlog          To Do           In Progress      Review           Done
 
 ### Suggested Task Breakdown (Minimal MVP)
 
-| Week | Tasks | Deliverable |
-|------|-------|-------------|
-| **Week 1** | Project skeleton, GitHub repo, DB schema, Trello setup | Runnable app with DB connection |
-| **Week 2** | Portfolio + Holdings CRUD (backend + frontend) | Can add/view/remove holdings |
-| **Week 3** | Finnhub integration: news fetch + price polling + caching | Data flowing into DB |
-| **Week 4** | NLP sentiment service up, Impact Correlator algorithm | Impact events generated |
-| **Week 5** | Frontend: Impact Feed, Side-by-Side view, Dashboard charts | Core UI complete |
-| **Week 6** | Polish, tests, Swagger docs, Docker, presentation prep | Production-ready demo |
+| Week | Tasks | Deliverable | Depends on |
+|------|-------|-------------|------------|
+| **Week 1** | Project skeleton, GitHub repo, DB schema, Trello setup | Runnable app with DB connection | — |
+| **Week 2** | Portfolio + Holdings CRUD (backend + frontend) | Can add/view/remove holdings | Week 1 |
+| **Week 3** | Finnhub integration: news fetch + price polling + caching | Data flowing into DB | Week 2 |
+| **Week 4** | NLP sentiment service up, Impact Correlator algorithm | Impact events generated | Week 3 |
+| **Week 5** | Frontend: Impact Feed, Side-by-Side view, Dashboard charts | Core UI complete | Week 4 |
+| **Week 6** | Polish, tests, Swagger docs, Docker, presentation prep | Production-ready demo | Week 5 |
 
 ### Ongoing Practices
 
@@ -1049,13 +1048,15 @@ Backlog          To Do           In Progress      Review           Done
 
 ### Demo Preparation Checklist
 
-- [ ] Pre-load 50+ news articles for 3-5 tickers into the database
-- [ ] Pre-run sentiment analysis on all (so labels appear instantly)
-- [ ] Pre-calculate impact events (so correlation data is ready)
-- [ ] Test the "trigger new news" flow for the live demo moment
-- [ ] Have a backup demo video recorded in case of internet outage
-- [ ] Prepare fallback demo mode: switch to local-only data if Finnhub is down
-- [ ] Each team member knows exactly which buttons to click and when
+| # | Task | Owner |
+|---|------|-------|
+| 1 | Pre-load 50+ news articles for 3-5 tickers into the database | Backend |
+| 2 | Pre-run sentiment analysis on all (so labels appear instantly) | NLP Lead |
+| 3 | Pre-calculate impact events (so correlation data is ready) | Backend |
+| 4 | Test the "trigger new news" flow end-to-end for the live demo moment | ALL |
+| 5 | Record a backup demo video in case of internet outage | Frontend |
+| 6 | Prepare fallback demo mode: switch to local-only data if Finnhub is down | Backend |
+| 7 | Each team member rehearses their section and knows exactly which buttons to click | ALL |
 
 ---
 
