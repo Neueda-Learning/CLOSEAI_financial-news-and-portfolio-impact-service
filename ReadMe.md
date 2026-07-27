@@ -1024,7 +1024,7 @@ Backlog          To Do           In Progress      Review           Done
 
 | Week | Tasks | Deliverable | Depends on |
 |------|-------|-------------|------------|
-| **Week 1** | Project skeleton, GitHub repo, DB schema, Trello setup | Runnable app with DB connection | — |
+| **Week 1** | Project skeleton, GitHub repo, DB schema, Jira setup | Runnable app with DB connection | — |
 | **Week 2** | Portfolio + Holdings CRUD (backend + frontend) | Can add/view/remove holdings | Week 1 |
 | **Week 3** | Finnhub integration: news fetch + price polling + caching | Data flowing into DB | Week 2 |
 | **Week 4** | NLP sentiment service up, Impact Correlator algorithm | Impact events generated | Week 3 |

@@ -25,7 +25,7 @@
 
 ## Linked Task
 
-Trello card: <!-- paste full URL -->
+Jira issue: <!-- paste full URL, e.g. FNPIS-42 -->
 
 ## Testing Performed
 
