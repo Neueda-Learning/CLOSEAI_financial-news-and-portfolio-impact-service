@@ -1,0 +1,70 @@
+# === Environment & Secrets ===
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+credentials.json
+
+# === OS Files (Windows + macOS) ===
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# === IDE & Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.iml
+
+# === Dependencies ===
+node_modules/
+.pnp
+.pnp.js
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+target/
+*.jar
+
+# === Build & Output ===
+dist/
+build/
+out/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# === Test & Coverage ===
+coverage/
+.coverage
+.nyc_output/
+*.lcov
+junit.xml
+
+# === Docker ===
+docker-compose.override.yml
+
+# === Misc ===
+.DS_Store
+*.tsbuildinfo
+.next/
+.cache/

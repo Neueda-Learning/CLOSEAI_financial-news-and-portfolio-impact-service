@@ -694,6 +694,18 @@ Frontend (Jest + React Testing Library):
 
 ## CI/CD & Docker
 
+### CI Pipeline (`.github/workflows/ci.yml`)
+
+| Job | What It Runs | Triggers |
+|-----|-------------|----------|
+| `lint` | ESLint (backend + frontend), Checkstyle (Java) or Prettier | PR to `dev` / `master`; push to `dev` / `master` |
+| `type-check` | `tsc --noEmit` (TypeScript) or `javac` (Java) | PR to `dev` / `master` |
+| `unit-test` | Backend: JUnit / Jest; Frontend: Jest + React Testing Library; NLP: pytest | PR to `dev` / `master` |
+| `build` | Verify the project compiles / bundles without errors | PR to `dev` / `master` |
+| `commitlint` | Reject commits that don't follow Conventional Commits | PR to `dev` / `master` |
+
+> **Critical rule:** CI must trigger on **both** PR and push to `dev`/`master`. The push trigger catches post-merge failures when two PRs pass individually but break `dev` when combined (see [Dev CI Failure](#dev-ci-failure)).
+
 ### Docker Compose (`docker-compose.yml`)
 
 ```yaml
@@ -785,31 +797,181 @@ jobs:
 ### Branch Strategy
 
 ```
-main          <- production-ready, protected
-  +-- develop <- integration branch
-       +-- feature/portfolio-crud
-       +-- feature/finnhub-integration
-       +-- feature/nlp-sentiment
-       +-- feature/impact-correlator
-       +-- feature/frontend-dashboard
-       +-- feature/frontend-impact-view
+master          <- release branch (protected — no direct push)
+  ├── hotfix/*    <- critical bug fix (source: master, target: master)
+  └── dev         <- integration branch (protected — no direct push)
+        ├── feature/*   <- new functionality (→ dev)
+        ├── fix/*       <- bug fix (→ dev)
+        ├── docs/*      <- documentation (→ dev)
+        ├── refactor/*  <- code restructure (→ dev)
+        ├── chore/*     <- tooling / CI / deps (→ dev)
+        └── release/*   <- release candidate (→ master)
+```
+
+### Branch Naming Convention
+
+All branch names use **kebab-case** (`lowercase-with-hyphens`).
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feature/` | New functionality | `feature/nlp-sentiment`, `feature/add-holding-form` |
+| `fix/` | Bug fixes | `fix/price-cache-timeout`, `fix/sentiment-score-range` |
+| `hotfix/` | Critical production bug (branched from `master`) | `hotfix/crash-on-login`, `hotfix/api-key-expired` |
+| `release/` | Release candidate (branched from `dev`, targets `master`) | `release/v0.1.0`, `release/v1.0.0` |
+| `docs/` | Documentation only | `docs/swagger-descriptions`, `docs/setup-guide` |
+| `refactor/` | Code restructuring (no feature change) | `refactor/impact-correlator`, `refactor/extract-common-charts` |
+| `chore/` | Tooling, CI, dependencies | `chore/update-docker-compose`, `chore/add-pre-commit-hooks` |
+
+### Commit Message Convention ([Conventional Commits](https://www.conventionalcommits.org/))
+
+```
+<type>: <short description>
+
+feat: add Finnhub company-news endpoint with caching
+fix: resolve NPE when price data is empty for ticker
+docs: document impact correlator algorithm
+refactor: extract price normalisation into shared util
+test: add edge cases for sentiment score mapping
+chore: update Docker Compose to PostgreSQL 16
 ```
 
 ### Rules
 
-1. **Never push directly to `main`**
-2. All work happens on `feature/*` branches
-3. Open a **Pull Request** to merge into `develop`
-4. At least one team member reviews before merging
-5. CI must pass (tests + lint) before merge
-6. Use descriptive commit messages: `feat: add Finnhub news fetch service`
-7. After final presentation, merge `develop` -> `main` and tag `v1.0.0`
+#### Branch Protection
+
+| Rule | `master` | `dev` |
+|------|----------|-------|
+| Direct push | ❌ Forbidden | ❌ Forbidden |
+| Require Pull Request | ✅ | ✅ |
+| Require review (≥1) | ✅ | ✅ |
+| Require CI pass | ✅ | ✅ |
+| Require conversation resolution | ✅ | ✅ |
+
+#### Everyday Workflow
+
+1. **Start** — pull latest `dev`, create a feature branch from `dev`:
+   ```bash
+   git checkout dev; git pull origin dev
+   git checkout -b feature/my-feature
+   ```
+2. **Commit** — use Conventional Commits; commit often with meaningful messages
+3. **Stay in sync** — periodically merge `dev` back into your feature branch to avoid large conflicts:
+   ```bash
+   git checkout dev; git pull origin dev
+   git checkout feature/my-feature; git merge dev
+   ```
+4. **Push & Open PR** — push your branch, open a PR targeting `dev`, fill in the PR template
+5. **Review** — at least one team member must review and approve; CI must pass (tests + lint)
+6. **Merge** — use **Merge Commit** (not squash, not rebase) to preserve full branch history when merging into `dev`
+7. **Clean up** — delete the feature branch after merge (GitHub can do this automatically; keep the checkbox checked)
+8. **Monitor dev CI** — after your PR merges, check that `dev` CI still passes. If `dev` CI goes red, **stop all new feature work** and create a `fix/*` branch immediately (see [Dev CI Failure](#dev-ci-failure) below)
+
+#### Merge Conflict Resolution
+
+1. **PR author is responsible** for resolving conflicts on their own PR
+2. Before resolving, pull latest `dev` and merge locally:
+   ```bash
+   git checkout dev; git pull origin dev
+   git checkout feature/my-feature; git merge dev
+   # Resolve conflicts in your editor, then:
+   git add .; git commit -m "chore: resolve merge conflicts with dev"
+   git push
+   ```
+3. **If the conflict is unclear** (e.g., another teammate changed the same logic) — ping them on the team channel before resolving
+4. **GitHub's "Resolve conflicts" button** is acceptable for trivial conflicts (whitespace, imports); complex ones must be resolved locally and re-reviewed
+5. A PR with unresolved merge conflicts must **never** be merged
+
+#### Dev CI Failure
+
+If `dev` CI fails after a merge (possible when two PRs pass individually but conflict post-merge):
+
+1. **Stop** — do not branch from a broken `dev`
+2. A **team lead** (or whoever notices first) creates a `fix/ci-dev-<issue>` branch
+3. This fix takes priority over all feature work
+4. Once fixed and merged back to `dev`, feature work resumes
+
+#### Hotfix Flow (Critical Bug on `master`)
+
+```
+master ← hotfix/<description>  (source: master, target: master)
+         then merge master → dev immediately after
+```
+
+1. Branch from `master`: `git checkout master; git checkout -b hotfix/crash-on-login`
+2. Fix + commit using Conventional Commits (`fix: ...`)
+3. Open PR targeting **`master`** (not dev)
+4. At least one reviewer approves + CI passes
+5. Merge Commit into `master`
+6. Tag immediately: `git tag -a vX.Y.Z -m "Hotfix: <description>"` — increment **patch** version (`v0.1.0` → `v0.1.1`)
+7. **Immediately** merge `master` back into `dev`:
+   ```bash
+   git checkout dev; git merge master; git push origin dev
+   ```
+
+#### Reverting a Bad Merge
+
+If a merged PR introduces a bug discovered after merge:
+
+1. **Preferred**: create a `fix/*` branch off `dev`, fix the bug, follow normal PR flow
+2. **If immediate rollback is needed**: use `git revert` (never `git reset --hard` on shared branches):
+   ```bash
+   git checkout dev; git pull origin dev
+   git revert -m 1 <merge-commit-hash> -m "revert: <what and why>"
+   git push origin dev
+   ```
+3. The original PR author investigates root cause and re-submits a corrected PR
+
+#### Release Flow (`dev` → `master`)
+
+> **Release branch protection:** `release/*` branches follow the same rules as `dev` — no direct push, PR required, review required.
+
+1. When `dev` is stable and ready for release:
+   ```bash
+   git checkout dev; git pull origin dev
+   git checkout -b release/vX.Y.Z
+   ```
+2. Open a PR from `release/vX.Y.Z` → `master`
+3. All team members review
+4. Merge Commit into `master`
+5. Tag the merge commit on `master`:
+   ```bash
+   git checkout master; git pull origin master
+   git tag -a vX.Y.Z -m "Release vX.Y.Z: <brief summary>"
+   git push origin vX.Y.Z
+   ```
+6. **The release PR author** is responsible for merging `master` back into `dev` immediately after tagging:
+   ```bash
+   git checkout dev; git merge master; git push origin dev
+   ```
+   Verify `dev` CI passes after the back-merge. If conflicts arise during back-merge, the release manager resolves them with input from affected authors.
+7. Delete the `release/*` branch after the back-merge succeeds
+
+#### Tag Naming
+
+| Stage | Tag | When |
+|-------|-----|------|
+| MVP | `v0.1.0` | Core CRUD working (Week 2) |
+| Iteration | `v0.2.0`, `v0.3.0`... | Each major milestone |
+| Final | `v1.0.0` | After final presentation |
 
 ### Repository Access
 
 - **Single repository** — one GitHub repo for all project work (per project specification)
 - **Visibility** — repo must be public **or** shared with instructors (`helppo2`, `tuistmessiah`) and all team members
 - **Team access** — ensure every team member can push and create PRs before Week 1 ends
+
+### Repository Configuration Files
+
+The following config files are maintained in the repo root. They are **not** repeated in this document to avoid staleness — the file is the source of truth:
+
+| File | Purpose |
+|------|---------|
+| [`.gitattributes`](../../.gitattributes) | Line ending normalisation (LF for code, CRLF for PS scripts, binary for images) |
+| [`.gitignore`](../../.gitignore) | OS files, editor config, `node_modules/`, `.env`, build output, secrets |
+
+### PR Template
+
+A self-contained PR template is provided at [`.github/pull_request_template.md`](../../.github/pull_request_template.md) — it carries all instructions an AI agent needs to fill in a complete PR. Every PR must use it.
 
 ---
 
