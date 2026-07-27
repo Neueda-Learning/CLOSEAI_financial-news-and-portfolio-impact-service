@@ -101,7 +101,7 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 | **CI/CD** | GitHub Actions | Build → Test → Lint on every PR |
 | **Container** | Docker + Docker Compose | One-command local setup; portable deployment |
 | **Version Control** | Git + GitHub | Feature branches, PR reviews |
-| **Project Mgmt** | Trello / Jira | Task tracking, sprint planning |
+| **Project Mgmt** | Jira | Task tracking, sprint planning |
 
 ---
 
@@ -993,9 +993,11 @@ A self-contained PR template is provided at [`.github/pull_request_template.md`]
 
 ## Project Management
 
-### Tool: Trello (or Jira)
+### Tool: Jira
 
-**Board Structure:**
+Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for a 6-week timeline).
+
+**Board Columns:**
 
 ```
 Backlog          To Do           In Progress      Review           Done
@@ -1006,6 +1008,17 @@ Backlog          To Do           In Progress      Review           Done
 | ...      |    | training |    | correlat.|    | dashboard|    | repo     |
 +----------+    +----------+    +----------+    +----------+    +----------+
 ```
+
+**Issue Types:**
+
+| Type | Use For |
+|------|---------|
+| Epic | Each week's milestone (Week 1 ~ Week 6) |
+| Story | User-facing feature (P0-P3 items) |
+| Task | Technical work item (e.g. "Set up Finnhub API client") |
+| Bug | Defect found during testing |
+
+**Labels:** `backend`, `frontend`, `nlp`, `devops`, `docs`
 
 ### Suggested Task Breakdown (Minimal MVP)
 

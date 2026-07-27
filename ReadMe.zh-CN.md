@@ -101,7 +101,7 @@ FNPIS 集成了 **两个** 外部 API（超过最低要求的一个）：
 | **CI/CD** | GitHub Actions | 每次 PR 构建 → 测试 → 检查 |
 | **容器化** | Docker + Docker Compose | 一键本地启动；可移植部署 |
 | **版本控制** | Git + GitHub | 功能分支、PR 审查 |
-| **项目管理** | Trello / Jira | 任务跟踪、迭代规划 |
+| **项目管理** | Jira | 任务跟踪、迭代规划 |
 
 ---
 
@@ -604,9 +604,22 @@ chore: 升级 Docker Compose 至 PostgreSQL 16
 
 ## 项目管理
 
-### 工具：Trello（或 Jira）
+### 工具：Jira
 
-看板结构：Backlog → To Do → In Progress → Review → Done
+10 人以下团队免费。使用 **Kanban** 项目（6 周时间线比 Scrum 更简单合适）。
+
+**看板列：** Backlog → To Do → In Progress → Review → Done
+
+**Issue 类型：**
+
+| 类型 | 用途 |
+|------|------|
+| Epic | 每周里程碑（第 1 周 ~ 第 6 周） |
+| Story | 面向用户的功能（P0-P3 项） |
+| Task | 技术工作项（如"搭建 Finnhub API 客户端"） |
+| Bug | 测试中发现的缺陷 |
+
+**标签：** `backend`、`frontend`、`nlp`、`devops`、`docs`
 
 ### 建议任务分解（最小 MVP）
 
