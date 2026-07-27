@@ -866,6 +866,12 @@ chore: update Docker Compose to PostgreSQL 16
 7. **Clean up** — delete the feature branch after merge (GitHub can do this automatically; keep the checkbox checked)
 8. **Monitor dev CI** — after your PR merges, check that `dev` CI still passes. If `dev` CI goes red, **stop all new feature work** and create a `fix/*` branch immediately (see [Dev CI Failure](#dev-ci-failure) below)
 
+#### Stale Branch Cleanup
+
+- **Draft PRs** — if a draft PR has no activity for **1 week**, the author must either push updates or close it
+- **Abandoned branches** — stale branches (no commits for **2+ weeks**, no open PR) are deleted during the weekly sync
+- **Weekly check-in** — every Friday, the team reviews all open branches and PRs; any branch not actively being worked on is reassigned or deleted
+
 #### Merge Conflict Resolution
 
 1. **PR author is responsible** for resolving conflicts on their own PR
