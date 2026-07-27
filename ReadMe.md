@@ -2,6 +2,8 @@
 
 > **Project #15** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with intraday price movements (5-min polling).
 
+[中文版 (Chinese)](./ReadMe.zh-CN.md)
+
 ---
 
 ## Table of Contents
@@ -62,11 +64,17 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 
 ## Team
 
+**Team Name:** CLOSEAI
+
 | Name | Role | Responsibilities |
 |------|------|-----------------|
-| TBD | Backend Lead | REST API, DB schema, Finnhub integration, cron jobs |
-| TBD | NLP / Algorithm Lead | Sentiment analysis pipeline, impact correlator engine |
-| TBD | Frontend Lead | React SPA, Chart.js/D3 visualizations, responsive UI |
+| Evan Li | TBD | TBD |
+| David Hu | TBD | TBD |
+| Venessa Feng | TBD | TBD |
+| Ethan SUN | TBD | TBD |
+| Timothy Xue | TBD | TBD |
+
+> Role assignments (Backend Lead / NLP Lead / Frontend Lead / additional roles) to be decided by the team in Week 1.
 
 **Instructors (GitHub Viewers):** `helppo2`, `tuistmessiah`
 
@@ -85,7 +93,7 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 |-------|-----------|-----------|
 | **Backend** | Java 17 + Spring Boot 3 | Training stack |
 | **Frontend** | React + Chart.js / D3.js | SPA with rich interactive charts |
-| **Database** | PostgreSQL / MySQL | Persistent storage for holdings, news, prices, impact events |
+| **Database** | MySQL 8 | Persistent storage for holdings, news, prices, impact events |
 | **NLP** | finBERT (ProsusAI) via Python microservice, or LLM API | Financial-domain sentiment analysis; local-first for reliability |
 | **External APIs** | Finnhub (primary), Alpha Vantage (fallback) | News + stock prices |
 | **Scheduling** | Spring `@Scheduled` | Periodic news fetch, price polling, impact correlation |
@@ -168,7 +176,7 @@ FNPIS/
 - **Java 17+** + Maven
 - **Python 3.10+** (for NLP microservice)
 - **Docker & Docker Compose**
-- **PostgreSQL 15+** (or use Dockerized DB)
+- **MySQL 8+** (or use Dockerized DB)
 - **Finnhub API Key** — [Get free key](https://finnhub.io/register)
 
 ### Environment Variables
@@ -178,10 +186,11 @@ Create a `.env` file in the project root (never commit this file):
 ```env
 # Database
 DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=fnpis
-DB_USER=fnpis_user
-DB_PASSWORD=your_db_password
+DB_PORT=3306
+MYSQL_DATABASE=fnpis
+MYSQL_USER=fnpis_user
+MYSQL_PASSWORD=your_db_password
+MYSQL_ROOT_PASSWORD=your_root_password
 
 # External APIs
 FINNHUB_API_KEY=your_finnhub_key
@@ -198,7 +207,7 @@ SERVER_PORT=8080
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/<your-team>/FNPIS.git
+git clone https://github.com/therain2020/financial-news-and-portfolio-impact-service.git
 cd FNPIS
 
 # 2. Set up environment
@@ -711,15 +720,16 @@ Frontend (Jest + React Testing Library):
 version: "3.8"
 services:
   db:
-    image: postgres:15
+    image: mysql:8
     environment:
-      POSTGRES_DB: fnpis
-      POSTGRES_USER: fnpis_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: fnpis
+      MYSQL_USER: fnpis_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mysqldata:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3306:3306"
 
   nlp-service:
     build: ./nlp-service
@@ -733,6 +743,7 @@ services:
       - "8080:8080"
     environment:
       - DB_HOST=db
+      - DB_PORT=3306
       - NLP_SERVICE_URL=http://nlp-service:5001
       - FINNHUB_API_KEY=${FINNHUB_API_KEY}
     depends_on:
@@ -749,7 +760,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgdata:
+  mysqldata:
 ```
 
 ### GitHub Actions CI (`ci.yml`)

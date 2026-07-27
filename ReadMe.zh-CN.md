@@ -2,6 +2,8 @@
 
 > **项目 #15** — 聚合投资组合中公司的金融新闻，结合金融新闻 API 和股票价格 API，评估哪些持仓受到影响。使用 NLP 情感分析将新闻与日内价格走势（5 分钟轮询）进行关联。
 
+[English Version](./ReadMe.md)
+
 ---
 
 ## 目录
@@ -62,11 +64,17 @@ FNPIS 集成了 **两个** 外部 API（超过最低要求的一个）：
 
 ## 团队
 
+**团队名称：** CLOSEAI
+
 | 姓名 | 角色 | 职责 |
 |------|------|------|
-| 待定 | 后端负责人 | REST API、数据库设计、Finnhub 集成、定时任务 |
-| 待定 | NLP / 算法负责人 | 情感分析流水线、影响关联引擎 |
-| 待定 | 前端负责人 | React SPA、Chart.js/D3 可视化、响应式 UI |
+| Evan Li | 待定 | 待定 |
+| David Hu | 待定 | 待定 |
+| Venessa Feng | 待定 | 待定 |
+| Ethan SUN | 待定 | 待定 |
+| Timothy Xue | 待定 | 待定 |
+
+> 角色分配（后端负责人 / NLP 负责人 / 前端负责人 / 其他角色）由团队在第 1 周内确定。
 
 **导师（GitHub 观察者）：** `helppo2`、`tuistmessiah`
 
@@ -85,7 +93,7 @@ FNPIS 集成了 **两个** 外部 API（超过最低要求的一个）：
 |------|------|----------|
 | **后端** | Java 17 + Spring Boot 3 | 培训技术栈 |
 | **前端** | React + Chart.js / D3.js | 单页应用，丰富的交互式图表 |
-| **数据库** | PostgreSQL（或 MySQL） | 持久化存储持仓、新闻、价格、影响事件 |
+| **数据库** | MySQL 8 | 持久化存储持仓、新闻、价格、影响事件 |
 | **NLP** | finBERT (ProsusAI) 通过 Python 微服务，或 LLM API 备用 | 金融领域情感分析；优先本地模型以保证可靠性 |
 | **外部 API** | Finnhub（主）、Alpha Vantage（备用） | 新闻 + 股票价格 |
 | **定时调度** | Spring `@Scheduled` | 定期新闻获取、价格轮询、影响关联 |
@@ -172,7 +180,7 @@ FNPIS/
 - **Java 17+** + Maven
 - **Python 3.10+**（用于 NLP 微服务）
 - **Docker & Docker Compose**
-- **PostgreSQL 15+**（或使用 Docker 化的数据库）
+- **MySQL 8+**（或使用 Docker 化的数据库）
 - **Finnhub API Key** — [获取免费 Key](https://finnhub.io/register)
 
 ### 环境变量
@@ -182,10 +190,11 @@ FNPIS/
 ```env
 # 数据库
 DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=fnpis
-DB_USER=fnpis_user
-DB_PASSWORD=your_db_password
+DB_PORT=3306
+MYSQL_DATABASE=fnpis
+MYSQL_USER=fnpis_user
+MYSQL_PASSWORD=your_db_password
+MYSQL_ROOT_PASSWORD=your_root_password
 
 # 外部 API
 FINNHUB_API_KEY=your_finnhub_key
@@ -202,7 +211,7 @@ SERVER_PORT=8080
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/<your-team>/FNPIS.git
+git clone https://github.com/therain2020/financial-news-and-portfolio-impact-service.git
 cd FNPIS
 
 # 2. 设置环境
