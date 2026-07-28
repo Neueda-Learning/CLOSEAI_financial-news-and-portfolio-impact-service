@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+  Intentionally light. The point is to catch the things the project
+  actually cares about (CLAUDE.md "When Writing Code"), not to fight
+  the team over formatting during a 6-week build.
+
+  Raise strictness later if it turns out to be needed.
+-->
+<module name="Checker">
+  <property name="severity" value="warning"/>
+  <property name="fileExtensions" value="java"/>
+
+  <!-- No tabs: keeps diffs stable across editors -->
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+  </module>
+
+  <module name="LineLength">
+    <property name="max" value="120"/>
+    <property name="ignorePattern" value="^package.*|^import.*|^\s*\*.*https?://"/>
+  </module>
+
+  <module name="TreeWalker">
+    <!-- Unused imports rot fast once several people touch a file -->
+    <module name="UnusedImports"/>
+    <module name="RedundantImport"/>
+    <module name="AvoidStarImport"/>
+
+    <!-- No System.out.println left in commits (CLAUDE.md) -->
+    <module name="Regexp">
+      <property name="format" value="System\.(out|err)\.print"/>
+      <property name="illegalPattern" value="true"/>
+      <property name="message"
+                value="No System.out/err in committed code - use a logger."/>
+    </module>
+
+    <!-- Money must never be double/float (architecture 6.2) -->
+    <module name="Regexp">
+      <property name="format" value="\b(double|float)\s+\w*([Pp]rice|[Vv]alue|[Aa]mount|[Cc]ost)"/>
+      <property name="illegalPattern" value="true"/>
+      <property name="message"
+                value="Use BigDecimal for money, never double/float (architecture 6.2)."/>
+    </module>
+
+    <module name="EmptyCatchBlock">
+      <property name="exceptionVariableName" value="expected|ignored"/>
+    </module>
+
+    <module name="NeedBraces"/>
+    <module name="EqualsHashCode"/>
+    <module name="StringLiteralEquality"/>
+  </module>
+</module>

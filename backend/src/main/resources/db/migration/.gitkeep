@@ -1,0 +1,18 @@
+Flyway migration scripts live here. Owned by one person - see CLAUDE.md and
+the architecture document section 4.5.
+
+V1__create_core_tables.sql      portfolio, holding, security
+V2__create_news_tables.sql      news_article, article_security_link, sentiment_score
+V3__create_price_tables.sql     price_quote, price_bar
+V4__create_impact_table.sql     impact_assessment
+V5__seed_watchlist.sql          initial watchlist symbols
+
+Two rules:
+  - Never edit a script that has been committed. Flyway stores a checksum, so a
+    changed file makes every other checkout fail on startup. Add a new version.
+  - V1-V5 are reserved. Claim V6+ for later schema changes and tell the team.
+
+Once V1 exists, delete `spring.flyway.fail-on-missing-locations: false` from
+application.yml - leaving it in would silence a genuinely missing migration.
+
+Delete this placeholder file at the same time.
