@@ -38,13 +38,17 @@ public class ChainedPriceProvider implements PriceProvider {
     public Optional<QuoteSnapshot> fetchQuote(String symbol) {
         try {
             Optional<QuoteSnapshot> result = finnhub.fetchQuote(symbol);
-            if (result.isPresent()) return result;
+            if (result.isPresent()) {
+                return result;
+            }
         } catch (Exception e) {
             log.warn("Finnhub failed for {}, trying Twelve Data", symbol, e);
         }
         try {
             Optional<QuoteSnapshot> result = twelvedata.fetchQuote(symbol);
-            if (result.isPresent()) return result;
+            if (result.isPresent()) {
+                return result;
+            }
         } catch (Exception e2) {
             log.warn("Twelve Data failed for {}, falling back to DB cache", symbol, e2);
         }

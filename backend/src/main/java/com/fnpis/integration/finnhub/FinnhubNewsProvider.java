@@ -60,12 +60,16 @@ class FinnhubNewsProvider implements NewsProvider {
     }
 
     private String truncateUrl(String url) {
-        if (url == null) return "";
+        if (url == null) {
+            return "";
+        }
         return url.length() > 1024 ? url.substring(0, 1024) : url;
     }
 
     private String truncate(String value, int max) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         return value.length() > max ? value.substring(0, max) : value;
     }
 
