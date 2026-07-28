@@ -82,9 +82,7 @@ FNPIS 集成了两类不同的外部数据接口，加一个 LLM API：
 **限流器按 key 分别配置，绝不共用** —— 共用的话 15 分钟一次的新闻轮询会把限流器打满，
 报价刷新跟着被拒，那两个账号就白开了。
 
-单一服务商依赖是真风险，而且多个 key 解决不了：Finnhub 自己挂掉时两条链路一起断。
-真正兜住这个风险的是 `PriceProvider` 接口 —— 换一家数据源只需新增一个实现类，
-业务逻辑和数据表都不用动。
+单一服务商依赖已通过 `PriceProvider` 接口缓解：Twelve Data 是行情第二个现成实现。Finnhub 挂掉时行情链路切到 Twelve Data（配置切换，不是代码改动），新闻降级到 `news_article` 缓存。
 
 ---
 
@@ -146,7 +144,7 @@ FNPIS 集成了两类不同的外部数据接口，加一个 LLM API：
 | **图表** | Chart.js 4 + annotation 插件 | 联动视图要在折线图上画新闻时刻竖线，这是前端唯一的硬约束 |
 | **数据库** | MySQL 8 + Flyway | 版本化 SQL 迁移；全库 utf8mb4 |
 | **情感分析** | LLM Agent，单一引擎 | 见[情感分析](#情感分析) |
-| **外部 API** | Finnhub，新闻与行情各用独立 key | 按用途隔离额度 |
+| **外部 API** | Finnhub（主）+ Twelve Data（备用行情）+ yfinance（离线准备） | Finnhub 负责新闻和行情主力（独立 key）；Twelve Data 做行情 fallback（800/天）；yfinance 用于播种期批量下载历史数据 |
 | **HTTP 客户端** | RestClient (Spring 6.1+) | — |
 | **韧性组件** | Resilience4j | 限流、重试、熔断 |
 | **本地缓存** | Caffeine + Spring Cache | 包在对外调用外层 |

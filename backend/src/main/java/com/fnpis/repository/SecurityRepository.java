@@ -4,14 +4,20 @@ import com.fnpis.domain.Security;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
- * Securities master data, seeded by V5.
+ * Read the watchlist (V5 seed).
  *
- * <p>Read-only from module A's side: the watchlist does not grow at runtime in
- * the MVP (AS-03). Used to reject unknown symbols (EC-05) and to attach company
- * names to holdings rows.
+ * <p>Module A (portfolio CRUD) and Module B (quote refresh) both need this.
+ * The first module to land it creates it; the second reuses it. Do not create
+ * a second SecurityRepository in another package.
+ *
+ * <p>Read-only in the MVP: the watchlist does not grow at runtime (AS-03).
+ * Module A uses it to reject unknown symbols (EC-05) and to attach company names
+ * to holdings rows.
  */
+@Repository
 public interface SecurityRepository extends JpaRepository<Security, String> {
 
     /**

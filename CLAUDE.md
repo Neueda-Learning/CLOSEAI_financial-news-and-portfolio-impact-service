@@ -5,7 +5,7 @@
 - **Project**: #15 · Group 7 — Financial News & Portfolio Impact Service
 - **Team**: CLOSEAI (5 members)
 - **Repo**: https://github.com/Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service
-- **Timeline**: 6 weeks
+- **Timeline**: 5 days
 - **Presentation**: 15 min + 5 min Q&A
 
 ## Team
@@ -46,7 +46,7 @@ Per architecture §0 and §6.1.
 | Frontend | SPA, framework chosen by the frontend dev | **Chart.js 4** + annotation plugin is required (the news marker line in F4) |
 | Database | **MySQL 8** + Flyway | utf8mb4 throughout; `ddl-auto: validate` — Flyway owns the schema |
 | Sentiment | **LLM Agent, single engine** | No finBERT, no Python service, no multi-engine comparison (decision 5) |
-| External APIs | **Finnhub only** — separate key for news and for prices | Two endpoints, two accounts, one rate limiter per key (§6.5) |
+| External APIs | **Finnhub (primary) + Twelve Data (backup quotes) + yfinance (offline prep)** | Finnhub news + quotes on separate keys; Twelve Data for quote fallback; yfinance for bulk history download when seeding |
 | HTTP client | RestClient (Spring 6.1+) | — |
 | Resilience | Resilience4j | Rate limit, retry, circuit breaker (decision 1) |
 | Local cache | Caffeine + Spring Cache | In front of outbound provider calls only, never read endpoints (decision 2) |
