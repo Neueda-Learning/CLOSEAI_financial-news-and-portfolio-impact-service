@@ -207,7 +207,7 @@ SERVER_PORT=8080
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Neueda-Learning/financial-news-and-portfolio-impact-service.git
+git clone https://github.com/Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service.git
 cd FNPIS
 
 # 2. Set up environment
