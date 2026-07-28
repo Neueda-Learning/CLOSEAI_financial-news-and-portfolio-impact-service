@@ -27,3 +27,12 @@ export const holdingsMock: Holding[] = [
   { id: 3, ticker: 'MSFT', companyName: 'Microsoft Corporation', shares: 12, averageCost: 410, currentPrice: 438.18, dayChangePct: 0.84 },
   { id: 4, ticker: 'AMD', companyName: 'Advanced Micro Devices', shares: 90, averageCost: 141, currentPrice: 159.9, dayChangePct: 2.8 },
 ]
+
+export const portfolioValueTrend = [
+  { date: '07/22', totalValue: 124300 },
+  { date: '07/23', totalValue: 125880 },
+  { date: '07/24', totalValue: 127160 },
+  { date: '07/25', totalValue: 126400 },
+  { date: '07/26', totalValue: 129820 },
+  { date: '07/27', totalValue: 128450.75 },
+]

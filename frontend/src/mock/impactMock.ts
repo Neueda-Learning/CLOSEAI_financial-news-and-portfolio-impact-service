@@ -6,12 +6,15 @@ export const impactEventsMock: ImpactEvent[] = [
     ticker: 'AAPL',
     headline: 'Apple lowers production forecast after supplier checks',
     source: 'Reuters',
+    url: 'https://example.com/article/1',
     publishedAt: '2026-07-27T12:31:00Z',
     sentiment: 'NEGATIVE',
+    sentimentScore: -0.82,
     confidence: 0.97,
     priceChange: -3.38,
     portfolioImpact: -520,
     strength: 'Strong',
+    alignment: 'CONFIRMED',
     content:
       'Supplier channel checks suggest Apple may trim near-term iPhone production targets. The article points to softer demand signals and tighter inventory control across the hardware supply chain.',
     priceSeries: [
@@ -28,12 +31,15 @@ export const impactEventsMock: ImpactEvent[] = [
     ticker: 'NVDA',
     headline: 'Nvidia raises guidance as enterprise AI demand accelerates',
     source: 'Bloomberg',
+    url: 'https://example.com/article/2',
     publishedAt: '2026-07-27T10:15:00Z',
     sentiment: 'POSITIVE',
+    sentimentScore: 0.84,
     confidence: 0.88,
     priceChange: 4.15,
     portfolioImpact: 1614,
     strength: 'Strong',
+    alignment: 'CONFIRMED',
     content:
       'Nvidia lifted its outlook after reporting stronger orders from cloud and enterprise customers. Analysts highlighted resilient AI infrastructure spending despite broader macro caution.',
     priceSeries: [
@@ -49,12 +55,15 @@ export const impactEventsMock: ImpactEvent[] = [
     ticker: 'MSFT',
     headline: 'Microsoft cloud margin commentary keeps analysts neutral',
     source: 'CNBC',
+    url: 'https://example.com/article/3',
     publishedAt: '2026-07-26T15:05:00Z',
     sentiment: 'NEUTRAL',
+    sentimentScore: 0.08,
     confidence: 0.74,
     priceChange: 0.42,
     portfolioImpact: 92,
     strength: 'Watch',
+    alignment: 'INCONCLUSIVE',
     content:
       'Management commentary on cloud margins was balanced, with AI infrastructure costs offset by durable Azure demand. The market reaction stayed muted.',
     priceSeries: [

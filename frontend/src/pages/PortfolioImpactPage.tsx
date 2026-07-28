@@ -11,6 +11,14 @@ import type { Holding, ImpactEvent } from '../types/domain'
 
 type ViewMode = 'both' | 'portfolio' | 'news'
 
+const viewSequence: ViewMode[] = ['both', 'portfolio', 'news']
+
+const viewLabels: Record<ViewMode, string> = {
+  both: 'Both pages',
+  portfolio: 'Portfolio full',
+  news: 'News full',
+}
+
 function sparklinePath(values: number[]) {
   const width = 320
   const height = 58
@@ -34,10 +42,22 @@ function trendForHolding(holding: Holding) {
   return [base * (1 - direction * 0.025), base * (1 - direction * 0.012), base * (1 + direction * 0.004), base * (1 - direction * 0.006), base * (1 + direction * 0.016), base]
 }
 
-function PortfolioMarketCard({ holding }: { holding: Holding }) {
+function PortfolioMarketCard({
+  holding,
+  totalValue,
+  onEdit,
+  onDelete,
+}: {
+  holding: Holding
+  totalValue: number
+  onEdit: (holding: Holding) => void
+  onDelete: (id: number) => void
+}) {
   const marketValue = holding.currentPrice * holding.shares
   const totalCost = holding.averageCost * holding.shares
   const pnl = marketValue - totalCost
+  const pnlPct = totalCost === 0 ? 0 : (pnl / totalCost) * 100
+  const weight = totalValue === 0 ? 0 : (marketValue / totalValue) * 100
   const high = holding.currentPrice * 1.018
   const low = holding.currentPrice * 0.984
   const trend = trendForHolding(holding)
@@ -50,7 +70,11 @@ function PortfolioMarketCard({ holding }: { holding: Holding }) {
           <div className="stock-symbol">${holding.ticker}</div>
           <div className="stock-name">{holding.companyName} · NASDAQ</div>
         </div>
-        <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
+        <div className="market-actions">
+          <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
+          <button type="button" onClick={() => onEdit(holding)}>Edit</button>
+          <button type="button" className="danger-text" onClick={() => onDelete(holding.id)}>Delete</button>
+        </div>
       </div>
       <div className="stock-price-row">
         <span className="stock-price">{holding.currentPrice.toFixed(2)}</span>
@@ -61,6 +85,13 @@ function PortfolioMarketCard({ holding }: { holding: Holding }) {
         <span>Low <strong>{low.toFixed(2)}</strong></span>
         <span>Value <strong>{currency(marketValue)}</strong></span>
       </div>
+      <div className="position-grid">
+        <span><small>Shares</small><strong>{holding.shares}</strong></span>
+        <span><small>Average cost</small><strong>{currency(holding.averageCost)}</strong></span>
+        <span><small>Total cost</small><strong>{currency(totalCost)}</strong></span>
+        <span><small>Weight</small><strong>{percent(weight)}</strong></span>
+        <span><small>P/L</small><strong className={pnl >= 0 ? 'positive' : 'negative'}>{percent(pnlPct)}</strong></span>
+      </div>
       <svg className="mini-chart" viewBox="0 0 320 58" aria-label={`${holding.ticker} intraday trend`}>
         <polyline points={sparklinePath(trend)} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -69,12 +100,19 @@ function PortfolioMarketCard({ holding }: { holding: Holding }) {
 }
 
 function NewsImpactItem({ event }: { event: ImpactEvent }) {
+  const alignmentLabels: Record<ImpactEvent['alignment'], string> = {
+    CONFIRMED: 'Direction confirmed',
+    DIVERGENT: 'Divergent move',
+    INCONCLUSIVE: 'Inconclusive',
+  }
+
   return (
     <article className={`news-impact-item ${event.sentiment.toLowerCase()}`}>
       <div className="news-impact-headline">{event.headline}</div>
       <div className="news-impact-meta">
         <SentimentBadge sentiment={event.sentiment} />
         <span>{Math.round(event.confidence * 100)}% confidence</span>
+        <span>Score {event.sentimentScore.toFixed(2)}</span>
         <span>{event.source}</span>
         <span>{dateTime(event.publishedAt)}</span>
         <span className="ticker-tag">${event.ticker}</span>
@@ -82,17 +120,55 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
       <div className="news-impact-summary">
         <span className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)} price</span>
         <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
+        <span>{alignmentLabels[event.alignment]}</span>
+        <a href={event.url} target="_blank" rel="noreferrer">Original</a>
         <Link to={`/impact/${event.id}`}>View analysis</Link>
       </div>
+      <p className="news-impact-excerpt">{event.content}</p>
     </article>
   )
 }
 
 export function PortfolioImpactPage() {
-  const { holdings, addHolding } = usePortfolio()
+  const { holdings, addHolding, updateHolding, deleteHolding } = usePortfolio()
   const [viewMode, setViewMode] = useState<ViewMode>('both')
   const [open, setOpen] = useState(false)
+  const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
+  const [tickerFilter, setTickerFilter] = useState('ALL')
+  const [newsPage, setNewsPage] = useState(1)
+  const [lastRefresh, setLastRefresh] = useState('12:31')
   const negativeCount = useMemo(() => impactEventsMock.filter((event) => event.sentiment === 'NEGATIVE').length, [])
+  const totalValue = useMemo(() => holdings.reduce((sum, holding) => sum + holding.currentPrice * holding.shares, 0), [holdings])
+  const totalCost = useMemo(() => holdings.reduce((sum, holding) => sum + holding.averageCost * holding.shares, 0), [holdings])
+  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(impactEventsMock.map((event) => event.ticker)))], [])
+  const filteredEvents = useMemo(
+    () => impactEventsMock.filter((event) => tickerFilter === 'ALL' || event.ticker === tickerFilter),
+    [tickerFilter],
+  )
+  const pageSize = 2
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
+  const visibleEvents = filteredEvents.slice((newsPage - 1) * pageSize, newsPage * pageSize)
+
+  async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
+    if (editingHolding) {
+      await updateHolding(editingHolding.id, { shares: input.shares, averageCost: input.averageCost })
+      setEditingHolding(null)
+      return
+    }
+
+    await addHolding(input)
+  }
+
+  function refreshNewsNow() {
+    setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    setNewsPage(1)
+  }
+
+  function cycleViewMode() {
+    const currentIndex = viewSequence.indexOf(viewMode)
+    const nextMode = viewSequence[(currentIndex + 1) % viewSequence.length]
+    setViewMode(nextMode)
+  }
 
   return (
     <div className={`split-module split-${viewMode}`}>
@@ -100,13 +176,17 @@ export function PortfolioImpactPage() {
         <div>
           <p className="eyebrow">Portfolio Impact</p>
           <h1>Holdings and news impact, side by side</h1>
-          <p className="lede">Left page tracks the portfolio. Right page explains which headlines are moving it.</p>
         </div>
-        <div className="view-switcher" aria-label="Choose split view">
-          <button className={viewMode === 'portfolio' ? 'active' : ''} onClick={() => setViewMode('portfolio')}>Portfolio full</button>
-          <button className={viewMode === 'both' ? 'active' : ''} onClick={() => setViewMode('both')}>Both pages</button>
-          <button className={viewMode === 'news' ? 'active' : ''} onClick={() => setViewMode('news')}>News full</button>
-        </div>
+        <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
+          <span className={`view-cycle-glyph mode-${viewMode}`} aria-hidden="true">
+            <i />
+            <i />
+          </span>
+          <span>
+            <small>View</small>
+            {viewLabels[viewMode]}
+          </span>
+        </button>
       </header>
 
       <section className="split-pages">
@@ -122,17 +202,22 @@ export function PortfolioImpactPage() {
             <div className="pane-summary">
               <div>
                 <small>Total Value</small>
-                <strong>{currency(portfolioSummaryMock.totalValue)}</strong>
+                <strong>{currency(totalValue || portfolioSummaryMock.totalValue)}</strong>
               </div>
               <div>
-                <small>Today</small>
-                <strong className={portfolioSummaryMock.todayChange >= 0 ? 'positive' : 'negative'}>{percent(portfolioSummaryMock.todayChangePct)}</strong>
+                <small>Total Cost</small>
+                <strong>{currency(totalCost)}</strong>
               </div>
               <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
             </div>
+            <div className="portfolio-service-strip">
+              <span>Latest quotes updated 4 minutes ago</span>
+              <span>Cached fallback enabled</span>
+              <span>{holdings.length} holdings · weights recalculated</span>
+            </div>
             <div className="market-stack">
               {holdings.map((holding) => (
-                <PortfolioMarketCard key={holding.id} holding={holding} />
+                <PortfolioMarketCard key={holding.id} holding={holding} totalValue={totalValue} onEdit={setEditingHolding} onDelete={deleteHolding} />
               ))}
             </div>
           </div>
@@ -150,27 +235,64 @@ export function PortfolioImpactPage() {
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
-                <strong>{impactEventsMock.length}</strong>
+                <strong>{filteredEvents.length}</strong>
               </div>
               <div>
                 <small>Largest impact</small>
                 <strong className="positive">{currency(1614)}</strong>
               </div>
               <div>
-                <small>Next poll</small>
-                <strong>1:45</strong>
+                <small>Last refresh</small>
+                <strong>{lastRefresh}</strong>
               </div>
             </div>
+            <div className="news-controls" aria-label="News filters and refresh controls">
+              <div className="ticker-filter">
+                {tickers.map((ticker) => (
+                  <button
+                    type="button"
+                    key={ticker}
+                    className={tickerFilter === ticker ? 'active' : ''}
+                    onClick={() => {
+                      setTickerFilter(ticker)
+                      setNewsPage(1)
+                    }}
+                  >
+                    {ticker === 'ALL' ? 'All' : `$${ticker}`}
+                  </button>
+                ))}
+              </div>
+              <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
+            </div>
             <div className="news-impact-list">
-              {impactEventsMock.map((event) => (
+              {visibleEvents.map((event) => (
                 <NewsImpactItem key={event.id} event={event} />
               ))}
+            </div>
+            <div className="pagination-row">
+              <button type="button" disabled={newsPage === 1} onClick={() => setNewsPage((page) => Math.max(1, page - 1))}>
+                Previous
+              </button>
+              <span>Page {newsPage} of {totalPages}</span>
+              <button type="button" disabled={newsPage === totalPages} onClick={() => setNewsPage((page) => Math.min(totalPages, page + 1))}>
+                Next
+              </button>
             </div>
           </div>
         </section>
       </section>
 
-      {open && <AddHoldingModal onClose={() => setOpen(false)} onSubmit={addHolding} />}
+      {(open || editingHolding) && (
+        <AddHoldingModal
+          mode={editingHolding ? 'edit' : 'add'}
+          initialValue={editingHolding ?? undefined}
+          onClose={() => {
+            setOpen(false)
+            setEditingHolding(null)
+          }}
+          onSubmit={submitHolding}
+        />
+      )}
     </div>
   )
 }

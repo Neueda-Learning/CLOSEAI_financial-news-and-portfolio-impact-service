@@ -26,6 +26,19 @@ export const portfolioService = {
     return created
   },
 
+  async updateHolding(id: number, holding: Pick<Holding, 'shares' | 'averageCost'>) {
+    holdings = holdings.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            shares: holding.shares,
+            averageCost: holding.averageCost,
+          }
+        : item,
+    )
+    return holdings.find((item) => item.id === id)
+  },
+
   async deleteHolding(id: number) {
     holdings = holdings.filter((holding) => holding.id !== id)
   },

@@ -4,6 +4,7 @@ import type { Holding } from '../types/domain'
 export type PortfolioContextValue = {
   holdings: Holding[]
   addHolding: (input: { ticker: string; shares: number; averageCost: number }) => Promise<void>
+  updateHolding: (id: number, input: { shares: number; averageCost: number }) => Promise<void>
   deleteHolding: (id: number) => Promise<void>
 }
 

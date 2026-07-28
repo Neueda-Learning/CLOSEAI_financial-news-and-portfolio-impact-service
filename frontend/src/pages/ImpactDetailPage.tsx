@@ -24,6 +24,20 @@ export function ImpactDetailPage() {
     <div className="page-stack">
       <p className="eyebrow">Impact detail</p>
       <NewsInfoCard event={event} />
+      <Card className="analysis-note">
+        <div>
+          <small>Document flow</small>
+          <strong>{event.sentiment} news · {event.alignment.toLowerCase()} by market move</strong>
+        </div>
+        <p>
+          The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
+          {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
+          <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>
+            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.portfolioImpact)}
+          </span>
+          .
+        </p>
+      </Card>
       <section className="grid-2">
         <Card>
           <h2>News Content</h2>

@@ -18,17 +18,25 @@ export type PortfolioSummary = {
   sentimentTrend: Array<{ date: string; positive: number; negative: number; neutral: number }>
 }
 
+export type PortfolioValuePoint = {
+  date: string
+  totalValue: number
+}
+
 export type ImpactEvent = {
   id: number
   ticker: string
   headline: string
   source: string
+  url: string
   publishedAt: string
   sentiment: Sentiment
+  sentimentScore: number
   confidence: number
   priceChange: number
   portfolioImpact: number
   strength: 'Strong' | 'Moderate' | 'Watch'
+  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE'
   content: string
   priceSeries: Array<{ time: string; price: number }>
 }

@@ -10,6 +10,10 @@ export function ImpactSummaryCard({ event }: { event: ImpactEvent }) {
         <strong>{event.strength}</strong>
       </div>
       <div>
+        <small>Alignment</small>
+        <strong>{event.alignment}</strong>
+      </div>
+      <div>
         <small>Price change</small>
         <strong className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)}</strong>
       </div>

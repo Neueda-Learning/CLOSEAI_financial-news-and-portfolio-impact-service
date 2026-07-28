@@ -1,7 +1,7 @@
 import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
 import { PieChart } from '../components/charts/PieChart'
-import { portfolioSummaryMock } from '../mock/portfolioMock'
+import { portfolioSummaryMock, portfolioValueTrend } from '../mock/portfolioMock'
 import { currency, percent } from '../utils/formatters'
 
 export function DashboardPage() {
@@ -48,18 +48,48 @@ export function DashboardPage() {
           </div>
         </Card>
         <Card>
-          <h2>Sentiment Overview</h2>
+          <h2>Portfolio Value Trend</h2>
           <div className="chart-box">
             <LineChart
-              labels={portfolioSummaryMock.sentimentTrend.map((item) => item.date)}
+              labels={portfolioValueTrend.map((item) => item.date)}
               datasets={[
-                { label: 'Positive', data: portfolioSummaryMock.sentimentTrend.map((item) => item.positive), borderColor: '#2f7d63', backgroundColor: 'rgba(47, 125, 99, 0.18)' },
-                { label: 'Negative', data: portfolioSummaryMock.sentimentTrend.map((item) => item.negative), borderColor: '#b91c1c', backgroundColor: 'rgba(185, 28, 28, 0.12)' },
+                { label: 'Total value', data: portfolioValueTrend.map((item) => item.totalValue), borderColor: '#27506f', backgroundColor: 'rgba(39, 80, 111, 0.12)' },
               ]}
             />
           </div>
         </Card>
       </section>
+
+      <Card>
+        <h2>Sentiment Overview</h2>
+        <div className="chart-box">
+          <LineChart
+            labels={portfolioSummaryMock.sentimentTrend.map((item) => item.date)}
+            datasets={[
+              { label: 'Positive', data: portfolioSummaryMock.sentimentTrend.map((item) => item.positive), borderColor: '#2f7d63', backgroundColor: 'rgba(47, 125, 99, 0.18)' },
+              { label: 'Negative', data: portfolioSummaryMock.sentimentTrend.map((item) => item.negative), borderColor: '#b91c1c', backgroundColor: 'rgba(185, 28, 28, 0.12)' },
+            ]}
+          />
+        </div>
+      </Card>
+
+      <Card>
+        <h2>External API Surface</h2>
+        <div className="api-grid">
+          <div>
+            <small>Read-only access</small>
+            <strong>/api/portfolios /api/holdings /api/news /api/impacts</strong>
+          </div>
+          <div>
+            <small>Auth</small>
+            <strong>API key header</strong>
+          </div>
+          <div>
+            <small>Docs</small>
+            <strong>Swagger endpoint for demos</strong>
+          </div>
+        </div>
+      </Card>
 
       <Card>
         <h2>Holdings Summary</h2>

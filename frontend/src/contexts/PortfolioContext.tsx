@@ -17,6 +17,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         await portfolioService.addHolding(input)
         setHoldings(await portfolioService.getHoldings())
       },
+      updateHolding: async (id: number, input: { shares: number; averageCost: number }) => {
+        await portfolioService.updateHolding(id, input)
+        setHoldings(await portfolioService.getHoldings())
+      },
       deleteHolding: async (id: number) => {
         await portfolioService.deleteHolding(id)
         setHoldings(await portfolioService.getHoldings())
