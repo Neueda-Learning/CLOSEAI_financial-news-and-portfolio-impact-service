@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ------------------------------------------------------------------
-  # Commitlint — always runs, checks ALL commits in the PR/push
+  # Commitlint — always runs
   # ------------------------------------------------------------------
   commitlint:
     runs-on: ubuntu-latest
@@ -22,14 +22,15 @@ jobs:
 
   # ------------------------------------------------------------------
   # Backend — Java 17 + Spring Boot 3
-  # Activates when backend/ directory has code
   # ------------------------------------------------------------------
   backend-lint:
     needs: commitlint
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -42,9 +43,11 @@ jobs:
   backend-type-check:
     needs: commitlint
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -57,9 +60,11 @@ jobs:
   backend-test:
     needs: [backend-lint, backend-type-check]
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -70,15 +75,16 @@ jobs:
         run: ./mvnw test
 
   # ------------------------------------------------------------------
-  # Frontend — React
-  # Activates when frontend/ directory has code
+  # Frontend — activates automatically when frontend/ is created
   # ------------------------------------------------------------------
   frontend-lint:
     needs: commitlint
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no frontend code yet
+        if: hashFiles('frontend/**') == ''
+        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -92,9 +98,11 @@ jobs:
   frontend-type-check:
     needs: commitlint
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/tsconfig.json') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no frontend code yet
+        if: hashFiles('frontend/tsconfig.json') == ''
+        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -108,9 +116,11 @@ jobs:
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no frontend code yet
+        if: hashFiles('frontend/**') == ''
+        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -122,15 +132,16 @@ jobs:
         run: npm test
 
   # ------------------------------------------------------------------
-  # NLP Service — Python (finBERT)
-  # Activates when nlp-service/ directory has code
+  # NLP Service — activates automatically when nlp-service/ is created
   # ------------------------------------------------------------------
   nlp-test:
     needs: commitlint
     runs-on: ubuntu-latest
-    if: hashFiles('nlp-service/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no NLP service code yet
+        if: hashFiles('nlp-service/**') == ''
+        run: exit 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -142,23 +153,18 @@ jobs:
         run: pytest
 
   # ------------------------------------------------------------------
-  # Build — verifies everything compiles together
+  # Build — docker compose + backend jar
   # ------------------------------------------------------------------
   build:
-    needs: [backend-test, frontend-test, nlp-test]
+    needs: [backend-test]
     runs-on: ubuntu-latest
     if: always() && !cancelled()
     steps:
       - uses: actions/checkout@v4
-      # docker-compose.yml marks the secrets as required, so interpolation
-      # fails outright when they are unset. The example file supplies
-      # placeholder values, which is enough to validate the compose syntax
-      # and doubles as a check that .env.example stays in sync.
       - name: Seed placeholder env
         run: cp .env.example .env
       - name: Verify Docker Compose config
         run: docker compose config --quiet
-      - name: Build backend jar (if present)
-        if: hashFiles('backend/pom.xml') != ''
+      - name: Build backend jar
         working-directory: backend
         run: ./mvnw package -DskipTests
