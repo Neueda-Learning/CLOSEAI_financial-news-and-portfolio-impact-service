@@ -83,10 +83,10 @@ starve the other. Rate limiters are configured per key, never shared — otherwi
 15-minute news poll saturates the limiter and quote refresh gets rejected alongside it,
 which defeats the whole point of two accounts.
 
-Single-vendor dependency is a real risk, and multiple keys do nothing about it: if
-Finnhub itself goes down, both chains go down together. The `PriceProvider` interface is
-what actually contains that risk — adding another vendor's implementation touches no
-business logic and no table.
+Single-vendor dependency is addressed by the `PriceProvider` interface: Twelve Data
+is a ready second implementation for quotes. When Finnhub goes down, the price chain
+cuts over to Twelve Data (configuration change, not a code change); news degrades to
+the `news_article` cache.
 
 ---
 
@@ -149,7 +149,7 @@ everyone's checkout fail to start.
 | **Charts** | Chart.js 4 + annotation plugin | The annotation plugin draws the news marker line on the price chart; this is the one frontend constraint |
 | **Database** | MySQL 8 + Flyway | Versioned SQL migrations; utf8mb4 throughout |
 | **Sentiment** | LLM agent, single engine | See [Sentiment Analysis](#sentiment-analysis) |
-| **External APIs** | Finnhub — separate key for news and prices | Per-purpose quota isolation |
+| **External APIs** | Finnhub (primary) + Twelve Data (backup quotes) + yfinance (offline prep) | Finnhub for news and quotes on separate keys; Twelve Data for quote fallback (800/day); yfinance for seeding historical data |
 | **HTTP client** | RestClient (Spring 6.1+) | — |
 | **Resilience** | Resilience4j | Rate limiting, retry, circuit breaking |
 | **Local cache** | Caffeine + Spring Cache | Wraps outbound provider calls |
