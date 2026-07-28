@@ -1,0 +1,78 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: fnpis-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fnpis}
+      MYSQL_USER: ${MYSQL_USER:-fnpis_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+    # utf8mb4 is not optional: headlines carry emoji and symbols that plain
+    # utf8 cannot store, and the insert fails rather than degrading.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # Do not drop this healthcheck. Flyway connects the moment the backend
+    # starts, and the container accepts connections several seconds after the
+    # process launches - without gating on health the backend dies on boot.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: fnpis-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fnpis}
+      MYSQL_USER: ${MYSQL_USER:-fnpis_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      SERVER_PORT: 8080
+      # Three separate secrets. No defaults anywhere - a default is the same
+      # exposure as committing the key (architecture 7.5).
+      FINNHUB_KEY_NEWS: ${FINNHUB_KEY_NEWS:?set FINNHUB_KEY_NEWS in .env}
+      FINNHUB_KEY_PRICE: ${FINNHUB_KEY_PRICE:?set FINNHUB_KEY_PRICE in .env}
+      LLM_API_KEY: ${LLM_API_KEY:?set LLM_API_KEY in .env}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      # Flip any of these to mock/stub to run without touching a provider
+      PROVIDER_NEWS: ${PROVIDER_NEWS:-finnhub}
+      PROVIDER_PRICE: ${PROVIDER_PRICE:-finnhub}
+      PROVIDER_SENTIMENT: ${PROVIDER_SENTIMENT:-agent}
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q -O- http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  # Uncomment once frontend/ has a Dockerfile. Kept commented rather than
+  # deleted so the shape of the third service is already agreed.
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: fnpis-frontend
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+  #   ports:
+  #     - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  mysql-data:
