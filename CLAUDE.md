@@ -2,7 +2,7 @@
 
 ## Project Identity
 
-- **Project**: #15 — Financial News & Portfolio Impact Service
+- **Project**: #15 · Group 7 — Financial News & Portfolio Impact Service
 - **Team**: CLOSEAI (5 members)
 - **Repo**: https://github.com/Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service
 - **Timeline**: 6 weeks
@@ -34,7 +34,7 @@ Instructors (GitHub viewers): `helppo2`, `tuistmessiah`
 | CI/CD | **GitHub Actions** | 5-job pipeline (see below) |
 | Container | **Docker + Docker Compose** | 4 services: db, nlp-service, backend, frontend |
 | Docs | Swagger / OpenAPI 3.0 | Auto-generated from Spring annotations |
-| PM | **Jira** | Kanban, free tier |
+| PM | **[Jira](https://therain2026.atlassian.net/jira/software/projects/FNPIS/boards/3)** | Kanban, free tier |
 
 ## Git Workflow (LOCKED)
 
