@@ -56,6 +56,7 @@ Jira issue: <!-- paste full URL, e.g. FNPIS-42 -->
 - [ ] No leftover debug code (`console.log`, `System.out.println`, `print(`, `debugger`)
 - [ ] No commented-out blocks (delete them — Git history preserves them)
 - [ ] No secrets, keys, tokens, or passwords in the diff (`.env` is gitignored — verify no `.env` in changed files)
+- [ ] ⛔ Zero mentions of "HSBC" anywhere — code, comments, strings, test data, file names
 - [ ] No unrelated file changes (only files relevant to this PR's purpose)
 - [ ] Breaking changes are documented in the PR description (if any)
 

@@ -1116,6 +1116,7 @@ To Do  →  In Progress  →  In Review  →  Done
 3. **External API Resilience:** Every project should demonstrate fallback behavior when an external API is unavailable. Our caching layer in `stock_prices` and `news_articles` serves this purpose — the demo should explicitly show this resilience.
 4. **Quality Over Quantity:** A polished 3-ticker demo with clean UI and working NLP beats a buggy 20-ticker system.
 5. **Stay Agile:** The single biggest problem teams face is starting with a data model that is too complex. Begin with `Portfolio(id, name)` + `Holding(id, portfolioId, ticker, shares)`. Add sentiment, prices, and impact tables after the core CRUD works.
+6. **⛔ HSBC Ban:** Never mention "HSBC" in any project artifact — code, comments, commits, PRs, docs, variable names, class names, API responses, test data, Jira issues, or file names. This is non-negotiable. Remove immediately if found.
 
 ---
 

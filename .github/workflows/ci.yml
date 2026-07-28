@@ -8,6 +8,21 @@ on:
 
 jobs:
   # ------------------------------------------------------------------
+  # HSBC scan — always runs, blocks any content containing the banned word
+  # ------------------------------------------------------------------
+  hsbc-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for banned content
+        run: |
+          if grep -rIi 'hsbc' --include='*' --exclude-dir='.git' --exclude='CLAUDE.md' --exclude='ReadMe.md' --exclude='ReadMe.zh-CN.md' --exclude='ci.yml' .; then
+            echo "⛔ BANNED: 'HSBC' found in project files. Remove immediately."
+            exit 1
+          fi
+          echo "✅ HSBC scan clean"
+
+  # ------------------------------------------------------------------
   # Commitlint — always runs, checks ALL commits in the PR/push
   # ------------------------------------------------------------------
   commitlint:
