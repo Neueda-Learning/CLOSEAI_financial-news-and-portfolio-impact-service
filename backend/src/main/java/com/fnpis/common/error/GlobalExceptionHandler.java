@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,6 +42,21 @@ public class GlobalExceptionHandler {
                 .toList();
         String detail = "Request has " + errors.size() + " invalid field(s)";
         return respond(ErrorCode.VALIDATION_FAILED, detail, request, errors);
+    }
+
+    /**
+     * Unparseable request body - malformed JSON, a string where a number belongs,
+     * bytes that are not valid UTF-8.
+     *
+     * <p>Without this the generic handler below would answer 500, blaming the
+     * server for a bad request and burying a client-side encoding bug in our
+     * logs. The client cannot act on a 500; it can act on a 400.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ProblemDetail> handleUnreadableBody(
+            HttpMessageNotReadableException ex, HttpServletRequest request) {
+        LOG.warn("Unreadable request body on {}: {}", request.getRequestURI(), ex.getMessage());
+        return respond(ErrorCode.VALIDATION_FAILED, "请求体不是合法的 JSON", request, null);
     }
 
     @ExceptionHandler(Exception.class)
