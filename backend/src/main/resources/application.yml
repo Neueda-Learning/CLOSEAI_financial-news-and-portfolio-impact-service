@@ -28,9 +28,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    # Directory is empty until the schema owner lands V1-V5.
-    # Remove this line once migrations exist.
-    fail-on-missing-locations: false
+    # Fail on boot if that directory goes missing, rather than starting against
+    # an empty schema and failing later on the first query. Spring's default is
+    # false, so this line is the protection - deleting it removes it.
+    fail-on-missing-locations: true
 
   jackson:
     default-property-inclusion: non_null
