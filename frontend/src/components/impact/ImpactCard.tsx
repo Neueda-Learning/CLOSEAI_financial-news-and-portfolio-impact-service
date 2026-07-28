@@ -5,6 +5,8 @@ import { Card } from '../common/Card'
 import { SentimentBadge } from './SentimentBadge'
 
 export function ImpactCard({ event }: { event: ImpactEvent }) {
+  const confidenceText = event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`
+
   return (
     <Card className="impact-card">
       <div>
@@ -12,8 +14,8 @@ export function ImpactCard({ event }: { event: ImpactEvent }) {
         <h3>{event.headline}</h3>
       </div>
       <div className="impact-metrics">
-        <span><small>Sentiment</small><SentimentBadge sentiment={event.sentiment} /></span>
-        <span><small>Confidence</small>{Math.round(event.confidence * 100)}%</span>
+        <span><small>Sentiment</small><SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} /></span>
+        <span><small>Confidence</small>{confidenceText}</span>
         <span><small>Price Change</small><b className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)}</b></span>
         <span><small>Portfolio Impact</small><b className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)}</b></span>
       </div>

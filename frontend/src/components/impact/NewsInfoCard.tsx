@@ -11,9 +11,9 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
       <div className="info-row">
         <span>Source</span><b>{event.source}</b>
         <span>Published</span><b>{dateTime(event.publishedAt)}</b>
-        <span>Sentiment</span><SentimentBadge sentiment={event.sentiment} />
-        <span>Score</span><b>{event.sentimentScore.toFixed(2)}</b>
-        <span>Confidence</span><b>{Math.round(event.confidence * 100)}%</b>
+        <span>Sentiment</span><SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+        <span>Score</span><b>{event.sentimentScore === null ? 'Pending' : event.sentimentScore.toFixed(2)}</b>
+        <span>Confidence</span><b>{event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`}</b>
         <span>Original</span><a className="inline-link" href={event.url} target="_blank" rel="noreferrer">Open article</a>
       </div>
     </Card>

@@ -73,4 +73,26 @@ export const impactEventsMock: ImpactEvent[] = [
       { time: '16:00', price: 438.1 },
     ],
   },
+  {
+    id: 4,
+    ticker: 'AMD',
+    headline: 'AMD announces expanded data center GPU availability',
+    source: 'MarketWatch',
+    url: 'https://example.com/article/4',
+    publishedAt: '2026-07-27T09:58:00Z',
+    sentiment: null,
+    sentimentScore: null,
+    confidence: null,
+    priceChange: 0,
+    portfolioImpact: 0,
+    strength: 'Watch',
+    alignment: null,
+    content:
+      'The article has been stored and matched to AMD, but sentiment analysis has not finished yet. The UI treats this as a normal pipeline state rather than an error.',
+    priceSeries: [
+      { time: '09:45', price: 158.4 },
+      { time: '09:58', price: 158.9 },
+      { time: '10:20', price: 159.2 },
+    ],
+  },
 ]

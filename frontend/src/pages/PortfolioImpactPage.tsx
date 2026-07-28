@@ -100,19 +100,21 @@ function PortfolioMarketCard({
 }
 
 function NewsImpactItem({ event }: { event: ImpactEvent }) {
-  const alignmentLabels: Record<ImpactEvent['alignment'], string> = {
+  const alignmentLabels: Record<NonNullable<ImpactEvent['alignment']>, string> = {
     CONFIRMED: 'Direction confirmed',
     DIVERGENT: 'Divergent move',
     INCONCLUSIVE: 'Inconclusive',
   }
+  const isPending = event.sentiment === null
+  const sentimentTone = isPending ? 'pending' : event.sentiment === 'POSITIVE' ? 'positive' : event.sentiment === 'NEGATIVE' ? 'negative' : 'neutral'
 
   return (
-    <article className={`news-impact-item ${event.sentiment.toLowerCase()}`}>
+    <article className={`news-impact-item ${sentimentTone}`}>
       <div className="news-impact-headline">{event.headline}</div>
       <div className="news-impact-meta">
-        <SentimentBadge sentiment={event.sentiment} />
-        <span>{Math.round(event.confidence * 100)}% confidence</span>
-        <span>Score {event.sentimentScore.toFixed(2)}</span>
+        <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+        <span>{event.confidence === null ? 'Pending analysis' : `${Math.round(event.confidence * 100)}% confidence`}</span>
+        <span>{event.sentimentScore === null ? 'Score pending' : `Score ${event.sentimentScore.toFixed(2)}`}</span>
         <span>{event.source}</span>
         <span>{dateTime(event.publishedAt)}</span>
         <span className="ticker-tag">${event.ticker}</span>
@@ -120,7 +122,7 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
       <div className="news-impact-summary">
         <span className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)} price</span>
         <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
-        <span>{alignmentLabels[event.alignment]}</span>
+        <span>{event.alignment === null ? 'Analyzing alignment' : alignmentLabels[event.alignment]}</span>
         <a href={event.url} target="_blank" rel="noreferrer">Original</a>
         <Link to={`/impact/${event.id}`}>View analysis</Link>
       </div>

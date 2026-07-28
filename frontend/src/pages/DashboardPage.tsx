@@ -1,10 +1,22 @@
 import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
 import { PieChart } from '../components/charts/PieChart'
+import { impactEventsMock } from '../mock/impactMock'
 import { portfolioSummaryMock, portfolioValueTrend } from '../mock/portfolioMock'
 import { currency, percent } from '../utils/formatters'
 
 export function DashboardPage() {
+  const analyzedEvents = impactEventsMock.filter((event) => event.sentiment !== null)
+  const confirmedCount = analyzedEvents.filter((event) => event.alignment === 'CONFIRMED').length
+  const divergentCount = analyzedEvents.filter((event) => event.alignment === 'DIVERGENT').length
+  const inconclusiveCount = analyzedEvents.filter((event) => event.alignment === 'INCONCLUSIVE').length
+  const sampleSize = analyzedEvents.length
+  const minimumSampleSize = 20
+  const directionAgreementRate = sampleSize >= minimumSampleSize ? (confirmedCount / sampleSize) * 100 : null
+  const sentimentScores = analyzedEvents.map((event) => event.sentimentScore ?? 0)
+  const weightedSentiment = sentimentScores.length > 0 ? sentimentScores.reduce((sum, value) => sum + value, 0) / sentimentScores.length : 0
+  const newsCoverageRate = impactEventsMock.length === 0 ? 0 : (analyzedEvents.length / impactEventsMock.length) * 100
+
   return (
     <div className="page-stack">
       <header className="hero">
@@ -39,6 +51,40 @@ export function DashboardPage() {
           <span>Mock service ready</span>
         </Card>
       </section>
+
+      <Card className="impact-summary-overview">
+        <div className="impact-summary-main">
+          <small>Direction agreement</small>
+          <strong>{directionAgreementRate === null ? 'Sample insufficient' : `${Math.round(directionAgreementRate)}%`}</strong>
+          <div className="agreement-bar" aria-hidden="true">
+            <span style={{ width: `${directionAgreementRate ?? 0}%` }} />
+          </div>
+          <p>
+            {directionAgreementRate === null
+              ? `Current ${sampleSize} analyzed records; need at least ${minimumSampleSize} before showing a rate.`
+              : `Based on ${sampleSize} analyzed records.`}
+          </p>
+        </div>
+        <div className="impact-summary-counts" aria-label="Impact assessment counts">
+          <span className="alignment-confirmed">✓ Confirmed {confirmedCount}</span>
+          <span className="alignment-divergent">✕ Divergent {divergentCount}</span>
+          <span className="alignment-inconclusive">— Inconclusive {inconclusiveCount}</span>
+        </div>
+        <div className="impact-summary-metrics">
+          <div>
+            <small>Weighted sentiment</small>
+            <strong className={weightedSentiment >= 0 ? 'positive' : 'negative'}>{weightedSentiment >= 0 ? '+' : ''}{weightedSentiment.toFixed(2)}</strong>
+          </div>
+          <div>
+            <small>News coverage</small>
+            <strong>{Math.round(newsCoverageRate)}%</strong>
+          </div>
+          <div>
+            <small>Data as of</small>
+            <strong>15:42:10</strong>
+          </div>
+        </div>
+      </Card>
 
       <section className="grid-2">
         <Card>

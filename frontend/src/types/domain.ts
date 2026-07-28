@@ -1,4 +1,5 @@
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
+export type SentimentState = Sentiment | null
 
 export type Holding = {
   id: number
@@ -30,13 +31,13 @@ export type ImpactEvent = {
   source: string
   url: string
   publishedAt: string
-  sentiment: Sentiment
-  sentimentScore: number
-  confidence: number
+  sentiment: SentimentState
+  sentimentScore: number | null
+  confidence: number | null
   priceChange: number
   portfolioImpact: number
   strength: 'Strong' | 'Moderate' | 'Watch'
-  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE'
+  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE' | null
   content: string
   priceSeries: Array<{ time: string; price: number }>
 }
