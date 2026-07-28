@@ -91,6 +91,10 @@ finnhub:
     news: ${FINNHUB_KEY_NEWS}
     price: ${FINNHUB_KEY_PRICE}
 
+twelvedata:
+  base-url: https://api.twelvedata.com
+  key: ${TWELVEDATA_API_KEY:}
+
 llm:
   api-key: ${LLM_API_KEY}
   base-url: ${LLM_BASE_URL:}
