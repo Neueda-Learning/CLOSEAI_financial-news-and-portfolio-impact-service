@@ -1,6 +1,6 @@
 # Financial News & Portfolio Impact Service (FNPIS)
 
-> **Project #15** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with intraday price movements (5-min polling).
+> **Project #15 · Group 7** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with intraday price movements (5-min polling).
 
 [中文版 (Chinese)](./ReadMe.zh-CN.md)
 
@@ -101,7 +101,7 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 | **CI/CD** | GitHub Actions | Build → Test → Lint on every PR |
 | **Container** | Docker + Docker Compose | One-command local setup; portable deployment |
 | **Version Control** | Git + GitHub | Feature branches, PR reviews |
-| **Project Mgmt** | Jira | Task tracking, sprint planning |
+| **Project Mgmt** | [Jira](https://therain2026.atlassian.net/jira/software/projects/FNPIS/boards/3) | Task tracking, Kanban board |
 
 ---
 
