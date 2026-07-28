@@ -4,7 +4,7 @@
 
 - **Project**: #15 — Financial News & Portfolio Impact Service
 - **Team**: CLOSEAI (5 members)
-- **Repo**: https://github.com/therain2020/financial-news-and-portfolio-impact-service
+- **Repo**: https://github.com/Neueda-Learning/financial-news-and-portfolio-impact-service
 - **Timeline**: 6 weeks
 - **Presentation**: 15 min + 5 min Q&A
 
