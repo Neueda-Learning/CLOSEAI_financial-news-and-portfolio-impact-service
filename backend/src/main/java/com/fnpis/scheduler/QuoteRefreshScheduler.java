@@ -1,7 +1,6 @@
 package com.fnpis.scheduler;
 
 import com.fnpis.common.error.ApiException;
-import com.fnpis.common.error.ErrorCode;
 import com.fnpis.service.QuoteRefreshService;
 import java.time.Clock;
 import java.time.Instant;
@@ -37,7 +36,7 @@ public class QuoteRefreshScheduler {
     /** Manual trigger via HTTP. Returns 409 if a refresh is already running. */
     public void manualRefresh() {
         if (!service.tryAcquire()) {
-            throw new ApiException(ErrorCode.TASK_ALREADY_RUNNING);
+            throw ApiException.taskAlreadyRunning("quote-refresh");
         }
         try {
             doRefresh();

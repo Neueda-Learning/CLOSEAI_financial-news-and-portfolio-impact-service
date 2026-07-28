@@ -1,7 +1,6 @@
 package com.fnpis.scheduler;
 
 import com.fnpis.common.error.ApiException;
-import com.fnpis.common.error.ErrorCode;
 import com.fnpis.service.NewsFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,7 @@ public class NewsFetchScheduler {
     /** Manual trigger via HTTP. Returns 409 if a fetch is already running. */
     public void manualFetch() {
         if (!service.tryAcquire()) {
-            throw new ApiException(ErrorCode.TASK_ALREADY_RUNNING);
+            throw ApiException.taskAlreadyRunning("news-fetch");
         }
         try {
             doFetch();
