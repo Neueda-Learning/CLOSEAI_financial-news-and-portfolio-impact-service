@@ -132,9 +132,9 @@ in `.env.example` and this goes red.
 ## Jira Setup
 
 - **Project type**: Kanban (not Scrum)
-- **Status flow**: To Do → In Progress → In Review → Done (Blocked at In Progress)
-- **Issue types**: Epic (weekly), Story (P0-P3), Task (tech work), Bug
-- **Labels**: `backend`, `frontend`, `nlp`, `devops`, `docs`
+- **Status flow**: TODO → IN PROCESS → IN REVIEW → COMPLETED (Blocked is its own column)
+- **Issue types**: 长篇故事 (Epic), 故事 (Story), 子任务 (Subtask), Feature, 缺陷 (Bug)
+- **Labels**: `backend`, `frontend`, `core-logic`, `demo-hook`, `test`, `data`, `api`, `infra`, `p0`, `p1`, `p2`
 - **Views**: Kanban Board, By Assignee, By Epic, Backlog
 
 ## Project Files
@@ -173,7 +173,7 @@ yet, so creating them now would leave the repo non-compiling for everyone.
 > `common/` is **not** in architecture §7.1 — it is an addition. The paging envelope,
 > `Freshness`, and the error types are imported by all three developers, and putting
 > them under `api/` would make one person's package own types everyone depends on.
-> Either write it back into §7.1 or move it; currently undecided.
+> `common/` is accepted as a permanent addition. Sync it back to architecture §7.1.
 
 ## Ownership
 
@@ -184,9 +184,9 @@ yet, so creating them now would leave the repo non-compiling for everyone.
 | Requirements B, C | second developer | — |
 | Requirements D, E (sentiment + impact) | third developer | Blocked until entities land |
 
-**Flyway rules.** V1–V5 are reserved (see `backend/src/main/resources/db/migration/`).
+**Flyway rules.** V1–V6 are reserved (see `backend/src/main/resources/db/migration/`).
 Never edit a committed script — Flyway stores a checksum, so a changed file makes every
-other checkout fail on startup. Claim V6+ for later changes and tell the team.
+other checkout fail on startup. Claim V7+ for later changes and tell the team.
 
 ## Known Decisions
 

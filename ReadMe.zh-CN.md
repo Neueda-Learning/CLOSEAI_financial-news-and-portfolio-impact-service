@@ -467,14 +467,15 @@ impact_assessment ──► news_article + security + portfolio
 | 表 | 主键 | 关键约束 |
 |----|------|----------|
 | `portfolio` | `id` | — |
-| `holding` | `id` | FK portfolio，索引 (portfolio_id, symbol) |
+| `holding` | `id` | FK portfolio，**UNIQUE** (portfolio_id, symbol) |
 | `security` | `symbol` | 业务天然主键，不另造代理键 |
 | `news_article` | `id` | **UNIQUE (external_id)** — 去重完全依赖它 |
 | `article_security_link` | (article_id, symbol) | 复合主键，天然防重 |
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — 单引擎，一篇一条 |
 | `price_quote` | `symbol` | 只留最新一条，写入走 upsert |
 | `price_bar` | (symbol, trade_date) | 复合主键 |
-| `impact_assessment` | `id` | 索引 (portfolio_id, attribution_date) 和 (article_id) |
+| `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + 索引 (portfolio_id, attribution_date) |
+| `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK portfolio，复合主键 |
 
 ### 三个建模要点
 
@@ -494,7 +495,7 @@ impact_assessment ──► news_article + security + portfolio
 
 - **已提交的脚本永不修改。** Flyway 存了校验和，改动过的文件会让其他人的 checkout
   在启动时全部失败。要改就加新版本。
-- V1–V5 已保留。后续变更从 V6 开始，并通知团队。
+- V1–V6 已保留。后续变更从 V7 开始，并通知团队。
 - `ddl-auto: validate` —— Hibernate 不建表也不改表，只校验实体和 Flyway 建出来的
   schema 是否一致。不一致就启动失败，这正是想要的效果。
 
@@ -859,34 +860,33 @@ chore: 将 Docker Compose 的 MySQL 固定到 8.4
 
 10 人以下团队免费。使用 **Kanban** 项目（6 周时间线比 Scrum 更简单合适）。
 
-**看板列：** Backlog → To Do → In Progress → Review → Done
-
 **Issue 类型：**
 
 | 类型 | 用途 |
 |------|------|
-| Epic | 每周里程碑（第 1 周 ~ 第 6 周） |
-| Story | 面向用户的功能（P0-P3 项） |
-| Task | 技术工作项（如"搭建 Finnhub API 客户端"） |
-| Bug | 测试中发现的缺陷 |
+| 长篇故事 (Epic) | 按模块分组（A–G、基础设施） |
+| 故事 (Story) | 面向用户的功能（A1~A7, B1~B5, …, G1~G3） |
+| 子任务 (Subtask) | 实现任务，挂在 Story 下 |
+| Feature | 跨 Story 的技术能力 |
+| 缺陷 (Bug) | 测试中发现的缺陷 |
 
-**标签：** `backend`、`frontend`、`sentiment`、`devops`、`docs`
+**标签：** `p0`, `p1`, `p2`, `backend`, `frontend`, `core-logic`, `demo-hook`, `test`, `data`, `api`, `infra`
 
 **流转状态：**
 
 ```
-To Do  →  In Progress  →  In Review  →  Done
-                ↕
-             Blocked
+TODO  →  IN PROCESS  →  IN REVIEW  →  COMPLETED
+  ↓
+BLOCKED   （从 IN PROCESS 可拖入，独立列）
 ```
 
 | 状态 | 含义 | 触发时机 |
 |------|------|----------|
-| **To Do** | 就绪，等待认领 | 创建 Issue 时默认 |
-| **In Progress** | 正在开发中 | 认领后自行拖拽 |
-| **Blocked** | 被外部阻塞（等 API Key / 等队友 / 环境问题） | 随时 |
-| **In Review** | PR 已开，等待队友审查 | 创建 PR 后拖拽 |
-| **Done** | 已合入 `dev` | PR 合并后拖拽 |
+| **TODO** | 就绪，等待认领 | 创建 Issue 时默认 |
+| **IN PROCESS** | 正在开发中 | 认领后自行拖拽 |
+| **BLOCKED** | 被外部阻塞（等 API Key / 等队友 / 环境问题） | 随时 |
+| **IN REVIEW** | PR 已开，等待队友审查 | 创建 PR 后拖拽 |
+| **COMPLETED** | 已合入 `dev` | PR 合并后拖拽 |
 
 **看板视图：**
 

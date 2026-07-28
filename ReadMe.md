@@ -482,14 +482,15 @@ impact_assessment ──► news_article + security + portfolio
 | Table | Primary key | Key constraint |
 |-------|-------------|----------------|
 | `portfolio` | `id` | — |
-| `holding` | `id` | FK to portfolio, index on (portfolio_id, symbol) |
+| `holding` | `id` | FK to portfolio, **UNIQUE** (portfolio_id, symbol) |
 | `security` | `symbol` | Natural key — no surrogate id |
 | `news_article` | `id` | **UNIQUE (external_id)** — dedupe depends entirely on this |
 | `article_security_link` | (article_id, symbol) | Composite key, inherently duplicate-proof |
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — single engine, one score per article |
 | `price_quote` | `symbol` | Latest row only, written by upsert |
 | `price_bar` | (symbol, trade_date) | Composite |
-| `impact_assessment` | `id` | Index on (portfolio_id, attribution_date) and (article_id) |
+| `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + index on (portfolio_id, attribution_date) |
+| `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK to portfolio, composite PK |
 
 ### Three Modelling Points
 
@@ -511,7 +512,7 @@ version produced a given verdict.
 
 - **Never edit a committed script.** Flyway stores a checksum, so a modified file makes
   every other checkout fail at startup. Add a new version instead.
-- V1–V5 are reserved. Claim V6+ and tell the team.
+- V1–V6 are reserved. Claim V7+ and tell the team.
 - `ddl-auto: validate` — Hibernate never creates or alters tables, it only verifies that
   the entities match what Flyway built. A mismatch fails startup, which is the point.
 
@@ -1021,12 +1022,12 @@ Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for 
 **Board Columns:**
 
 ```
-Backlog          To Do           In Progress      Review           Done
+Backlog          TODO            IN PROCESS      IN REVIEW        COMPLETED
 +----------+    +----------+    +----------+    +----------+    +----------+
-| User auth|    | DB schema|    | Finnhub  |    | Portfolio|    | Project  |
-| E2E tests|    | design   |    | integrat.|    | CRUD PR  |    | skeleton |
-| CI/CD    |    | Sentiment|    | Impact   |    | Frontend |    | GitHub   |
-| ...      |    | training |    | correlat.|    | dashboard|    | repo     |
+| User auth|    | Sentiment|    | Finnhub  |    | Portfolio|    | DB schema|
+| E2E tests|    | engine   |    | integrat.|    | CRUD PR  |    | skeleton |
+| ...      |    | Impact   |    | Quote    |    | Frontend |    | GitHub   |
+|          |    | engine   |    | refresh  |    | dashboard|    | repo     |
 +----------+    +----------+    +----------+    +----------+    +----------+
 ```
 
@@ -1034,28 +1035,29 @@ Backlog          To Do           In Progress      Review           Done
 
 | Type | Use For |
 |------|---------|
-| Epic | Each week's milestone (Week 1 ~ Week 6) |
-| Story | User-facing feature (P0-P3 items) |
-| Task | Technical work item (e.g. "Set up Finnhub API client") |
-| Bug | Defect found during testing |
+| 长篇故事 (Epic) | Feature module grouping (A–G, Infrastructure) |
+| 故事 (Story) | User-facing feature (A1–A7, B1–B5, …, G1–G3) |
+| 子任务 (Subtask) | Implementation task, child of a Story |
+| Feature | Cross-story technical capability |
+| 缺陷 (Bug) | Defect found during testing |
 
-**Labels:** `backend`, `frontend`, `sentiment`, `devops`, `docs`
+**Labels:** `p0`, `p1`, `p2`, `backend`, `frontend`, `core-logic`, `demo-hook`, `test`, `data`, `api`, `infra`
 
 **Status Flow:**
 
 ```
-To Do  →  In Progress  →  In Review  →  Done
-                ↕
-             Blocked
+TODO  →  IN PROCESS  →  IN REVIEW  →  COMPLETED
+  ↓
+BLOCKED   (draggable from IN PROCESS, its own column)
 ```
 
 | Status | Meaning | Trigger |
 |--------|---------|---------|
-| **To Do** | Ready, waiting for someone to pick up | Default on issue creation |
-| **In Progress** | Actively being worked on | Assignee drags after claiming |
-| **Blocked** | Stuck — waiting on API key / teammate / environment | Anyone, any time |
-| **In Review** | PR opened, awaiting teammate review | Dragged when PR is created |
-| **Done** | Merged into `dev` | Dragged after PR merge |
+| **TODO** | Ready, waiting for someone to pick up | Default on issue creation |
+| **IN PROCESS** | Actively being worked on | Assignee drags after claiming |
+| **BLOCKED** | Stuck — waiting on API key / teammate / environment | Anyone, any time |
+| **IN REVIEW** | PR opened, awaiting teammate review | Dragged when PR is created |
+| **COMPLETED** | Merged into `dev` | Dragged after PR merge |
 
 **Board Views:**
 
