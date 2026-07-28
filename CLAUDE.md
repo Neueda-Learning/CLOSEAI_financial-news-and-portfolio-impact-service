@@ -5,7 +5,7 @@
 - **Project**: #15 · Group 7 — Financial News & Portfolio Impact Service
 - **Team**: CLOSEAI (5 members)
 - **Repo**: https://github.com/Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service
-- **Timeline**: 6 weeks
+- **Timeline**: 5 days
 - **Presentation**: 15 min + 5 min Q&A
 
 ## Team

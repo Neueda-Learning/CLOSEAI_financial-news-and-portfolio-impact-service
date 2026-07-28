@@ -1021,7 +1021,7 @@ A self-contained PR template is provided at [`.github/pull_request_template.md`]
 
 ### Tool: Jira
 
-Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for a 6-week timeline).
+Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for a 5-day timeline).
 
 **Board Columns:**
 
@@ -1107,7 +1107,7 @@ BLOCKED   (draggable from IN PROCESS, its own column)
 
 | Time | Speaker | Content |
 |------|---------|---------|
-| 0:00-1:00 | Team Lead | Introduce team; what we've been learning; what we were asked to do; how much time we've had (6 weeks) |
+| 0:00-1:00 | Team Lead | Introduce team; what we've been learning; what we were asked to do; how much time we've had (5 days) |
 | 1:00-2:00 | Team Lead | How we approached the project — roles, tools, technologies, team name |
 | 2:00-3:30 | Backend | High-level architecture (diagram), data model walkthrough — explain our design decisions |
 | 3:30-5:00 | Sentiment owner | Sentiment pipeline: why one LLM engine, how malformed responses are rejected, why `DIVERGENT` is a feature |
