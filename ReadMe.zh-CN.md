@@ -1,6 +1,6 @@
 # 金融新闻与投资组合影响服务 (FNPIS)
 
-> **项目 #15** — 聚合投资组合中公司的金融新闻，结合金融新闻 API 和股票价格 API，评估哪些持仓受到影响。使用 NLP 情感分析将新闻与日内价格走势（5 分钟轮询）进行关联。
+> **项目 #15 · 第 7 组** — 聚合投资组合中公司的金融新闻，结合金融新闻 API 和股票价格 API，评估哪些持仓受到影响。使用 NLP 情感分析将新闻与日内价格走势（5 分钟轮询）进行关联。
 
 [English Version](./ReadMe.md)
 
@@ -101,7 +101,7 @@ FNPIS 集成了 **两个** 外部 API（超过最低要求的一个）：
 | **CI/CD** | GitHub Actions | 每次 PR 构建 → 测试 → 检查 |
 | **容器化** | Docker + Docker Compose | 一键本地启动；可移植部署 |
 | **版本控制** | Git + GitHub | 功能分支、PR 审查 |
-| **项目管理** | Jira | 任务跟踪、迭代规划 |
+| **项目管理** | [Jira](https://therain2026.atlassian.net/jira/software/projects/FNPIS/boards/3) | 任务跟踪、Kanban 看板 |
 
 ---
 

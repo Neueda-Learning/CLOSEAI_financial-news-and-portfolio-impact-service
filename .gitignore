@@ -63,6 +63,9 @@ junit.xml
 # === Docker ===
 docker-compose.override.yml
 
+# === Out-of-Band Constraints ===
+team-constraints.md
+
 # === Misc ===
 .DS_Store
 *.tsbuildinfo
