@@ -1,0 +1,67 @@
+import type { ImpactEvent } from '../types/domain'
+
+export const impactEventsMock: ImpactEvent[] = [
+  {
+    id: 1,
+    ticker: 'AAPL',
+    headline: 'Apple lowers production forecast after supplier checks',
+    source: 'Reuters',
+    publishedAt: '2026-07-27T12:31:00Z',
+    sentiment: 'NEGATIVE',
+    confidence: 0.97,
+    priceChange: -3.38,
+    portfolioImpact: -520,
+    strength: 'Strong',
+    content:
+      'Supplier channel checks suggest Apple may trim near-term iPhone production targets. The article points to softer demand signals and tighter inventory control across the hardware supply chain.',
+    priceSeries: [
+      { time: '12:00', price: 190.1 },
+      { time: '12:20', price: 189.8 },
+      { time: '12:31', price: 189.6 },
+      { time: '12:45', price: 186.7 },
+      { time: '13:10', price: 184.9 },
+      { time: '13:40', price: 183.7 },
+    ],
+  },
+  {
+    id: 2,
+    ticker: 'NVDA',
+    headline: 'Nvidia raises guidance as enterprise AI demand accelerates',
+    source: 'Bloomberg',
+    publishedAt: '2026-07-27T10:15:00Z',
+    sentiment: 'POSITIVE',
+    confidence: 0.88,
+    priceChange: 4.15,
+    portfolioImpact: 1614,
+    strength: 'Strong',
+    content:
+      'Nvidia lifted its outlook after reporting stronger orders from cloud and enterprise customers. Analysts highlighted resilient AI infrastructure spending despite broader macro caution.',
+    priceSeries: [
+      { time: '09:45', price: 121.4 },
+      { time: '10:05', price: 121.9 },
+      { time: '10:15', price: 122.1 },
+      { time: '10:45', price: 124.8 },
+      { time: '11:20', price: 126.5 },
+    ],
+  },
+  {
+    id: 3,
+    ticker: 'MSFT',
+    headline: 'Microsoft cloud margin commentary keeps analysts neutral',
+    source: 'CNBC',
+    publishedAt: '2026-07-26T15:05:00Z',
+    sentiment: 'NEUTRAL',
+    confidence: 0.74,
+    priceChange: 0.42,
+    portfolioImpact: 92,
+    strength: 'Watch',
+    content:
+      'Management commentary on cloud margins was balanced, with AI infrastructure costs offset by durable Azure demand. The market reaction stayed muted.',
+    priceSeries: [
+      { time: '14:30', price: 436.3 },
+      { time: '15:05', price: 436.7 },
+      { time: '15:35', price: 437.8 },
+      { time: '16:00', price: 438.1 },
+    ],
+  },
+]
