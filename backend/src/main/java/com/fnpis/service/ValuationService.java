@@ -159,11 +159,23 @@ public class ValuationService {
                 .doubleValue();
     }
 
-    /** Ratio of part to whole, or null when the whole is zero. */
+    /** Ratio of part to whole as a display number, or null when the whole is zero. */
     static Double ratioOrNull(BigDecimal part, BigDecimal whole) {
+        BigDecimal exact = exactRatioOrNull(part, whole);
+        return exact == null ? null : exact.doubleValue();
+    }
+
+    /**
+     * The same ratio kept as BigDecimal, for callers that compute with it.
+     *
+     * <p>Module E multiplies a weight into money ({@code w × r}, {@code s × c ×
+     * w}), and architecture 6.2 keeps money off double. The Double above is for
+     * the wire, where a weight is only ever displayed.
+     */
+    static BigDecimal exactRatioOrNull(BigDecimal part, BigDecimal whole) {
         if (part == null || whole == null || whole.compareTo(BigDecimal.ZERO) == 0) {
             return null;
         }
-        return part.divide(whole, RATIO_SCALE, RoundingMode.HALF_UP).doubleValue();
+        return part.divide(whole, RATIO_SCALE, RoundingMode.HALF_UP);
     }
 }

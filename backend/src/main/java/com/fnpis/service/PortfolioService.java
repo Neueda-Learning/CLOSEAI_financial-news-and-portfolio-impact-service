@@ -82,6 +82,25 @@ public class PortfolioService {
         portfolios.delete(require(portfolioId));
     }
 
+    /**
+     * Position weights and market values, for the impact engine (requirements 5.3).
+     *
+     * <p>Supplies two of the four inputs that section needs - {@code w} and the
+     * market value {@code valueImpact} multiplies. Exists so module E does not
+     * recompute them: two implementations of the same weight would eventually
+     * disagree, and SC-002/SC-003 check exactly that.
+     *
+     * <p>Weights are BigDecimal here rather than the Double the API returns, since
+     * the caller multiplies them into money (architecture 6.2).
+     *
+     * @throws com.fnpis.common.error.ApiException 404 when the portfolio is gone
+     */
+    @Transactional(readOnly = true)
+    public PortfolioWeights weights(Long portfolioId, Instant now) {
+        require(portfolioId);
+        return loader.value(portfolioId, now).weights();
+    }
+
     /** Shared 404 so every endpoint reports a missing portfolio identically. */
     public Portfolio require(Long portfolioId) {
         return portfolios.findById(portfolioId)

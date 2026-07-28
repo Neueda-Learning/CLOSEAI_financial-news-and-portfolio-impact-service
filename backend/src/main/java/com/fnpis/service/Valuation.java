@@ -5,6 +5,8 @@ import com.fnpis.api.internal.dto.HoldingRow;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A valued portfolio: per-position figures plus the totals they sum to.
@@ -37,6 +39,25 @@ record Valuation(
      */
     List<HoldingRow> rows() {
         return positions.stream().map(this::toRow).toList();
+    }
+
+    /**
+     * Weights keyed by symbol, for the impact engine (module E, requirements 5.3).
+     *
+     * <p>Keeps positions with no quote, unlike {@link #allocations()} which drops
+     * them: a pie slice of unknown size cannot be drawn, but module E still needs
+     * to know the position is held before deciding it cannot assess it.
+     */
+    PortfolioWeights weights() {
+        Map<String, PositionWeight> bySymbol = positions.stream()
+                .collect(Collectors.toMap(
+                        p -> p.holding().getSymbol(),
+                        p -> new PositionWeight(
+                                p.holding().getSymbol(),
+                                p.holding().getQuantity(),
+                                p.marketValue(),
+                                ValuationService.exactRatioOrNull(p.marketValue(), totalMarketValue))));
+        return new PortfolioWeights(bySymbol, totalMarketValue, asOf, stale);
     }
 
     /** Allocation slices for the pie, skipping positions with no valuation. */
