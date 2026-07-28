@@ -124,6 +124,43 @@ class ValuationServiceTest {
     }
 
     @Test
+    @DisplayName("EC-22: a zero total yields null weights, never a division by zero")
+    void zeroTotalGivesNullWeights() {
+        // A worthless holding is the awkward case: the quote exists, so the row
+        // is priced, but the total it divides into is zero.
+        Valuation v = service.value(
+                List.of(holding(1L, "DEAD", "100", "50.00")),
+                Map.of("DEAD", quote("DEAD", "0.00", null, NOW)),
+                Map.of(),
+                NOW);
+
+        HoldingRow row = v.rows().get(0);
+        assertThat(v.totalMarketValue()).isEqualByComparingTo("0.00");
+        // Null, not zero: the frontend shows a dash rather than a real 0% slice.
+        assertThat(row.weight()).isNull();
+        assertThat(row.marketValue()).isEqualByComparingTo("0.00");
+        // The loss is still knowable - 100 shares bought at 50 are down 5000.
+        assertThat(row.unrealizedPnL()).isEqualByComparingTo("-5000.00");
+        assertThat(row.unrealizedPnLPct()).isEqualByComparingTo(-100.00);
+    }
+
+    @Test
+    @DisplayName("EC-22: the module E path also refuses to divide by a zero total")
+    void zeroTotalGivesNullWeightForImpactEngine() {
+        Valuation v = service.value(
+                List.of(holding(1L, "DEAD", "100", "50.00")),
+                Map.of("DEAD", quote("DEAD", "0.00", null, NOW)),
+                Map.of(),
+                NOW);
+
+        PositionWeight position = v.weights().of("DEAD").orElseThrow();
+        assertThat(position.weight()).isNull();
+        // Unassessable, so module E skips it rather than writing a null into the
+        // NOT NULL holding_weight column.
+        assertThat(position.assessable()).isFalse();
+    }
+
+    @Test
     @DisplayName("Quantities go out as whole shares, not 20.0000")
     void quantityHasNoTrailingZeros() {
         Valuation v = service.value(
