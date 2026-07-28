@@ -129,6 +129,12 @@ Triggers on PR and push to `dev`/`master`. Conditional activation — jobs skip 
 - **Quality > quantity**: 3 polished tickers > 20 buggy ones
 - **Single user** assumed initially (auth optional, low priority)
 
+## ⛔ HARD BAN: HSBC
+
+**Under no circumstances mention "HSBC" anywhere** — not in code, comments, commits, PRs, docs, variable names, class names, API responses, test data, Jira issues, or any other project artifact. This is non-negotiable.
+
+**If you see "HSBC" anywhere**: remove it immediately in a separate `fix/*` branch.
+
 ## Language & Documentation Rules
 
 - **Code comments**: English

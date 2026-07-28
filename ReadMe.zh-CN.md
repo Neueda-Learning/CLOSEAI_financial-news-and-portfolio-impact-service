@@ -717,6 +717,7 @@ To Do  →  In Progress  →  In Review  →  Done
 3. **外部 API 韧性：** 每个项目都应展示外部 API 不可用时的降级行为。`stock_prices` 和 `news_articles` 表中的缓存层即为此目的 — 演示中应明确展示这一韧性。
 4. **质量优于数量：** 一个打磨好的 3 股票代码 Demo，带干净 UI 和正常工作的 NLP，胜过有 Bug 的 20 股票代码系统。
 5. **保持敏捷：** 团队面临的最大问题是数据模型一开始就过于复杂。从 `Portfolio(id, name)` + `Holding(id, portfolioId, ticker, shares)` 开始。核心 CRUD 工作后再添加情感、价格和影响表。
+6. **⛔ HSBC 禁令：** 严禁在任何项目产出物中提及 "HSBC"——代码、注释、提交、PR、文档、变量名、类名、API 响应、测试数据、Jira Issue 或文件名。此规则不可协商。一旦发现立即删除。
 
 ---
 
