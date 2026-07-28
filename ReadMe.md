@@ -475,6 +475,9 @@ news_article n──n article_security_link
 
 security 1──n price_quote    (latest quote, one row per symbol)
 security 1──n price_bar      (historical daily bars)
+security 1──n price_point    (intraday points, the linked view's curve)
+
+portfolio 1──n portfolio_valuation_snapshot   (daily close total value)
 
 impact_assessment ──► news_article + security + portfolio
 ```
@@ -489,6 +492,7 @@ impact_assessment ──► news_article + security + portfolio
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — single engine, one score per article |
 | `price_quote` | `symbol` | Latest row only, written by upsert |
 | `price_bar` | (symbol, trade_date) | Composite |
+| `price_point` | (symbol, captured_at) | Composite — key order is query order, no secondary index needed |
 | `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + index on (portfolio_id, attribution_date) |
 | `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK to portfolio, composite PK |
 
@@ -512,7 +516,7 @@ version produced a given verdict.
 
 - **Never edit a committed script.** Flyway stores a checksum, so a modified file makes
   every other checkout fail at startup. Add a new version instead.
-- V1–V6 are reserved. Claim V7+ and tell the team.
+- V1–V7 are applied. Claim V8+ and tell the team.
 - `ddl-auto: validate` — Hibernate never creates or alters tables, it only verifies that
   the entities match what Flyway built. A mismatch fails startup, which is the point.
 

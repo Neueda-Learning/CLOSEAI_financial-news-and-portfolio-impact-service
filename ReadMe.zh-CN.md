@@ -460,6 +460,9 @@ news_article n──n article_security_link
 
 security 1──n price_quote    （最新报价，每个代码一条）
 security 1──n price_bar      （历史日线）
+security 1──n price_point    （日内价格点，联动视图曲线）
+
+portfolio 1──n portfolio_valuation_snapshot   （每日收盘总市值）
 
 impact_assessment ──► news_article + security + portfolio
 ```
@@ -474,6 +477,7 @@ impact_assessment ──► news_article + security + portfolio
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — 单引擎，一篇一条 |
 | `price_quote` | `symbol` | 只留最新一条，写入走 upsert |
 | `price_bar` | (symbol, trade_date) | 复合主键 |
+| `price_point` | (symbol, captured_at) | 复合主键，主键顺序即查询顺序，无需额外索引 |
 | `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + 索引 (portfolio_id, attribution_date) |
 | `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK portfolio，复合主键 |
 
@@ -495,7 +499,7 @@ impact_assessment ──► news_article + security + portfolio
 
 - **已提交的脚本永不修改。** Flyway 存了校验和，改动过的文件会让其他人的 checkout
   在启动时全部失败。要改就加新版本。
-- V1–V6 已保留。后续变更从 V7 开始，并通知团队。
+- V1–V7 已落地。后续变更从 V8 开始，并通知团队。
 - `ddl-auto: validate` —— Hibernate 不建表也不改表，只校验实体和 Flyway 建出来的
   schema 是否一致。不一致就启动失败，这正是想要的效果。
 
