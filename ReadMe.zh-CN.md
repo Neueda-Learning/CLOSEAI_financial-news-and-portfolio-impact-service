@@ -211,7 +211,7 @@ SERVER_PORT=8080
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/therain2020/financial-news-and-portfolio-impact-service.git
+git clone https://github.com/Neueda-Learning/financial-news-and-portfolio-impact-service.git
 cd FNPIS
 
 # 2. 设置环境
