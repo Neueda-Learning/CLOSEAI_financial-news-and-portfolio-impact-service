@@ -150,6 +150,12 @@ jobs:
     if: always() && !cancelled()
     steps:
       - uses: actions/checkout@v4
+      # docker-compose.yml marks the secrets as required, so interpolation
+      # fails outright when they are unset. The example file supplies
+      # placeholder values, which is enough to validate the compose syntax
+      # and doubles as a check that .env.example stays in sync.
+      - name: Seed placeholder env
+        run: cp .env.example .env
       - name: Verify Docker Compose config
         run: docker compose config --quiet
       - name: Build backend jar (if present)
