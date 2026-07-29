@@ -54,6 +54,9 @@ services:
       PROVIDER_NEWS: ${PROVIDER_NEWS:-finnhub}
       PROVIDER_PRICE: ${PROVIDER_PRICE:-finnhub}
       PROVIDER_SENTIMENT: ${PROVIDER_SENTIMENT:-agent}
+      ADMIN_ENABLED: ${ADMIN_ENABLED:-false}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      SENTIMENT_BATCH_SIZE: ${SENTIMENT_BATCH_SIZE:-15}
     ports:
       - "${SERVER_PORT:-8080}:8080"
     healthcheck:
