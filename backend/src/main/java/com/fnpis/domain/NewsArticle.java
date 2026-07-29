@@ -45,11 +45,32 @@ public class NewsArticle {
     @Column(name = "headline", nullable = false, length = HEADLINE_MAX)
     private String headline;
 
+    /**
+     * Provider summary. Stored but not analysed - sentiment reads the headline
+     * only (AS-04). Null when the provider returned none.
+     *
+     * <p>Kept because it cannot be recovered later: once an article falls out of
+     * the free tier's history window the summary is gone, same as
+     * {@code price_point} rows.
+     */
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
+
     @Column(name = "source", nullable = false, length = 64)
     private String source;
 
     @Column(name = "url", nullable = false, length = 1024)
     private String url;
+
+    /**
+     * Thumbnail URL from the provider, or null when the article has no image.
+     *
+     * <p>TEXT rather than {@code url}'s VARCHAR(1024): CDN URLs carry signing
+     * and resize parameters and run past that limit, and a truncated URL is
+     * broken rather than merely shortened.
+     */
+    @Column(name = "image", columnDefinition = "TEXT")
+    private String image;
 
     /** UTC. Drives the attribution date (EC-16, EC-17). */
     @Column(name = "published_at", nullable = false)
