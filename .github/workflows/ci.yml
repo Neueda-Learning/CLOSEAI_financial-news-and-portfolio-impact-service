@@ -21,10 +21,36 @@ jobs:
           configFile: commitlint.config.mjs
 
   # ------------------------------------------------------------------
+  # Path gate — checks which optional modules exist so downstream jobs
+  # can skip themselves. hashFiles is valid at step-level if but NOT
+  # at job-level if, so we emit outputs instead.
+  # ------------------------------------------------------------------
+  check-paths:
+    needs: commitlint
+    runs-on: ubuntu-latest
+    outputs:
+      has_frontend: ${{ steps.set-flags.outputs.has_frontend }}
+      has_nlp: ${{ steps.set-flags.outputs.has_nlp }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-flags
+        run: |
+          if [ "$(ls -A frontend 2>/dev/null)" ]; then
+            echo "has_frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$(ls -A nlp-service 2>/dev/null)" ]; then
+            echo "has_nlp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_nlp=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ------------------------------------------------------------------
   # Backend — Java 17 + Spring Boot 3
   # ------------------------------------------------------------------
   backend-lint:
-    needs: commitlint
+    needs: check-paths
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +67,7 @@ jobs:
         run: ./mvnw checkstyle:check
 
   backend-type-check:
-    needs: commitlint
+    needs: check-paths
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,28 +101,22 @@ jobs:
         run: ./mvnw test
 
   # ------------------------------------------------------------------
-  # Frontend — activates automatically when frontend/ is created
+  # Frontend — activates automatically when frontend/ exists
   # ------------------------------------------------------------------
-  # Skip frontend jobs until frontend files exist.
   frontend-lint:
-    needs: commitlint
-    if: ${{ hashFiles('frontend/**') != '' }}
+    needs: check-paths
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oxc-project/oxlint-action@v2.0.1
         with:
-          node-version: '18'
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-      - name: Run ESLint
-        working-directory: frontend
-        run: npm run lint
+          working-directory: frontend
+          all-files: true
 
   frontend-type-check:
-    needs: commitlint
-    if: ${{ hashFiles('frontend/tsconfig.json') != '' }}
+    needs: check-paths
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +132,7 @@ jobs:
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
-    if: ${{ hashFiles('frontend/**') != '' }}
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,11 +147,11 @@ jobs:
         run: npm test
 
   # ------------------------------------------------------------------
-  # NLP Service — activates automatically when nlp-service/ is created
+  # NLP Service — activates automatically when nlp-service/ exists
   # ------------------------------------------------------------------
   nlp-test:
-    needs: commitlint
-    if: ${{ hashFiles('nlp-service/**') != '' }}
+    needs: check-paths
+    if: needs.check-paths.outputs.has_nlp == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
