@@ -25,6 +25,4 @@ Rules:
   A NEUTRAL "cannot tell" is a valid answer and is preferred over a confident
   wrong direction.
 
-<headline>
-{{HEADLINE}}
-</headline>
+The headline arrives in the next message, fenced in <headline> tags.
