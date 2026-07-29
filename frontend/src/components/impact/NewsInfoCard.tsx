@@ -17,8 +17,8 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
   const brand = brandSurface[event.ticker] ?? { logo: 'https://cdn.simpleicons.org/stock/29435a', tone: '#b7c6d7' }
   const alignmentLabel = event.alignment === 'CONFIRMED' ? 'confirmed' : event.alignment === 'DIVERGENT' ? 'divergent' : 'inconclusive'
   const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
-    BULLISH: 'Bullish',
-    BEARISH: 'Bearish',
+    POSITIVE: 'Positive',
+    NEGATIVE: 'Negative',
     NEUTRAL: 'Neutral',
   }
   const impactAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.portfolioImpact)
@@ -71,7 +71,7 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
           <div className="news-info-flow">
             <div>
               <small>Document flow</small>
-              <strong>{event.sentiment} news - {alignmentLabel} by market move</strong>
+              <strong>{event.sentiment ?? (event.analysisStatus === 'FAILED' ? 'analysis failed' : 'analysis pending')} - {alignmentLabel} by market move</strong>
             </div>
             <p>
               The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} maps to {event.affectedTickers.join(', ')} with a {directionLabels[event.impactDirection].toLowerCase()} direction, then compares the same-day price path to calculate
@@ -86,7 +86,7 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
           </div>
           <div className="news-info-cell">
             <span>Sentiment</span>
-            <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+            <SentimentBadge sentiment={event.sentiment} analysisStatus={event.analysisStatus} score={event.sentimentScore} confidence={event.confidence} />
           </div>
           <div className="news-info-cell">
             <span>Score</span>
