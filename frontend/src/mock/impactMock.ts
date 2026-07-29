@@ -2,7 +2,7 @@ import type { ImpactEvent, Sentiment } from '../types/domain'
 
 const tickers = ['AAPL', 'NVDA', 'MSFT', 'AMD'] as const
 const sources = ['Reuters', 'Bloomberg', 'CNBC', 'MarketWatch', 'Financial Times'] as const
-const sentimentCycle: Array<Sentiment | null> = ['POSITIVE', 'NEGATIVE', 'NEUTRAL', 'POSITIVE', null]
+const sentimentCycle: Sentiment[] = ['POSITIVE', 'NEGATIVE', 'NEUTRAL', 'POSITIVE', 'NEGATIVE']
 
 const headlines: Record<(typeof tickers)[number], string[]> = {
   AAPL: [
@@ -39,19 +39,23 @@ const headlines: Record<(typeof tickers)[number], string[]> = {
   ],
 }
 
-function scoreFor(sentiment: Sentiment | null, index: number) {
-  if (sentiment === null) return null
+function scoreFor(sentiment: Sentiment, index: number) {
   if (sentiment === 'POSITIVE') return Number((0.48 + (index % 4) * 0.11).toFixed(2))
   if (sentiment === 'NEGATIVE') return Number((-0.42 - (index % 4) * 0.1).toFixed(2))
   return Number(((index % 2) * 0.06).toFixed(2))
 }
 
-function impactFor(sentiment: Sentiment | null, index: number) {
-  if (sentiment === null) return 0
+function impactFor(sentiment: Sentiment, index: number) {
   const base = 120 + index * 37
   if (sentiment === 'NEGATIVE') return -base
   if (sentiment === 'NEUTRAL') return Math.round(base * 0.16)
   return base
+}
+
+function affectedTickersFor(ticker: (typeof tickers)[number], index: number) {
+  if (index % 6 === 0) return Array.from(new Set([ticker, 'MSFT']))
+  if (index % 8 === 0) return Array.from(new Set([ticker, 'NVDA', 'AMD']))
+  return [ticker]
 }
 
 export const impactEventsMock: ImpactEvent[] = Array.from({ length: 25 }, (_, index) => {
@@ -59,30 +63,33 @@ export const impactEventsMock: ImpactEvent[] = Array.from({ length: 25 }, (_, in
   const sentiment = sentimentCycle[index % sentimentCycle.length]
   const sentimentScore = scoreFor(sentiment, index)
   const portfolioImpact = impactFor(sentiment, index)
-  const priceChange = sentiment === null ? 0 : sentiment === 'NEGATIVE' ? -Number((0.72 + (index % 5) * 0.44).toFixed(2)) : Number((0.38 + (index % 5) * 0.72).toFixed(2))
-  const alignment = sentiment === null ? null : sentiment === 'NEUTRAL' ? 'INCONCLUSIVE' : index % 7 === 0 ? 'DIVERGENT' : 'CONFIRMED'
+  const priceChange = sentiment === 'NEGATIVE' ? -Number((0.72 + (index % 5) * 0.44).toFixed(2)) : Number((0.38 + (index % 5) * 0.72).toFixed(2))
+  const alignment = sentiment === 'NEUTRAL' ? 'INCONCLUSIVE' : index % 7 === 0 ? 'DIVERGENT' : 'CONFIRMED'
+  const impactDirection = sentiment === 'POSITIVE' ? 'BULLISH' : sentiment === 'NEGATIVE' ? 'BEARISH' : 'NEUTRAL'
   const publishedHour = 9 + (index % 7)
   const publishedMinute = String((index * 7) % 60).padStart(2, '0')
   const firstPrice = ticker === 'NVDA' ? 121.4 : ticker === 'MSFT' ? 436.3 : ticker === 'AMD' ? 158.4 : 190.1
+  const affectedTickers = affectedTickersFor(ticker, index)
 
   return {
     id: index + 1,
+    externalId: `provider-${ticker}-${String(index + 1).padStart(3, '0')}`,
     ticker,
+    affectedTickers,
     headline: headlines[ticker][index % headlines[ticker].length],
     source: sources[index % sources.length],
     url: `https://example.com/article/${index + 1}`,
     publishedAt: `2026-07-${String(27 - (index % 3)).padStart(2, '0')}T${String(publishedHour).padStart(2, '0')}:${publishedMinute}:00Z`,
     sentiment,
     sentimentScore,
-    confidence: sentiment === null ? null : Number((0.7 + (index % 4) * 0.07).toFixed(2)),
+    confidence: Number((0.7 + (index % 4) * 0.07).toFixed(2)),
+    impactDirection,
     priceChange,
     portfolioImpact,
     strength: Math.abs(portfolioImpact) > 600 ? 'Strong' : Math.abs(portfolioImpact) > 260 ? 'Moderate' : 'Watch',
     alignment,
     content:
-      sentiment === null
-        ? `${ticker} news has been stored and matched to the portfolio, but the LLM agent has not finished sentiment analysis yet. This is a normal pipeline state, so the interface keeps it as analyzing rather than reporting an error.`
-        : `${ticker} was mentioned in a market-moving headline from ${sources[index % sources.length]}. The assessment links the headline direction to the portfolio holding, then compares it with the same-day price move to estimate dollar impact.`,
+      `${ticker} was mentioned in a market-moving headline from ${sources[index % sources.length]}. The LLM agent assigns a ${impactDirection.toLowerCase()} impact direction, maps the story to ${affectedTickers.join(', ')}, and compares it with the same-day price move to estimate dollar impact.`,
     priceSeries: [
       { time: `${String(publishedHour - 1).padStart(2, '0')}:45`, price: Number((firstPrice * (1 - 0.006)).toFixed(2)) },
       { time: `${String(publishedHour).padStart(2, '0')}:${publishedMinute}`, price: Number(firstPrice.toFixed(2)) },

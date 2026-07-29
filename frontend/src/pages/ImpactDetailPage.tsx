@@ -36,7 +36,7 @@ export function ImpactDetailPage() {
               labels={event.priceSeries.map((point) => point.time)}
               datasets={[
                 {
-                  label: event.ticker,
+                  label: event.affectedTickers.join(', '),
                   data: event.priceSeries.map((point) => point.price),
                   borderColor: '#1f4e79',
                   backgroundColor: 'rgba(31, 78, 121, 0.15)',

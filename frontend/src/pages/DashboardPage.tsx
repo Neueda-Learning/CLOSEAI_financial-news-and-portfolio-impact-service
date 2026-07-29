@@ -3,41 +3,42 @@ import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
 import { PieChart } from '../components/charts/PieChart'
 import { impactEventsMock } from '../mock/impactMock'
-import { portfolioSummaryMock, stockValueTrends } from '../mock/portfolioMock'
+import { portfolioValueTrend, stockValueTrends } from '../mock/portfolioMock'
+import { usePortfolio } from '../hooks/usePortfolio'
 import { currency, percent } from '../utils/formatters'
 
 export function DashboardPage() {
+  const { activePortfolio, holdings, summary } = usePortfolio()
   const [selectedTicker, setSelectedTicker] = useState<'AAPL' | 'NVDA' | 'MSFT' | 'AMD'>('NVDA')
   const stockTrend = stockValueTrends[selectedTicker]
-  const stockAllocation = useMemo(
-    () => portfolioSummaryMock.allocation.filter((item) => item.ticker !== 'CASH'),
-    [],
-  )
+  const stockAllocation = summary.allocation
   const stockTrendTickers = Object.keys(stockValueTrends) as Array<keyof typeof stockValueTrends>
-  const analyzedEvents = impactEventsMock.filter((event) => event.sentiment !== null)
+  const holdingTickerSet = useMemo(() => new Set(holdings.map((holding) => holding.ticker)), [holdings])
+  const analyzedEvents = impactEventsMock.filter((event) => event.affectedTickers.some((ticker) => holdingTickerSet.has(ticker)))
   const confirmedCount = analyzedEvents.filter((event) => event.alignment === 'CONFIRMED').length
   const divergentCount = analyzedEvents.filter((event) => event.alignment === 'DIVERGENT').length
   const inconclusiveCount = analyzedEvents.filter((event) => event.alignment === 'INCONCLUSIVE').length
   const sampleSize = analyzedEvents.length
   const minimumSampleSize = 20
   const directionAgreementRate = sampleSize >= minimumSampleSize ? (confirmedCount / sampleSize) * 100 : null
-  const sentimentScores = analyzedEvents.map((event) => event.sentimentScore ?? 0)
+  const sentimentScores = analyzedEvents.map((event) => event.sentimentScore)
   const weightedSentiment = sentimentScores.length > 0 ? sentimentScores.reduce((sum, value) => sum + value, 0) / sentimentScores.length : 0
   const newsCoverageRate = impactEventsMock.length === 0 ? 0 : (analyzedEvents.length / impactEventsMock.length) * 100
+  const weightTotal = stockAllocation.reduce((sum, item) => sum + item.weight, 0)
 
   return (
     <div className="page-stack">
       <header className="hero">
         <div>
           <p className="eyebrow">Dashboard</p>
-          <h1>Morning view of portfolio health</h1>
-          <p className="lede">A clean, financial-first summary of value, allocation, and sentiment trend.</p>
+          <h1>{activePortfolio?.name ?? 'Morning view of portfolio health'}</h1>
+          <p className="lede">A clean, financial-first summary of value, allocation, quote freshness, and portfolio history.</p>
         </div>
         <Card className="hero-metric">
           <small>Total value</small>
-          <strong>{currency(portfolioSummaryMock.totalValue)}</strong>
-          <span className={portfolioSummaryMock.todayChange >= 0 ? 'positive' : 'negative'}>
-            {percent(portfolioSummaryMock.todayChangePct)} today
+          <strong>{currency(summary.totalValue)}</strong>
+          <span className={summary.todayChange >= 0 ? 'positive' : 'negative'}>
+            {percent(summary.todayChangePct)} today
           </span>
         </Card>
       </header>
@@ -45,18 +46,23 @@ export function DashboardPage() {
       <section className="signal-row" aria-label="Portfolio summary">
         <Card className="signal-card">
           <small>Today's Change</small>
-          <strong className="negative">{currency(portfolioSummaryMock.todayChange)}</strong>
-          <span>{percent(portfolioSummaryMock.todayChangePct)}</span>
+          <strong className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{currency(summary.todayChange)}</strong>
+          <span>{percent(summary.todayChangePct)}</span>
+        </Card>
+        <Card className="signal-card">
+          <small>Total P/L</small>
+          <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)}</strong>
+          <span>{percent(summary.totalPnLPct)}</span>
         </Card>
         <Card className="signal-card">
           <small>Tracked Symbols</small>
-          <strong>{portfolioSummaryMock.allocation.length - 1}</strong>
+          <strong>{holdings.length}</strong>
           <span>Active holdings</span>
         </Card>
         <Card className="signal-card">
           <small>Data posture</small>
-          <strong>Fresh</strong>
-          <span>Mock service ready</span>
+          <strong>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Fallback' : 'Fresh'}</strong>
+          <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached quote available' : 'Live quote feed'}</span>
         </Card>
       </section>
 
@@ -74,9 +80,9 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="impact-summary-counts" aria-label="Impact assessment counts">
-          <span className="alignment-confirmed">✓ Confirmed {confirmedCount}</span>
-          <span className="alignment-divergent">✕ Divergent {divergentCount}</span>
-          <span className="alignment-inconclusive">— Inconclusive {inconclusiveCount}</span>
+          <span className="alignment-confirmed">Confirmed {confirmedCount}</span>
+          <span className="alignment-divergent">Divergent {divergentCount}</span>
+          <span className="alignment-inconclusive">Inconclusive {inconclusiveCount}</span>
         </div>
         <div className="impact-summary-metrics">
           <div>
@@ -100,6 +106,7 @@ export function DashboardPage() {
           <div className="chart-box">
             <PieChart labels={stockAllocation.map((item) => item.ticker)} values={stockAllocation.map((item) => item.value)} />
           </div>
+          <p className="chart-footnote">Weights total {weightTotal.toFixed(1)}% across stock holdings.</p>
         </Card>
         <Card>
           <div className="card-heading-row">
@@ -125,6 +132,18 @@ export function DashboardPage() {
           </div>
         </Card>
       </section>
+
+      <Card>
+        <h2>Portfolio Historical Value</h2>
+        <div className="chart-box">
+          <LineChart
+            labels={portfolioValueTrend.map((item) => item.date)}
+            datasets={[
+              { label: 'Portfolio value', data: portfolioValueTrend.map((item) => item.totalValue), borderColor: '#176b4d', backgroundColor: 'rgba(23, 107, 77, 0.12)' },
+            ]}
+          />
+        </div>
+      </Card>
 
       <Card>
         <h2>External API Surface</h2>
@@ -156,7 +175,7 @@ export function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {portfolioSummaryMock.allocation.map((item) => (
+              {stockAllocation.map((item) => (
                 <tr key={item.ticker}>
                   <td className="ticker">{item.ticker}</td>
                   <td>{item.weight.toFixed(1)}%</td>

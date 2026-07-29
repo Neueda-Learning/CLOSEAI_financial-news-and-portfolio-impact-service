@@ -1,4 +1,4 @@
-import type { Holding, PortfolioSummary } from '../types/domain'
+import type { Holding, Portfolio, PortfolioSummary } from '../types/domain'
 
 export const portfolioSummaryMock: PortfolioSummary = {
   totalValue: 128450.75,
@@ -22,10 +22,29 @@ export const portfolioSummaryMock: PortfolioSummary = {
 }
 
 export const holdingsMock: Holding[] = [
-  { id: 1, ticker: 'AAPL', companyName: 'Apple Inc.', shares: 20, averageCost: 180, currentPrice: 189.12, dayChangePct: -0.52 },
-  { id: 2, ticker: 'NVDA', companyName: 'NVIDIA Corporation', shares: 20, averageCost: 100, currentPrice: 125.6, dayChangePct: 3.46 },
-  { id: 3, ticker: 'MSFT', companyName: 'Microsoft Corporation', shares: 12, averageCost: 410, currentPrice: 438.18, dayChangePct: 0.84 },
-  { id: 4, ticker: 'AMD', companyName: 'Advanced Micro Devices', shares: 90, averageCost: 141, currentPrice: 159.9, dayChangePct: 2.8 },
+  { id: 1, ticker: 'AAPL', companyName: 'Apple Inc.', shares: 20, averageCost: 180, currentPrice: 189.12, dayChangePct: -0.52, quoteUpdatedAt: '2026-07-29T15:38:00Z', quoteSource: 'LIVE' },
+  { id: 2, ticker: 'NVDA', companyName: 'NVIDIA Corporation', shares: 20, averageCost: 100, currentPrice: 125.6, dayChangePct: 3.46, quoteUpdatedAt: '2026-07-29T15:39:00Z', quoteSource: 'LIVE' },
+  { id: 3, ticker: 'MSFT', companyName: 'Microsoft Corporation', shares: 12, averageCost: 410, currentPrice: 438.18, dayChangePct: 0.84, quoteUpdatedAt: '2026-07-29T15:35:00Z', quoteSource: 'CACHE' },
+  { id: 4, ticker: 'AMD', companyName: 'Advanced Micro Devices', shares: 90, averageCost: 141, currentPrice: 159.9, dayChangePct: 2.8, quoteUpdatedAt: '2026-07-29T15:37:00Z', quoteSource: 'LIVE' },
+]
+
+export const portfoliosMock: Portfolio[] = [
+  {
+    id: 1,
+    name: 'Core Growth Portfolio',
+    createdAt: '2026-07-22T09:00:00Z',
+    holdings: holdingsMock,
+  },
+  {
+    id: 2,
+    name: 'AI Infrastructure Watchlist',
+    createdAt: '2026-07-25T10:30:00Z',
+    holdings: [
+      { id: 21, ticker: 'NVDA', companyName: 'NVIDIA Corporation', shares: 16, averageCost: 104, currentPrice: 125.6, dayChangePct: 3.46, quoteUpdatedAt: '2026-07-29T15:39:00Z', quoteSource: 'LIVE' },
+      { id: 22, ticker: 'AMD', companyName: 'Advanced Micro Devices', shares: 55, averageCost: 148, currentPrice: 159.9, dayChangePct: 2.8, quoteUpdatedAt: '2026-07-29T15:37:00Z', quoteSource: 'LIVE' },
+      { id: 23, ticker: 'MSFT', companyName: 'Microsoft Corporation', shares: 8, averageCost: 421, currentPrice: 438.18, dayChangePct: 0.84, quoteUpdatedAt: '2026-07-29T15:35:00Z', quoteSource: 'CACHE' },
+    ],
+  },
 ]
 
 export const portfolioValueTrend = [

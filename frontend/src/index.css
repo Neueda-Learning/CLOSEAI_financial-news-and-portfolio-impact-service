@@ -242,6 +242,9 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 }
 :root[data-theme='dark'] .impact-summary-counts span,
 :root[data-theme='dark'] .impact-summary-metrics > div { background: rgba(255, 255, 255, .035); }
+.impact-summary-strip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
 .impact-summary-counts span {
   font-weight: 680;
 }
@@ -652,6 +655,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   font-weight: 650;
 }
 .panel-badge.live { color: var(--positive); background: rgba(49, 115, 93, .09); }
+.panel-badge.cache { color: var(--warning); background: rgba(148, 98, 0, .08); }
 .panel-badge.polling { color: var(--accent); background: var(--accent-soft); }
 .status-dot {
   width: 7px;
@@ -702,6 +706,97 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   font-size: 1.22rem;
   letter-spacing: -.025em;
   font-weight: 660;
+}
+.portfolio-management {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.portfolio-create-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+:root[data-theme='dark'] .portfolio-create-form { background: rgba(255, 255, 255, .035); }
+.portfolio-create-form label {
+  display: grid;
+  gap: 6px;
+}
+.portfolio-create-form span {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.portfolio-list {
+  display: grid;
+  gap: 8px;
+}
+.portfolio-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+.portfolio-list-item.active {
+  border-color: rgba(39, 80, 111, .24);
+  box-shadow: 0 6px 18px rgba(39, 80, 111, .08);
+}
+.portfolio-list-item button:first-child {
+  display: grid;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.portfolio-list-item button:first-child strong {
+  font-size: .92rem;
+}
+.portfolio-list-item button:first-child span,
+.quote-status-row span,
+.empty-state span,
+.chart-footnote {
+  color: var(--muted);
+  font-size: .78rem;
+}
+.portfolio-list-item .danger-text {
+  padding: 7px 10px;
+}
+.quote-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  color: var(--muted);
+}
+.empty-state {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, .76);
+}
+:root[data-theme='dark'] .empty-state {
+  background: rgba(255, 255, 255, .03);
+}
+.empty-state strong {
+  font-size: .95rem;
+}
+.chart-footnote {
+  margin: 8px 0 0;
 }
 .portfolio-service-strip,
 .news-controls,
@@ -827,7 +922,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .stock-meta strong { color: var(--text); }
 .position-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
   padding: 9px;
@@ -902,6 +997,9 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
+.news-impact-item .ticker-tag {
+  margin-left: auto;
+}
 .news-impact-summary a {
   margin-left: auto;
   color: var(--accent);
@@ -942,7 +1040,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 @media (max-width: 1280px) {
   body { min-width: 0; }
   .shell { grid-template-columns: 240px minmax(0, 1fr); }
-  .impact-metrics, .summary-strip, .grid-2, .signal-row, .pane-summary, .news-summary, .position-grid, .impact-summary-counts, .impact-summary-metrics, .impact-pending-strip { grid-template-columns: 1fr; }
+  .impact-metrics, .summary-strip, .grid-2, .signal-row, .pane-summary, .news-summary, .position-grid, .impact-summary-counts, .impact-summary-metrics, .impact-pending-strip, .impact-summary-strip { grid-template-columns: 1fr; }
   .info-row { grid-template-columns: 1fr; }
   .api-grid { grid-template-columns: 1fr; }
   .split-module { height: auto; }
