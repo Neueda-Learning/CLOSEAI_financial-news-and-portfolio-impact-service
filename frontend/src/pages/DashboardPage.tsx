@@ -1,11 +1,19 @@
+import { useMemo, useState } from 'react'
 import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
 import { PieChart } from '../components/charts/PieChart'
 import { impactEventsMock } from '../mock/impactMock'
-import { portfolioSummaryMock, portfolioValueTrend } from '../mock/portfolioMock'
+import { portfolioSummaryMock, stockValueTrends } from '../mock/portfolioMock'
 import { currency, percent } from '../utils/formatters'
 
 export function DashboardPage() {
+  const [selectedTicker, setSelectedTicker] = useState<'AAPL' | 'NVDA' | 'MSFT' | 'AMD'>('NVDA')
+  const stockTrend = stockValueTrends[selectedTicker]
+  const stockAllocation = useMemo(
+    () => portfolioSummaryMock.allocation.filter((item) => item.ticker !== 'CASH'),
+    [],
+  )
+  const stockTrendTickers = Object.keys(stockValueTrends) as Array<keyof typeof stockValueTrends>
   const analyzedEvents = impactEventsMock.filter((event) => event.sentiment !== null)
   const confirmedCount = analyzedEvents.filter((event) => event.alignment === 'CONFIRMED').length
   const divergentCount = analyzedEvents.filter((event) => event.alignment === 'DIVERGENT').length
@@ -90,34 +98,33 @@ export function DashboardPage() {
         <Card>
           <h2>Portfolio Allocation</h2>
           <div className="chart-box">
-            <PieChart labels={portfolioSummaryMock.allocation.map((item) => item.ticker)} values={portfolioSummaryMock.allocation.map((item) => item.weight)} />
+            <PieChart labels={stockAllocation.map((item) => item.ticker)} values={stockAllocation.map((item) => item.value)} />
           </div>
         </Card>
         <Card>
-          <h2>Portfolio Value Trend</h2>
+          <div className="card-heading-row">
+            <h2>Portfolio Value Trend</h2>
+            <label className="ticker-select">
+              <span>Ticker</span>
+              <select value={selectedTicker} onChange={(event) => setSelectedTicker(event.target.value as keyof typeof stockValueTrends)}>
+                {stockTrendTickers.map((ticker) => (
+                  <option key={ticker} value={ticker}>
+                    {ticker}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <div className="chart-box">
             <LineChart
-              labels={portfolioValueTrend.map((item) => item.date)}
+              labels={stockTrend.map((item) => item.date)}
               datasets={[
-                { label: 'Total value', data: portfolioValueTrend.map((item) => item.totalValue), borderColor: '#27506f', backgroundColor: 'rgba(39, 80, 111, 0.12)' },
+                { label: `${selectedTicker} price`, data: stockTrend.map((item) => item.price), borderColor: '#27506f', backgroundColor: 'rgba(39, 80, 111, 0.12)' },
               ]}
             />
           </div>
         </Card>
       </section>
-
-      <Card>
-        <h2>Sentiment Overview</h2>
-        <div className="chart-box">
-          <LineChart
-            labels={portfolioSummaryMock.sentimentTrend.map((item) => item.date)}
-            datasets={[
-              { label: 'Positive', data: portfolioSummaryMock.sentimentTrend.map((item) => item.positive), borderColor: '#2f7d63', backgroundColor: 'rgba(47, 125, 99, 0.18)' },
-              { label: 'Negative', data: portfolioSummaryMock.sentimentTrend.map((item) => item.negative), borderColor: '#b91c1c', backgroundColor: 'rgba(185, 28, 28, 0.12)' },
-            ]}
-          />
-        </div>
-      </Card>
 
       <Card>
         <h2>External API Surface</h2>

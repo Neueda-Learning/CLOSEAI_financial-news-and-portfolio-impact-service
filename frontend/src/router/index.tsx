@@ -8,7 +8,7 @@ export const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      { path: '/', element: <Navigate to="/dashboard" replace /> },
+      { path: '/', element: <Navigate to="/portfolio-impact" replace /> },
       { path: '/dashboard', element: <DashboardPage /> },
       { path: '/portfolio-impact', element: <PortfolioImpactPage /> },
       { path: '/portfolio', element: <Navigate to="/portfolio-impact" replace /> },

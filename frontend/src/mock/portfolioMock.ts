@@ -36,3 +36,42 @@ export const portfolioValueTrend = [
   { date: '07/26', totalValue: 129820 },
   { date: '07/27', totalValue: 128450.75 },
 ]
+
+export const stockValueTrends = {
+  AAPL: [
+    { date: '07/01', price: 183.2 },
+    { date: '07/08', price: 186.4 },
+    { date: '07/12', price: 188.1 },
+    { date: '07/16', price: 191.3 },
+    { date: '07/20', price: 189.8 },
+    { date: '07/24', price: 193.4 },
+    { date: '07/27', price: 189.12 },
+  ],
+  NVDA: [
+    { date: '07/01', price: 117.2 },
+    { date: '07/08', price: 121.4 },
+    { date: '07/12', price: 123.8 },
+    { date: '07/16', price: 122.6 },
+    { date: '07/20', price: 124.7 },
+    { date: '07/24', price: 126.9 },
+    { date: '07/27', price: 125.6 },
+  ],
+  MSFT: [
+    { date: '07/01', price: 430.1 },
+    { date: '07/08', price: 434.6 },
+    { date: '07/12', price: 438.8 },
+    { date: '07/16', price: 441.2 },
+    { date: '07/20', price: 437.9 },
+    { date: '07/24', price: 439.5 },
+    { date: '07/27', price: 438.18 },
+  ],
+  AMD: [
+    { date: '07/01', price: 153.4 },
+    { date: '07/08', price: 155.6 },
+    { date: '07/12', price: 157.2 },
+    { date: '07/16', price: 158.8 },
+    { date: '07/20', price: 160.7 },
+    { date: '07/24', price: 161.5 },
+    { date: '07/27', price: 159.9 },
+  ],
+} as const

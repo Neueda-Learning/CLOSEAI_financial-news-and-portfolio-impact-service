@@ -110,7 +110,9 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
 
   return (
     <article className={`news-impact-item ${sentimentTone}`}>
-      <div className="news-impact-headline">{event.headline}</div>
+      <Link className="news-impact-headline-link" to={`/impact/${event.id}`}>
+        <div className="news-impact-headline">{event.headline}</div>
+      </Link>
       <div className="news-impact-meta">
         <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
         <span>{event.confidence === null ? 'Pending analysis' : `${Math.round(event.confidence * 100)}% confidence`}</span>
@@ -124,7 +126,7 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
         <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
         <span>{event.alignment === null ? 'Analyzing alignment' : alignmentLabels[event.alignment]}</span>
         <a href={event.url} target="_blank" rel="noreferrer">Original</a>
-        <Link to={`/impact/${event.id}`}>View analysis</Link>
+        <Link to={`/impact/${event.id}`}>View details</Link>
       </div>
       <p className="news-impact-excerpt">{event.content}</p>
     </article>
@@ -147,7 +149,7 @@ export function PortfolioImpactPage() {
     () => impactEventsMock.filter((event) => tickerFilter === 'ALL' || event.ticker === tickerFilter),
     [tickerFilter],
   )
-  const pageSize = 2
+  const pageSize = 20
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
   const visibleEvents = filteredEvents.slice((newsPage - 1) * pageSize, newsPage * pageSize)
 
@@ -195,7 +197,7 @@ export function PortfolioImpactPage() {
         <section className="split-pane portfolio-pane" aria-label="Portfolio page">
           <div className="panel-header sticky-panel-header">
             <div>
-              <span className="panel-title">Module B · Portfolio Market Data</span>
+              <span className="panel-title">Portfolio Market Data</span>
               <p>Live-style prices, holdings value, and intraday movement.</p>
             </div>
             <span className="panel-badge live"><span className="status-dot green" />Mock price cache</span>
@@ -228,7 +230,7 @@ export function PortfolioImpactPage() {
         <section className="split-pane news-pane" aria-label="News impact page">
           <div className="panel-header sticky-panel-header">
             <div>
-              <span className="panel-title">Module C · News Impact</span>
+              <span className="panel-title">News Impact</span>
               <p>Sentiment, confidence, price movement, and portfolio contribution.</p>
             </div>
             <span className="panel-badge polling">{negativeCount} risk headlines</span>

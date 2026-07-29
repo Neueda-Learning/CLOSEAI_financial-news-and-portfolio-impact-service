@@ -174,6 +174,28 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .analysis-note small { color: var(--muted); font-weight: 680; letter-spacing: .04em; text-transform: uppercase; }
 .analysis-note p { margin: 0; color: var(--muted); }
 .inline-link { color: var(--accent); font-weight: 700; }
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ticker-select {
+  display: grid;
+  gap: 5px;
+  min-width: 140px;
+  color: var(--muted);
+  font-size: .76rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.ticker-select select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--surface-strong);
+  color: var(--text);
+}
 .impact-summary-overview {
   display: grid;
   gap: 18px;
@@ -674,6 +696,12 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   font-size: .94rem;
   font-weight: 640;
   line-height: 1.45;
+}
+.news-impact-headline-link {
+  display: block;
+}
+.news-impact-headline-link:hover .news-impact-headline {
+  color: var(--accent);
 }
 .news-impact-meta, .news-impact-summary {
   display: flex;
