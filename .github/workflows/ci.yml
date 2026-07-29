@@ -77,14 +77,13 @@ jobs:
   # ------------------------------------------------------------------
   # Frontend — activates automatically when frontend/ is created
   # ------------------------------------------------------------------
+  # Skip frontend jobs until frontend files exist.
   frontend-lint:
     needs: commitlint
+    if: hashFiles('frontend/**') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend code yet
-        if: hashFiles('frontend/**') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -97,12 +96,10 @@ jobs:
 
   frontend-type-check:
     needs: commitlint
+    if: hashFiles('frontend/tsconfig.json') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend code yet
-        if: hashFiles('frontend/tsconfig.json') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -115,12 +112,10 @@ jobs:
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
+    if: hashFiles('frontend/**') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend code yet
-        if: hashFiles('frontend/**') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
@@ -132,25 +127,23 @@ jobs:
         run: npm test
 
   # ------------------------------------------------------------------
-  # NLP Service — uncomment when nlp-service/ is created (kept as skeleton)
+  # NLP Service — activates automatically when nlp-service/ is created
   # ------------------------------------------------------------------
-  # nlp-test:
-  #   needs: commitlint
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Skip — no NLP service code yet
-  #       if: hashFiles('nlp-service/**') == ''
-  #       run: exit 0
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.10'
-  #     - name: Install dependencies
-  #       working-directory: nlp-service
-  #       run: pip install -r requirements.txt
-  #     - name: Run pytest
-  #       working-directory: nlp-service
-  #       run: pytest
+  nlp-test:
+    needs: commitlint
+    if: hashFiles('nlp-service/**') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        working-directory: nlp-service
+        run: pip install -r requirements.txt
+      - name: Run pytest
+        working-directory: nlp-service
+        run: pytest
 
   # ------------------------------------------------------------------
   # Build — docker compose + backend jar
