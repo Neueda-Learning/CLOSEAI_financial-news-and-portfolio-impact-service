@@ -77,80 +77,73 @@ jobs:
   # ------------------------------------------------------------------
   # Frontend — activates automatically when frontend/ is created
   # ------------------------------------------------------------------
+  # Skip frontend jobs until frontend files exist.
   frontend-lint:
     needs: commitlint
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend code yet
-        if: hashFiles('frontend/**') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '18'
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci --include=optional
+        run: npm ci
       - name: Run ESLint
         working-directory: frontend
         run: npm run lint
 
   frontend-type-check:
     needs: commitlint
+    if: ${{ hashFiles('frontend/tsconfig.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend code yet
-        if: hashFiles('frontend/tsconfig.json') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '18'
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci --include=optional
+        run: npm ci
       - name: TypeScript check
         working-directory: frontend
         run: npx tsc --noEmit
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Skip — no frontend tests yet
-        if: hashFiles('frontend/**/*.test.*', 'frontend/**/*.spec.*') == ''
-        run: exit 0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '18'
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci --include=optional
+        run: npm ci
       - name: Run Jest tests
         working-directory: frontend
-        run: npm run test --if-present
+        run: npm test
 
   # ------------------------------------------------------------------
-  # NLP Service — uncomment when nlp-service/ is created (kept as skeleton)
+  # NLP Service — activates automatically when nlp-service/ is created
   # ------------------------------------------------------------------
-  # nlp-test:
-  #   needs: commitlint
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Skip — no NLP service code yet
-  #       if: hashFiles('nlp-service/**') == ''
-  #       run: exit 0
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.10'
-  #     - name: Install dependencies
-  #       working-directory: nlp-service
-  #       run: pip install -r requirements.txt
-  #     - name: Run pytest
-  #       working-directory: nlp-service
-  #       run: pytest
+  nlp-test:
+    needs: commitlint
+    if: ${{ hashFiles('nlp-service/**') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        working-directory: nlp-service
+        run: pip install -r requirements.txt
+      - name: Run pytest
+        working-directory: nlp-service
+        run: pytest
 
   # ------------------------------------------------------------------
   # Build — docker compose + backend jar
@@ -159,6 +152,14 @@ jobs:
     needs: [backend-test]
     runs-on: ubuntu-latest
     if: always() && !cancelled()
+    env:
+      # Use deterministic placeholders — compose config validation and jar
+      # packaging don't need real API keys. Real keys are wired via .env at
+      # runtime. Using placeholders here keeps forks portable.
+      FINNHUB_KEY_NEWS: ci-placeholder
+      FINNHUB_KEY_PRICE: ci-placeholder
+      TWELVEDATA_API_KEY: ci-placeholder
+      LLM_API_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - name: Seed placeholder env

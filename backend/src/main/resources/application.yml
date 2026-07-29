@@ -54,9 +54,9 @@ app:
   # Flip any of these to the mock/stub implementation. On demo day this is the
   # fallback path when quota is gone or a provider is down (decision 1, 8.1).
   providers:
-    news: ${PROVIDER_NEWS:finnhub}       # finnhub | mock
-    price: ${PROVIDER_PRICE:finnhub}     # finnhub | mock
-    sentiment: ${PROVIDER_SENTIMENT:agent}  # agent | stub
+    news: ${PROVIDER_NEWS:finnhub}       # finnhub (mock: reserved, not wired yet)
+    price: ${PROVIDER_PRICE:finnhub}     # finnhub | mock (mock wired via @ConditionalOnProperty)
+    sentiment: ${PROVIDER_SENTIMENT:agent}  # agent | stub (wired by D/E)
 
   sentiment:
     model: ${LLM_MODEL:}
@@ -91,6 +91,10 @@ finnhub:
     news: ${FINNHUB_KEY_NEWS}
     price: ${FINNHUB_KEY_PRICE}
 
+twelvedata:
+  base-url: https://api.twelvedata.com
+  key: ${TWELVEDATA_API_KEY:}
+
 llm:
   api-key: ${LLM_API_KEY}
   base-url: ${LLM_BASE_URL:}
@@ -120,6 +124,10 @@ resilience4j:
         limit-for-period: 20
         limit-refresh-period: 60s
         timeout-duration: 5s
+      twelvedata:
+        limit-for-period: 8
+        limit-refresh-period: 60s
+        timeout-duration: 0s
 
   retry:
     instances:
@@ -129,7 +137,17 @@ resilience4j:
         max-attempts: 3
         wait-duration: 1s
         enable-exponential-backoff: true
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
 
+  # Circuit breaker instances are configured but @CircuitBreaker annotations
+  # are not wired yet — the rate limiter alone catches most quota issues.
+  # When wired, these open on sustained failures and stop the refresh cycle
+  # until the upstream is reachable again.
   circuitbreaker:
     instances:
       finnhub:
