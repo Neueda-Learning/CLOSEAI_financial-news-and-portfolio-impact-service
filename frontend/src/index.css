@@ -159,6 +159,29 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   color: var(--heading);
   text-shadow: 0 1px 18px rgba(139, 188, 255, .12);
 }
+.portfolio-picker { position: relative; display: inline-block; }
+.portfolio-picker-trigger { all: unset; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.portfolio-picker-trigger h1 { margin: 4px 0 8px; font-size: clamp(1.8rem, 2.3vw, 2.9rem); line-height: 1.06; font-weight: 720; color: var(--heading); }
+.portfolio-picker-trigger:hover .picker-chevron { color: var(--accent); }
+.picker-chevron { font-size: 1rem; color: var(--muted); transition: transform 180ms var(--spring), color 180ms var(--spring); }
+.picker-chevron.open { transform: rotate(180deg); color: var(--accent); }
+.portfolio-picker-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 30;
+  min-width: 240px; padding: 6px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); box-shadow: 0 8px 24px rgba(17, 24, 39, .10);
+  display: grid; gap: 2px;
+}
+.portfolio-picker-dropdown button {
+  all: unset; display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-radius: 6px; cursor: pointer;
+  transition: background-color 120ms var(--spring);
+}
+.portfolio-picker-dropdown button:hover, .portfolio-picker-dropdown button.active { background: var(--accent-soft); }
+.portfolio-picker-dropdown button.active strong { color: var(--accent); }
+.portfolio-picker-dropdown strong { font-size: .92rem; font-weight: 650; }
+.portfolio-picker-dropdown span { font-size: .82rem; color: var(--muted); }
+.picker-empty { padding: 10px 12px; color: var(--muted); font-size: .82rem; }
 .lede { max-width: 60ch; margin: 0; font-size: 1rem; }
 .card, .modal {
   background: var(--surface);
