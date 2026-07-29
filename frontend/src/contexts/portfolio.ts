@@ -9,6 +9,8 @@ type PortfolioRuntimeSummary = {
   todayChange: number
   todayChangePct: number
   allocation: Array<{ ticker: string; weight: number; value: number }>
+  asOf: string | null
+  stale: boolean
 }
 
 export type PortfolioContextValue = {

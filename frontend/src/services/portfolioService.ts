@@ -1,197 +1,66 @@
-import { portfolioSummaryMock, portfoliosMock } from '../mock/portfolioMock'
+import { apiFetch, asNumber, type PagedResponse } from './apiClient'
 import type { Holding, Portfolio } from '../types/domain'
 
-const storageKey = 'fnpis-portfolios-v1'
+type PortfolioDto = { id: number; name: string; totalMarketValue: string; holdingCount: number; createdAt: string; asOf: string | null; stale: boolean }
+type HoldingDto = { id: number; symbol: string; companyName: string; quantity: string; costBasis: string; currentPrice: string | null; marketValue: string; totalCost: string; unrealizedPnL: string; unrealizedPnLPct: number | null; dayChangePct: number | null; weight: number; quoteAvailable: boolean }
+type SummaryDto = { totalMarketValue: string; totalCost: string; unrealizedPnL: string; unrealizedPnLPct: number | null; dayChange: string | null; dayChangePct: number | null; allocations: Array<{ symbol: string; marketValue: string; weight: number }>; asOf: string | null; stale: boolean }
+
 const activeStorageKey = 'fnpis-active-portfolio-v1'
 
-const companyProfiles: Record<string, Pick<Holding, 'companyName' | 'currentPrice' | 'dayChangePct' | 'quoteSource'>> = {
-  AAPL: { companyName: 'Apple Inc.', currentPrice: 189.12, dayChangePct: -0.52, quoteSource: 'LIVE' },
-  NVDA: { companyName: 'NVIDIA Corporation', currentPrice: 125.6, dayChangePct: 3.46, quoteSource: 'LIVE' },
-  MSFT: { companyName: 'Microsoft Corporation', currentPrice: 438.18, dayChangePct: 0.84, quoteSource: 'CACHE' },
-  AMD: { companyName: 'Advanced Micro Devices', currentPrice: 159.9, dayChangePct: 2.8, quoteSource: 'LIVE' },
-  TSLA: { companyName: 'Tesla Inc.', currentPrice: 251.4, dayChangePct: -1.18, quoteSource: 'CACHE' },
-  GOOGL: { companyName: 'Alphabet Inc.', currentPrice: 184.72, dayChangePct: 0.66, quoteSource: 'LIVE' },
+function mapPortfolio(dto: PortfolioDto): Portfolio {
+  return { id: dto.id, name: dto.name, holdings: [], createdAt: dto.createdAt, totalMarketValue: asNumber(dto.totalMarketValue), holdingCount: dto.holdingCount, stale: dto.stale, asOf: dto.asOf }
 }
 
-let portfolios = loadPortfolios()
-let activePortfolioId = loadActivePortfolioId(portfolios)
-
-function loadPortfolios() {
-  try {
-    const stored = window.localStorage.getItem(storageKey)
-    if (!stored) return structuredClone(portfoliosMock)
-    const parsed = JSON.parse(stored) as Portfolio[]
-    return parsed.length > 0 ? parsed : structuredClone(portfoliosMock)
-  } catch {
-    return structuredClone(portfoliosMock)
-  }
-}
-
-function loadActivePortfolioId(items: Portfolio[]) {
-  const fallbackId = items[0]?.id ?? 1
-
-  try {
-    const stored = Number(window.localStorage.getItem(activeStorageKey))
-    return items.some((portfolio) => portfolio.id === stored) ? stored : fallbackId
-  } catch {
-    return fallbackId
-  }
-}
-
-function persist() {
-  window.localStorage.setItem(storageKey, JSON.stringify(portfolios))
-  window.localStorage.setItem(activeStorageKey, String(activePortfolioId))
-}
-
-function getActivePortfolio() {
-  return portfolios.find((portfolio) => portfolio.id === activePortfolioId) ?? portfolios[0]
-}
-
-function calculateSummary(holdings: Holding[]) {
-  const totalValue = holdings.reduce((sum, holding) => sum + holding.currentPrice * holding.shares, 0)
-  const totalCost = holdings.reduce((sum, holding) => sum + holding.averageCost * holding.shares, 0)
-  const todayChange = holdings.reduce((sum, holding) => {
-    const previousPrice = holding.currentPrice / (1 + holding.dayChangePct / 100)
-    return sum + (holding.currentPrice - previousPrice) * holding.shares
-  }, 0)
-  const todayChangePct = totalValue - todayChange === 0 ? 0 : (todayChange / (totalValue - todayChange)) * 100
-
+function mapHolding(dto: HoldingDto, asOf: string | null, stale: boolean): Holding {
   return {
-    ...portfolioSummaryMock,
-    totalValue,
-    totalCost,
-    totalPnL: totalValue - totalCost,
-    totalPnLPct: totalCost === 0 ? 0 : ((totalValue - totalCost) / totalCost) * 100,
-    todayChange,
-    todayChangePct,
-    allocation: holdings.map((holding) => {
-      const value = holding.currentPrice * holding.shares
-      return {
-        ticker: holding.ticker,
-        value,
-        weight: totalValue === 0 ? 0 : (value / totalValue) * 100,
-      }
-    }),
+    id: dto.id,
+    ticker: dto.symbol,
+    companyName: dto.companyName,
+    shares: asNumber(dto.quantity),
+    averageCost: asNumber(dto.costBasis),
+    currentPrice: asNumber(dto.currentPrice),
+    dayChangePct: dto.dayChangePct ?? 0,
+    marketValue: asNumber(dto.marketValue),
+    totalCost: asNumber(dto.totalCost),
+    unrealizedPnL: asNumber(dto.unrealizedPnL),
+    unrealizedPnLPct: dto.unrealizedPnLPct,
+    weight: dto.weight * 100,
+    quoteUpdatedAt: asOf,
+    quoteSource: stale || !dto.quoteAvailable ? 'CACHE' : 'LIVE',
   }
 }
 
 export const portfolioService = {
-  async getSummary() {
-    return calculateSummary(getActivePortfolio()?.holdings ?? [])
+  async getPortfolios() { return (await apiFetch<PortfolioDto[]>('/portfolios')).map(mapPortfolio) },
+  async getActivePortfolioId(portfolios: Portfolio[]) {
+    const stored = Number(window.localStorage.getItem(activeStorageKey))
+    return portfolios.some((portfolio) => portfolio.id === stored) ? stored : portfolios[0]?.id ?? 0
   },
-
-  async getPortfolios() {
-    return portfolios
-  },
-
-  async getActivePortfolioId() {
-    return activePortfolioId
-  },
-
-  async setActivePortfolio(id: number) {
-    if (portfolios.some((portfolio) => portfolio.id === id)) {
-      activePortfolioId = id
-      persist()
+  async setActivePortfolio(id: number) { window.localStorage.setItem(activeStorageKey, String(id)) },
+  async getSummary(id: number) {
+    const dto = await apiFetch<SummaryDto>(`/portfolios/${id}/summary`)
+    return {
+      totalValue: asNumber(dto.totalMarketValue), totalCost: asNumber(dto.totalCost), totalPnL: asNumber(dto.unrealizedPnL), totalPnLPct: dto.unrealizedPnLPct ?? 0,
+      todayChange: asNumber(dto.dayChange), todayChangePct: dto.dayChangePct ?? 0,
+      allocation: dto.allocations.map((item) => ({ ticker: item.symbol, value: asNumber(item.marketValue), weight: item.weight * 100 })),
+      asOf: dto.asOf, stale: dto.stale,
     }
   },
-
-  async createPortfolio(name: string) {
-    const created: Portfolio = {
-      id: Date.now(),
-      name: name.trim() || 'Untitled Portfolio',
-      holdings: [],
-      createdAt: new Date().toISOString(),
-    }
-
-    portfolios = [created, ...portfolios]
-    activePortfolioId = created.id
-    persist()
-    return created
+  async getHoldings(id: number, asOf: string | null = null, stale = true) {
+    const result = await apiFetch<PagedResponse<HoldingDto>>(`/portfolios/${id}/holdings?size=100`)
+    return result.content.map((holding) => mapHolding(holding, asOf ?? result.asOf, stale || result.stale))
   },
-
-  async deletePortfolio(id: number) {
-    portfolios = portfolios.filter((portfolio) => portfolio.id !== id)
-
-    if (portfolios.length === 0) {
-      portfolios = structuredClone(portfoliosMock)
-    }
-
-    if (activePortfolioId === id || !portfolios.some((portfolio) => portfolio.id === activePortfolioId)) {
-      activePortfolioId = portfolios[0].id
-    }
-
-    persist()
+  async createPortfolio(name: string) { return mapPortfolio(await apiFetch<PortfolioDto>('/portfolios', { method: 'POST', body: JSON.stringify({ name: name.trim() }) })) },
+  async deletePortfolio(id: number) { await apiFetch<void>(`/portfolios/${id}`, { method: 'DELETE' }) },
+  async addHolding(portfolioId: number, holding: { ticker: string; shares: number; averageCost: number }) {
+    await apiFetch(`/portfolios/${portfolioId}/holdings`, { method: 'POST', body: JSON.stringify({ symbol: holding.ticker, quantity: holding.shares, costBasis: holding.averageCost }) })
   },
-
-  async getHoldings() {
-    return getActivePortfolio()?.holdings ?? []
+  async updateHolding(id: number, holding: { shares: number; averageCost: number }) {
+    await apiFetch(`/holdings/${id}`, { method: 'PATCH', body: JSON.stringify({ quantity: holding.shares, costBasis: holding.averageCost }) })
   },
-
-  async addHolding(holding: Omit<Holding, 'id' | 'companyName' | 'currentPrice' | 'dayChangePct' | 'quoteUpdatedAt' | 'quoteSource'>) {
-    const ticker = holding.ticker.toUpperCase()
-    const profile = companyProfiles[ticker] ?? {
-      companyName: `${ticker} Holding`,
-      currentPrice: holding.averageCost,
-      dayChangePct: 0,
-      quoteSource: 'CACHE' as const,
-    }
-    const created: Holding = {
-      id: Date.now(),
-      ticker,
-      companyName: profile.companyName,
-      shares: holding.shares,
-      averageCost: holding.averageCost,
-      currentPrice: profile.currentPrice,
-      dayChangePct: profile.dayChangePct,
-      quoteUpdatedAt: new Date().toISOString(),
-      quoteSource: profile.quoteSource,
-    }
-
-    portfolios = portfolios.map((portfolio) =>
-      portfolio.id === activePortfolioId
-        ? {
-            ...portfolio,
-            holdings: [created, ...portfolio.holdings],
-          }
-        : portfolio,
-    )
-    persist()
-    return created
-  },
-
-  async updateHolding(id: number, holding: Pick<Holding, 'shares' | 'averageCost'>) {
-    let updated: Holding | undefined
-
-    portfolios = portfolios.map((portfolio) => {
-      if (portfolio.id !== activePortfolioId) return portfolio
-
-      return {
-        ...portfolio,
-        holdings: portfolio.holdings.map((item) => {
-          if (item.id !== id) return item
-
-          updated = {
-            ...item,
-            shares: holding.shares,
-            averageCost: holding.averageCost,
-          }
-          return updated
-        }),
-      }
-    })
-    persist()
-    return updated
-  },
-
-  async deleteHolding(id: number) {
-    portfolios = portfolios.map((portfolio) =>
-      portfolio.id === activePortfolioId
-        ? {
-            ...portfolio,
-            holdings: portfolio.holdings.filter((holding) => holding.id !== id),
-          }
-        : portfolio,
-    )
-    persist()
+  async deleteHolding(id: number) { await apiFetch<void>(`/holdings/${id}`, { method: 'DELETE' }) },
+  async getValuationHistory(id: number) {
+    const result = await apiFetch<{ points: Array<{ date: string; totalValue: string }> }>(`/portfolios/${id}/valuation-history`)
+    return result.points.map((point) => ({ date: point.date, totalValue: asNumber(point.totalValue) }))
   },
 }

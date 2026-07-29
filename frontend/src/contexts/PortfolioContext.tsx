@@ -5,7 +5,7 @@ import { PortfolioContext } from './portfolio'
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
-  const [activePortfolioId, setActivePortfolioId] = useState(1)
+  const [activePortfolioId, setActivePortfolioId] = useState(0)
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [summary, setSummary] = useState({
     totalValue: 0,
@@ -15,6 +15,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     todayChange: 0,
     todayChangePct: 0,
     allocation: [] as Array<{ ticker: string; weight: number; value: number }>,
+    asOf: null as string | null,
+    stale: true,
   })
 
   useEffect(() => {
@@ -22,12 +24,16 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function refreshPortfolioState() {
-    const [nextPortfolios, nextActivePortfolioId, nextHoldings, nextSummary] = await Promise.all([
-      portfolioService.getPortfolios(),
-      portfolioService.getActivePortfolioId(),
-      portfolioService.getHoldings(),
-      portfolioService.getSummary(),
-    ])
+    const nextPortfolios = await portfolioService.getPortfolios()
+    const nextActivePortfolioId = await portfolioService.getActivePortfolioId(nextPortfolios)
+    if (!nextActivePortfolioId) {
+      setPortfolios([])
+      setActivePortfolioId(0)
+      setHoldings([])
+      return
+    }
+    const nextSummary = await portfolioService.getSummary(nextActivePortfolioId)
+    const nextHoldings = await portfolioService.getHoldings(nextActivePortfolioId, nextSummary.asOf, nextSummary.stale)
 
     setPortfolios([...nextPortfolios])
     setActivePortfolioId(nextActivePortfolioId)
@@ -43,7 +49,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       holdings,
       summary,
       createPortfolio: async (name: string) => {
-        await portfolioService.createPortfolio(name)
+        const created = await portfolioService.createPortfolio(name)
+        await portfolioService.setActivePortfolio(created.id)
         await refreshPortfolioState()
       },
       deletePortfolio: async (id: number) => {
@@ -55,7 +62,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         await refreshPortfolioState()
       },
       addHolding: async (input: { ticker: string; shares: number; averageCost: number }) => {
-        await portfolioService.addHolding(input)
+        await portfolioService.addHolding(activePortfolioId, input)
         await refreshPortfolioState()
       },
       updateHolding: async (id: number, input: { shares: number; averageCost: number }) => {

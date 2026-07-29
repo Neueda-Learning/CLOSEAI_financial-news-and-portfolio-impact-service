@@ -1,20 +1,9 @@
-import { impactService } from './impactService'
+import { apiFetch, type PagedResponse } from './apiClient'
 
 export const newsService = {
-  async getLatestNews(tickers?: string[]) {
-    const events = tickers && tickers.length > 0
-      ? await impactService.getImpactEventsForTickers(tickers)
-      : await impactService.getImpactEvents()
-
-    return events.map((event) => ({
-      id: event.id,
-      externalId: event.externalId,
-      ticker: event.ticker,
-      affectedTickers: event.affectedTickers,
-      headline: event.headline,
-      source: event.source,
-      publishedAt: event.publishedAt,
-      url: event.url,
-    }))
+  async getLatestNews(ticker?: string) {
+    const query = new URLSearchParams({ page: '1', size: '20' })
+    if (ticker) query.set('symbol', ticker)
+    return apiFetch<PagedResponse<unknown>>(`/news?${query}`)
   },
 }

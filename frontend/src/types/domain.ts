@@ -9,7 +9,12 @@ export type Holding = {
   averageCost: number
   currentPrice: number
   dayChangePct: number
-  quoteUpdatedAt: string
+  marketValue: number
+  totalCost: number
+  unrealizedPnL: number
+  unrealizedPnLPct: number | null
+  weight: number
+  quoteUpdatedAt: string | null
   quoteSource: 'LIVE' | 'CACHE'
 }
 
@@ -18,6 +23,10 @@ export type Portfolio = {
   name: string
   holdings: Holding[]
   createdAt: string
+  totalMarketValue?: number
+  holdingCount?: number
+  stale?: boolean
+  asOf?: string | null
 }
 
 export type PortfolioSummary = {
