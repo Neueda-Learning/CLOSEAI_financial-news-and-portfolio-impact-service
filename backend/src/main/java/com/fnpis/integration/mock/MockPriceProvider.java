@@ -3,8 +3,6 @@ package com.fnpis.integration.mock;
 import com.fnpis.integration.DailyBar;
 import com.fnpis.integration.PriceProvider;
 import com.fnpis.integration.QuoteSnapshot;
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
