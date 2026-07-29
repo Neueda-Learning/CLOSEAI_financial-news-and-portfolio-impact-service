@@ -177,6 +177,7 @@ README 相关章节已加醒目提示指向本文档，但请直接以本文档�
 | GET | `/api/v1/news` | 新闻列表（可按 symbol／情感筛选） | C3,C4 | P0 |
 | GET | `/api/v1/news/{id}` | 新闻详情含情感 | C5 | P0 |
 | POST | `/api/v1/news/refresh` | 手动刷新（演示用） | C6 | P1 |
+| POST | `/api/v1/quotes/refresh` | 手动刷新报价（演示用） | B6 | P1 |
 
 ## 影响评估（核心）
 
@@ -529,6 +530,16 @@ README 相关章节已加醒目提示指向本文档，但请直接以本文档�
 不要静默无反应 —— 演示时静默比报错更尴尬。
 
 连续点两次，第二次 `inserted` 应为 0（SC-005 的去重验收点）。
+
+## POST /api/v1/quotes/refresh
+
+演示用的手动刷新报价（B6）。无请求体。
+
+**成功**返回 `202 Accepted`，空 body。报价刷新由调度器异步执行，
+逐 symbol 拉取最新价并写入 `price_quote` + `price_point` 表。
+
+**已有刷新任务在跑时返回 `409 Conflict`**（EC-20），与 `/news/refresh` 一致。
+前端据此提示「报价刷新正在进行中」。
 
 ## GET /api/v1/providers/status（P2，运维页 + 演示用）
 
