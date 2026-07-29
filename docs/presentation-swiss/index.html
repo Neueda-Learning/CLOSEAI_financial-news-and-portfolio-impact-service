@@ -754,8 +754,21 @@
     position:relative;
     overflow:hidden
   }
+  .avatar-placeholder img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center center;
+    display:block;
+    position:relative;
+    z-index:0
+  }
   .team-card.active .avatar-placeholder,
   .team-card.accent .avatar-placeholder{background:rgba(255,255,255,.16)}
+  .team-card.has-photo .avatar-placeholder{background:#fff}
+  .team-card.has-photo .avatar-placeholder::before,
+  .team-card.has-photo .avatar-placeholder::after{display:none}
+  .team-card.has-photo .avatar-placeholder span{display:none}
   .avatar-placeholder::before{
     content:"";position:absolute;width:38%;height:38%;top:18%;border-radius:50%;
     background:currentColor;opacity:.18
@@ -1659,11 +1672,11 @@
       <h2 class="h-xl" style="margin-top:1.4vh">Five people, five angles on the same product</h2>
     </div>
     <div class="team-grid">
-      <div class="team-card active"><div class="avatar-placeholder"><span>VE</span></div><div class="member-name">Venessa</div></div>
-      <div class="team-card"><div class="avatar-placeholder"><span>ET</span></div><div class="member-name">Ethan</div></div>
-      <div class="team-card"><div class="avatar-placeholder"><span>TI</span></div><div class="member-name">Timothy</div></div>
-      <div class="team-card"><div class="avatar-placeholder"><span>EV</span></div><div class="member-name">Evan</div></div>
-      <div class="team-card"><div class="avatar-placeholder"><span>DA</span></div><div class="member-name">David</div></div>
+      <div class="team-card has-photo active"><div class="avatar-placeholder"><img src="assets/team/01.jpg" alt="Venessa"><span>VE</span></div><div class="member-name">Venessa</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/02.jpg" alt="Ethan"><span>ET</span></div><div class="member-name">Ethan</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/03.jpg" alt="Timothy"><span>TI</span></div><div class="member-name">Timothy</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/04.jpg" alt="Evan"><span>EV</span></div><div class="member-name">Evan</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/05.png" alt="David"><span>DA</span></div><div class="member-name">David</div></div>
     </div>
   </div>
 </section>
