@@ -82,6 +82,18 @@ app:
     news-poll-delay: 900000      # 15 min
     quote-refresh-delay: 60000   # 1 min, trading hours only
 
+  admin:
+    # Off by default (contract 4.4 requirement 1). The destructive endpoints -
+    # recompute overwrites a whole session's assessments - only exist when this
+    # is explicitly switched on, and a disabled endpoint answers 404 rather than
+    # 403 so its existence is not advertised.
+    enabled: ${ADMIN_ENABLED:false}
+    # No default: enabling admin without setting a token would leave the
+    # endpoint open, so startup fails instead (same rule as the API keys below).
+    token: ${ADMIN_TOKEN:}
+    # Shown in the audit fields of a recompute response. Never the token itself.
+    identity: ${ADMIN_IDENTITY:admin-token:demo}
+
 finnhub:
   base-url: https://finnhub.io/api/v1
   # News and price use separate accounts so one hitting its quota cannot
