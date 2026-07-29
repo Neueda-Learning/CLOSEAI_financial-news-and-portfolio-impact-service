@@ -9,7 +9,9 @@ package com.fnpis.domain;
  * fuzzy matching later does not require a migration to tell old rows from new
  * ones.
  *
- * <p>Persist with {@code @Enumerated(EnumType.STRING)}.
+ * <p>Persist with {@code @Enumerated(EnumType.STRING)}. New values go on the end
+ * for that reason - an ordinal mapping would reassign the meaning of every
+ * stored row the moment a value is inserted mid-enum.
  */
 public enum MatchMethod {
 
@@ -17,5 +19,8 @@ public enum MatchMethod {
     SYMBOL_EXACT,
 
     /** Reserved: company name or alias found in the headline. Not implemented. */
-    NAME_FUZZY
+    NAME_FUZZY,
+
+    /** Reserved: news linked by semantic vector similarity. Not implemented. */
+    SEMANTIC_VECTOR
 }
