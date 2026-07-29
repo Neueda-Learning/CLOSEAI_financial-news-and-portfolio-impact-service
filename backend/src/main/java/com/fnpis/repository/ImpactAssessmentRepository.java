@@ -35,6 +35,9 @@ public interface ImpactAssessmentRepository extends JpaRepository<ImpactAssessme
     List<ImpactAssessment> findByPortfolioIdAndAttributionDate(
             Long portfolioId, LocalDate attributionDate);
 
+    /** Whether any assessment exists for this article (drives hasImpact in news lists). */
+    boolean existsByArticleId(Long articleId);
+
     /**
      * One session's assessments for a portfolio, newest-written first and paged
      * (E1-E3 list endpoint).

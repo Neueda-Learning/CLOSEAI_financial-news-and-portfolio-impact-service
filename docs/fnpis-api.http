@@ -61,8 +61,43 @@ POST http://localhost:8080/api/v1/quotes/refresh
 ### Concurrency test: fire twice rapidly — second should return 409
 ### (Run this immediately after the first one, or use a script)
 
+<<<<<<< HEAD
+### Get latest quote for a symbol (B1)
+GET http://localhost:8080/api/v1/prices/AAPL/quote
+
+### Get quote for unknown symbol — returns 404
+GET http://localhost:8080/api/v1/prices/XYZQ/quote
+
+### Portfolio valuation history (B2/F5) — default 30 days
+GET http://localhost:8080/api/v1/portfolios/1/valuation-history
+
+### Valuation history with date range
+GET http://localhost:8080/api/v1/portfolios/1/valuation-history?from=2026-07-01&to=2026-07-29
+
 # ------------------------------------------------------------------
-# Module C — News Refresh (新闻聚合)
+# Module C — News (新闻聚合)
+# ------------------------------------------------------------------
+
+### News list — default last 7 days, page 1 (C3)
+GET http://localhost:8080/api/v1/news
+
+### News list — filtered by symbol (C4)
+GET http://localhost:8080/api/v1/news?symbol=AAPL&page=1&size=10
+
+### News list — filtered by sentiment
+GET http://localhost:8080/api/v1/news?sentiment=POSITIVE
+
+### News list — with date range
+GET http://localhost:8080/api/v1/news?from=2026-07-20&to=2026-07-29&size=5
+
+### Single news article detail (C5)
+GET http://localhost:8080/api/v1/news/1
+
+### News detail — not found (404)
+GET http://localhost:8080/api/v1/news/99999
+
+# ------------------------------------------------------------------
+# Module C — News Refresh (新闻手动刷新)
 # ------------------------------------------------------------------
 
 ### Manual news refresh — fetches company news for every watchlist symbol.
