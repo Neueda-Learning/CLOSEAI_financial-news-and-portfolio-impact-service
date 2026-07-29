@@ -1,6 +1,6 @@
 # Presentation Deck Handover · FNPIS
 
-> Status: Swiss Modernist version ready for presentation, with in-browser editable text mode
+> Status: Swiss Modernist version ready for a 15-minute team presentation, with in-browser editable text mode
 > Last Updated: 2026-07-29
 
 ---
@@ -11,8 +11,9 @@ This folder contains the **Swiss Modernist style presentation deck** for the Fin
 
 ### Files
 
-- `index.html` — Complete presentation (10 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
+- `index.html` — Complete presentation (15 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
 - `HANDOVER.md` — This document
+- `SPEAKER_RUNBOOK.md` — Team page ownership, timing, and rehearsal scripts
 - `images/` — Image assets folder (currently empty; deck uses CSS-drawn graphics)
 
 ---
@@ -83,16 +84,33 @@ To publish on GitHub Pages:
 
 | # | Title | Layout | Notes |
 |----|-------|--------|-------|
-| 1 | Cover | S01 Hero | IKB blue accent background, ASCII dot matrix animation |
-| 2 | The Problem | S03 Split | Investors struggle to connect news → price impact |
-| 3 | Tech Stack | S04 Six Cells | Java/Spring, MySQL, Finnhub, LLM, Chart.js |
-| 4 | Architecture | S05 Three Layers | Experience / Service / Data (Swiss grid) |
-| 5 | Pipeline | S11 Horizontal Timeline | News → Sentiment → Price → Impact (4-step flow) |
-| 6 | Wow Moment | S08 Duo Compare | Current Seagate/STX breaking-news demo candidate |
-| 7 | Team & Delivery | S13 Three Forces | 5-day delivery rails: backend/data, frontend/demo, reliability/QA |
-| 8 | Feature Priorities | S06 KPI Tower | P0 Browse → P1 Impact → P2 Score → P3 Fallback |
-| 9 | 5-Day Roadmap | S02 Vertical Timeline | Day 1 Foundations / Days 2-4 Dev / Day 5 Demo |
-| 10 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 1 | Cover | S01 Hero | Product opener |
+| 2 | Our Team Members | S04/Grid | 5 member cards with placeholder portraits |
+| 3 | The Problem | S03 Split | Story-driven reason for the website |
+| 4 | User Journey | S06/Grid | Portfolio → news → sentiment → price → impact → verdict |
+| 5 | Requirements From README | S06/KPI Tower | P0 Browse, P1 Metrics, P2 Add, P3 Remove |
+| 6 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
+| 7 | What The Website Does | S11 Timeline | One endpoint-linked product loop |
+| 8 | Complete Demo Flow | S06/Grid | 6 live demo steps |
+| 9 | Architecture | S05 Three Layers | Frontend / Service / Data |
+| 10 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
+| 11 | Sentiment & Impact Engine | S08/Duo | Validated LLM Agent + stored results |
+| 12 | Honest Output | S06/KPI Tower | Direction vs alignment states |
+| 13 | Engineering Quality | S04/Grid | Precision, time, enum, refresh, CI reliability rules |
+| 14 | 5-Day Build Plan | S02/Timing | Working slice every day |
+| 15 | Closing | S10 Split Closing | 3 takeaways + thank you |
+
+## Team Speaker Ownership
+
+Detailed scripts live in `SPEAKER_RUNBOOK.md`.
+
+| Speaker | Slides |
+|---------|--------|
+| Venessa Feng | 1–3 |
+| David Hu | 4–6 |
+| Evan Li | 7–9 |
+| Ethan Sun | 10–12 |
+| Timothy Xue | 13–15 |
 
 ---
 
@@ -104,7 +122,7 @@ To publish on GitHub Pages:
 
 3. **No external images currently** — All diagrams/charts are CSS-drawn (grid layouts, color blocks, SVG icons). To add photos/screenshots, place them in `images/` and reference with `<img src="images/filename.png">`.
 
-4. **Slide count fixed at 10** — Modifying the deck structure (adding/removing slides) requires updating:
+4. **Slide count fixed at 15** — Modifying the deck structure (adding/removing slides) requires updating:
    - The slide counter display
    - Navigation dot count
    - Timeline/progression logic (if you add custom timing)
@@ -161,4 +179,4 @@ To disable the animated background by default:
 
 ---
 
-*Last Maintenance: 2026-07-28 · Questions? Check the repo's main README or ask the team.*
+*Last Maintenance: 2026-07-29 · Questions? Check the repo's main README or ask the team.*
