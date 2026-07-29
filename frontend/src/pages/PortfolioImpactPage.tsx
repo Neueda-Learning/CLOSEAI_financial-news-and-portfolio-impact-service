@@ -360,6 +360,7 @@ export function PortfolioImpactPage() {
                 ))}
               </div>
               <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
+              <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
             </div>
             <div className="news-impact-list page-turn" key={visiblePage}>
               {visibleEvents.map((event) => (
