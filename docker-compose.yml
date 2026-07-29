@@ -49,6 +49,7 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:?set LLM_API_KEY in .env}
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_MODEL: ${LLM_MODEL:-}
+      TWELVEDATA_API_KEY: ${TWELVEDATA_API_KEY:-}
       # Flip any of these to mock/stub to run without touching a provider
       PROVIDER_NEWS: ${PROVIDER_NEWS:-finnhub}
       PROVIDER_PRICE: ${PROVIDER_PRICE:-finnhub}

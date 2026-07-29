@@ -9,9 +9,11 @@ package com.fnpis.domain;
  * fuzzy matching later does not require a migration to tell old rows from new
  * ones.
  *
- * <p>Persist with {@code @Enumerated(EnumType.STRING)}. New values go on the end
- * for that reason - an ordinal mapping would reassign the meaning of every
- * stored row the moment a value is inserted mid-enum.
+ * <p>Persist with {@code @Enumerated(EnumType.STRING)}.
+ *
+ * <p>The V2 {@code article_security_link.match_method} column comment is stale
+ * after {@link #SEMANTIC_VECTOR} was added — it still lists only the original
+ * two values. A V8 migration corrects it.
  */
 public enum MatchMethod {
 
