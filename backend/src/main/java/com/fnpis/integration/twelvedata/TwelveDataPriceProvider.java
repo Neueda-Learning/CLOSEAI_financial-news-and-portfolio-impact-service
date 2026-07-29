@@ -55,8 +55,30 @@ class TwelveDataPriceProvider implements PriceProvider {
 
     @Override
     public List<DailyBar> fetchDailyBars(String symbol, LocalDate from, LocalDate to) {
-        throw new UnsupportedOperationException(
-                "Twelve Data daily bars not implemented yet — see Module B5");
+        int days = (int) from.until(to).getDays() + 1;
+        try {
+            TwelveDataTimeSeriesResponse r = restClient.get()
+                    .uri("/time_series?symbol={symbol}&interval=1day&outputsize={size}&apikey={apikey}",
+                            symbol, days, apiKey)
+                    .retrieve()
+                    .body(TwelveDataTimeSeriesResponse.class);
+            if (r == null || r.values() == null) {
+                return List.of();
+            }
+            return r.values().stream()
+                    .filter(v -> {
+                        LocalDate d = LocalDate.parse(v.datetime());
+                        return !d.isBefore(from) && !d.isAfter(to);
+                    })
+                    .map(v -> new DailyBar(
+                            symbol,
+                            LocalDate.parse(v.datetime()),
+                            v.open(), v.high(), v.low(), v.close(), v.volume()))
+                    .toList();
+        } catch (Exception e) {
+            log.warn("Twelve Data daily bars failed for {}: {}", symbol, e.getMessage());
+            throw e;
+        }
     }
 
 }

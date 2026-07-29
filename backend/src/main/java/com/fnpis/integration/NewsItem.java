@@ -7,6 +7,9 @@ import java.time.Instant;
  *
  * <p>Returned by {@link NewsProvider#fetchCompanyNews}. The service layer converts
  * this into a {@link com.fnpis.domain.NewsArticle} before persisting.
+ *
+ * @param summary Provider summary. Persisted for future use; sentiment analyses
+ *                the headline only (AS-04).
  */
 public record NewsItem(
         String externalId,

@@ -55,6 +55,7 @@ public class NewsPersistenceService {
         a.setSource(item.source());
         a.setUrl(item.url());
         a.setPublishedAt(item.publishedAt());
+        a.setSummary(item.summary());
         return a;
     }
 }

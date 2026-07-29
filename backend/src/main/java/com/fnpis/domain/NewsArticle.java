@@ -33,6 +33,16 @@ public class NewsArticle {
     /** Headlines longer than this are truncated rather than stored as TEXT. */
     public static final int HEADLINE_MAX = 512;
 
+    /**
+     * Provider summary. Persisted for future use; sentiment analyses the
+     * headline only (AS-04). Null when the provider returned no summary.
+     *
+     * <p>Once the free-tier history window slides past an article, this value
+     * cannot be re-fetched — same reasoning as {@code price_point} rows.
+     */
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
