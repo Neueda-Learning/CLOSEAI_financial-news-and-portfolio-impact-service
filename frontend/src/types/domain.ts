@@ -1,5 +1,6 @@
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
 export type SentimentState = Sentiment | null
+export type AnalysisStatus = 'PENDING' | 'FAILED' | null
 
 export type Holding = {
   id: number
@@ -51,10 +52,12 @@ export type ImpactEvent = {
   source: string
   url: string
   publishedAt: string
-  sentiment: Sentiment
+  sentiment: SentimentState
+  analysisStatus: AnalysisStatus
   sentimentScore: number
   confidence: number
-  impactDirection: 'BULLISH' | 'BEARISH' | 'NEUTRAL'
+  impactDirection: Sentiment
+  hasImpact: boolean
   priceChange: number
   portfolioImpact: number
   strength: 'Strong' | 'Moderate' | 'Watch'
