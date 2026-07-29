@@ -1,11 +1,15 @@
 package com.fnpis.repository;
 
 import com.fnpis.domain.Holding;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Holdings (A4-A7).
@@ -31,6 +35,20 @@ public interface HoldingRepository extends JpaRepository<Holding, Long> {
      * {@code Optional} is the honest return type.
      */
     Optional<Holding> findByPortfolioIdAndSymbol(Long portfolioId, String symbol);
+
+    /**
+     * Same lookup as a locking read, for the EC-09 merge.
+     *
+     * <p>{@code FOR UPDATE} here is about visibility, not just exclusion. Under
+     * InnoDB's default REPEATABLE READ a plain SELECT answers from the
+     * transaction's snapshot, so an add that waited on the portfolio lock could
+     * still read a pre-merge quantity and compute the average against a stale
+     * lot. A locking read always sees the latest committed row.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select h from Holding h where h.portfolioId = :portfolioId and h.symbol = :symbol")
+    Optional<Holding> findByPortfolioIdAndSymbolForUpdate(
+            @Param("portfolioId") Long portfolioId, @Param("symbol") String symbol);
 
     /** How many positions a portfolio holds. Cheaper than loading them to check emptiness (EC-01). */
     long countByPortfolioId(Long portfolioId);

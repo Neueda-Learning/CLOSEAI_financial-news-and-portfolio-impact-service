@@ -107,6 +107,19 @@ public class PortfolioService {
                 .orElseThrow(() -> ApiException.portfolioNotFound(portfolioId));
     }
 
+    /**
+     * {@link #require} plus a write lock on the row, for callers that modify
+     * positions (EC-09).
+     *
+     * <p>Same 404 as {@code require} - a missing portfolio locks nothing and the
+     * caller cannot tell the two methods apart from the response. Must be called
+     * inside a transaction, or the lock is released immediately and buys nothing.
+     */
+    public Portfolio requireForUpdate(Long portfolioId) {
+        return portfolios.findByIdForUpdate(portfolioId)
+                .orElseThrow(() -> ApiException.portfolioNotFound(portfolioId));
+    }
+
     private static Double dayChangePct(Valuation v) {
         if (v.totalDayChange() == null) {
             return null;

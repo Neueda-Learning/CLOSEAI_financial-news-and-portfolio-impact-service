@@ -57,17 +57,28 @@ public class HoldingService {
      * {@code (q1*c1 + q2*c2) / (q1+q2)}. Averaging the two cost bases alone
      * would be wrong whenever the lot sizes differ - 1 share at 10 plus 99 at 20
      * averages to 19.90, not 15.
+     *
+     * <p>The write lock on the parent portfolio makes that merge safe under
+     * concurrency. Find-then-write is not atomic: two simultaneous adds of one
+     * symbol either collide on the unique constraint (first add) or both read the
+     * same quantity and let the later save overwrite the earlier one (existing
+     * position). The second is the worse failure - no exception, no log, just a
+     * lot quietly missing from the average. Locking rather than retrying on
+     * constraint violation covers both cases with one mechanism; a retry loop
+     * only addresses the collision and leaves the lost update in place.
      */
     @Transactional
     public HoldingRow add(Long portfolioId, AddHoldingRequest request, Instant now) {
-        portfolios.require(portfolioId);
+        // Lock before reading the position: the read below must not be repeatable
+        // by a competing transaction.
+        portfolios.requireForUpdate(portfolioId);
         String symbol = request.normalisedSymbol();
         // EC-05: reject unknown symbols before writing anything.
         if (!securities.existsById(symbol)) {
             throw ApiException.securityNotFound(symbol);
         }
 
-        Holding merged = holdings.findByPortfolioIdAndSymbol(portfolioId, symbol)
+        Holding merged = holdings.findByPortfolioIdAndSymbolForUpdate(portfolioId, symbol)
                 .map(existing -> mergeInto(existing, request.quantity(), request.costBasis()))
                 .orElseGet(() -> new Holding(
                         portfolioId, symbol, request.quantity(), request.costBasis()));
