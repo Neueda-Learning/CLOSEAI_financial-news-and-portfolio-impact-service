@@ -15,26 +15,31 @@ import org.springframework.web.client.RestClient;
  * conflict. A separate class means module D owns its client end to end (CLAUDE.md
  * "write your own against the shared entities" applied to config).
  *
- * <p>Anthropic's Messages API authenticates with {@code x-api-key} and a pinned
- * {@code anthropic-version}, not a bearer token. Both are set once here so the
- * engine only builds the body. The key is read from {@code llm.api-key}, which
- * has no default - a missing key fails startup rather than collecting 401s later
- * (architecture 7.5).
+ * <p>Anthropic's Messages API authenticates with {@code x-api-key} and an
+ * {@code anthropic-version} header, not a bearer token. The API key is read from
+ * {@code llm.api-key} which has no default - a missing key fails startup rather
+ * than collecting 401s later (architecture 7.5).
+ *
+ * <p><b>Multi-provider support:</b> base URL, API key, model, and API version
+ * are all injectable via environment variables. No provider is hardcoded.
+ * Switch providers by changing {@code LLM_BASE_URL}, {@code LLM_API_KEY},
+ * {@code LLM_MODEL}, and optionally {@code LLM_API_VERSION} in {@code .env}.
  */
 @Configuration
 public class LlmClientConfig {
 
-    /** The Messages API version this code was written against. */
-    private static final String ANTHROPIC_VERSION = "2023-06-01";
+    /** Default Anthropic Messages API version. Override with LLM_API_VERSION. */
+    private static final String DEFAULT_API_VERSION = "2023-06-01";
 
     @Bean
     public RestClient llmRestClient(
             @Value("${llm.base-url}") String baseUrl,
-            @Value("${llm.api-key}") String apiKey) {
+            @Value("${llm.api-key}") String apiKey,
+            @Value("${llm.api-version:2023-06-01}") String apiVersion) {
         return RestClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader("x-api-key", apiKey)
-                .defaultHeader("anthropic-version", ANTHROPIC_VERSION)
+                .defaultHeader("anthropic-version", apiVersion)
                 .build();
     }
 }
