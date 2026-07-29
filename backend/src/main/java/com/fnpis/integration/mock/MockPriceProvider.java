@@ -6,6 +6,7 @@ import com.fnpis.integration.QuoteSnapshot;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Primary
+@Qualifier("writePriceProvider")
 @ConditionalOnProperty(name = "app.providers.price", havingValue = "mock")
 public class MockPriceProvider implements PriceProvider {
 

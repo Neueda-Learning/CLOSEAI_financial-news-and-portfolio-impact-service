@@ -1,6 +1,8 @@
 package com.fnpis.api.internal;
 
+import com.fnpis.api.internal.dto.NewsRefreshResponse;
 import com.fnpis.scheduler.NewsFetchScheduler;
+import com.fnpis.service.NewsFetchService.FetchResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +18,9 @@ public class NewsFetchController {
         this.scheduler = scheduler;
     }
 
-    @PostMapping("/news/fetch")
-    public ResponseEntity<Void> triggerFetch() {
-        scheduler.manualFetch();
-        return ResponseEntity.accepted().build();
+    @PostMapping("/news/refresh")
+    public ResponseEntity<NewsRefreshResponse> triggerRefresh() {
+        FetchResult r = scheduler.manualFetch();
+        return ResponseEntity.ok(new NewsRefreshResponse(r.inserted(), r.skippedDuplicates()));
     }
 }

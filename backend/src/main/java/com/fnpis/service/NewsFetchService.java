@@ -38,26 +38,33 @@ public class NewsFetchService {
         running.set(false);
     }
 
+    /** Result of one fetch cycle: how many new links were created vs skipped. */
+    public record FetchResult(int inserted, int skippedDuplicates) {}
+
     /**
      * Fetches news for every symbol in the watchlist.
      * One symbol = one transaction — delegated to {@link NewsPersistenceService}
      * so {@code @Transactional} takes effect via Spring AOP.
-     *
-     * @return total number of new articles persisted
      */
-    public int fetchAll() {
+    public FetchResult fetchAll() {
         List<String> symbols = securityRepo.findAll()
                 .stream()
                 .map(s -> s.getSymbol())
                 .toList();
         LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC);
-        int totalNew = 0;
+        int inserted = 0;
+        int skipped = 0;
         for (String symbol : symbols) {
-            totalNew += fetchForSymbol(symbol, today.minusDays(7), today);
+            int result = fetchForSymbol(symbol, today.minusDays(7), today);
+            if (result > 0) {
+                inserted += result;
+            } else {
+                skipped++;
+            }
         }
-        log.info("News fetch complete: {} new articles across {} symbols",
-                totalNew, symbols.size());
-        return totalNew;
+        log.info("News fetch complete: {} inserted, {} symbols all-duplicate",
+                inserted, skipped);
+        return new FetchResult(inserted, skipped);
     }
 
     private int fetchForSymbol(String symbol, LocalDate from, LocalDate to) {

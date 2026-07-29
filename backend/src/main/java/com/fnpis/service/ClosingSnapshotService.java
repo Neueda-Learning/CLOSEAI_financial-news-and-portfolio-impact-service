@@ -48,13 +48,13 @@ public class ClosingSnapshotService {
                 .stream()
                 .map(s -> s.getSymbol())
                 .toList();
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate today = LocalDate.now();
         int success = 0;
         for (String symbol : symbols) {
             try {
-                List<DailyBar> bars = priceProvider.fetchDailyBars(symbol, yesterday, yesterday);
+                List<DailyBar> bars = priceProvider.fetchDailyBars(symbol, today, today);
                 if (bars.isEmpty()) {
-                    log.debug("No bar for {} on {}", symbol, yesterday);
+                    log.debug("No bar for {} on {}", symbol, today);
                     continue;
                 }
                 DailyBar b = bars.get(0);

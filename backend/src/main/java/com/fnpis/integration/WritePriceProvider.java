@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Qualifier("writePriceProvider")
+@ConditionalOnProperty(name = "app.providers.price", havingValue = "finnhub", matchIfMissing = true)
 public class WritePriceProvider implements PriceProvider {
 
     private static final Logger log = LoggerFactory.getLogger(WritePriceProvider.class);

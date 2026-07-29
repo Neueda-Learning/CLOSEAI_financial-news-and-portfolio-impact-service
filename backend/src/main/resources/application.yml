@@ -133,6 +133,12 @@ resilience4j:
         max-attempts: 3
         wait-duration: 1s
         enable-exponential-backoff: true
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
 
   circuitbreaker:
     instances:

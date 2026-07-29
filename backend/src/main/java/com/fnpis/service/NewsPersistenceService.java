@@ -31,20 +31,26 @@ public class NewsPersistenceService {
     }
 
     /**
-     * Persists one symbol's news batch. Already-fetched articles (by externalId)
-     * are skipped. New articles are saved atomically with their security link.
+     * Persists one news item for one symbol.
      *
-     * @return number of new articles persisted
+     * <p>If the article already exists (same externalId), it is reused
+     * rather than re-inserted. The link is checked independently per
+     * symbol, so the same news story can be linked to multiple tickers
+     * (EC-24: one chip-sector story affects AAPL and NVDA).
+     *
+     * @return 1 if a new link was created, 0 if the link already existed
      */
     @Transactional
     public int persist(String symbol, NewsItem item) {
-        if (articleRepo.findByExternalId(item.externalId()).isPresent()) {
+        NewsArticle article = articleRepo.findByExternalId(item.externalId())
+                .orElseGet(() -> articleRepo.save(toEntity(item)));
+
+        ArticleSecurityLink.Key key = new ArticleSecurityLink.Key(article.getId(), symbol);
+        if (linkRepo.findById(key).isPresent()) {
             return 0;
         }
-        NewsArticle article = toEntity(item);
-        NewsArticle saved = articleRepo.save(article);
         linkRepo.save(new ArticleSecurityLink(
-                saved.getId(), symbol, MatchMethod.SYMBOL_EXACT));
+                article.getId(), symbol, MatchMethod.SYMBOL_EXACT));
         return 1;
     }
 

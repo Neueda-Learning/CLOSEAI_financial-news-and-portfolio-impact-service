@@ -51,6 +51,8 @@ class FinnhubNewsProvider implements NewsProvider {
                 return Collections.emptyList();
             }
             return Arrays.stream(responses)
+                    .filter(r -> r.headline() != null && !r.headline().isBlank()
+                            && r.datetime() > 0)  // EC-14: skip if missing headline or time
                     .map(r -> new NewsItem(
                             String.valueOf(r.id()),
                             truncate(r.headline(), HEADLINE_MAX),

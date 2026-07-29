@@ -2,6 +2,7 @@ package com.fnpis.scheduler;
 
 import com.fnpis.common.error.ApiException;
 import com.fnpis.service.NewsFetchService;
+import com.fnpis.service.NewsFetchService.FetchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,12 +32,12 @@ public class NewsFetchScheduler {
     }
 
     /** Manual trigger via HTTP. Returns 409 if a fetch is already running. */
-    public void manualFetch() {
+    public FetchResult manualFetch() {
         if (!service.tryAcquire()) {
             throw ApiException.taskAlreadyRunning("news-fetch");
         }
         try {
-            service.fetchAll();
+            return service.fetchAll();
         } finally {
             service.release();
         }
