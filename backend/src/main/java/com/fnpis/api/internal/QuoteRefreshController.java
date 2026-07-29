@@ -40,11 +40,11 @@ public class QuoteRefreshController {
                     Fetches the latest quote for every symbol in the watchlist via the \
                     PriceProvider chain (Finnhub → Twelve Data → DB), then writes both \
                     price_quote (upsert) and price_point (append) in one transaction per symbol. \
-                    Accepted immediately (202) — the refresh runs asynchronously. \
+                    Runs synchronously on the controller thread — returns 202 when complete. \
                     A second call while one is running returns 409."""
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "Refresh accepted, running in background"),
+            @ApiResponse(responseCode = "202", description = "Refresh completed"),
             @ApiResponse(responseCode = "409", description = "A refresh is already running — try again later",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })

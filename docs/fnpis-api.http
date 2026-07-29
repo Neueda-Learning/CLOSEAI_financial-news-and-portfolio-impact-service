@@ -97,10 +97,11 @@ POST http://localhost:8080/api/v1/news/refresh
 #
 # POST /api/v1/news/refresh 409:
 # {
-#   "type": "https://fnpis.local/errors/task-already-running",
+#   "type": "https://api.fnpis.local/errors/task-already-running",
 #   "title": "Task already running",
 #   "status": 409,
-#   "detail": "news-fetch is already in progress — try again later",
+#   "detail": "Task 'news-fetch' is already running",
+#   "instance": "/api/v1/news/refresh",
 #   "code": "TASK_ALREADY_RUNNING"
 # }
 #
@@ -109,9 +110,10 @@ POST http://localhost:8080/api/v1/news/refresh
 #
 # POST /api/v1/quotes/refresh 409:
 # {
-#   "type": "https://fnpis.local/errors/task-already-running",
+#   "type": "https://api.fnpis.local/errors/task-already-running",
 #   "title": "Task already running",
 #   "status": 409,
-#   "detail": "quote-refresh is already in progress — try again later",
+#   "detail": "Task 'quote-refresh' is already running",
+#   "instance": "/api/v1/quotes/refresh",
 #   "code": "TASK_ALREADY_RUNNING"
 # }
