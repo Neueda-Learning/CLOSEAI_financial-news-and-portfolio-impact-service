@@ -130,6 +130,24 @@ class AgentSentimentEngineTest {
         }
 
         @Test
+        @DisplayName("the system prompt carries no unsubstituted template placeholder")
+        void noTemplatePlaceholder() {
+            server.expect(requestTo("https://llm.test/v1/messages"))
+                    // The engine sends the prompt file verbatim and puts the
+                    // headline in the user turn; it does no {{...}} substitution.
+                    // A placeholder left in the file would reach the model as a
+                    // literal empty headline block competing with the real one.
+                    .andExpect(jsonPath("$.system").value(not(containsString("{{"))))
+                    .andRespond(withSuccess(
+                            reply("{\"label\":\"NEUTRAL\",\"score\":0,\"confidence\":0.2}"),
+                            MediaType.APPLICATION_JSON));
+
+            engine.analyze("Big news");
+
+            server.verify();
+        }
+
+        @Test
         @DisplayName("does not put the headline in the system prompt")
         void headlineStaysOutOfSystemPrompt() {
             server.expect(requestTo("https://llm.test/v1/messages"))
