@@ -109,15 +109,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - name: Install dependencies
+      # Official oxlint action bypasses npm entirely, avoiding the
+      # npm/cli#4828 optional-dep bug that drops native bindings on CI.
+      - uses: oxc-project/setup-oxlint@v1
+      - name: Run oxlint
         working-directory: frontend
-        run: npm ci
-      - name: Run ESLint
-        working-directory: frontend
-        run: npm run lint
+        run: oxlint
 
   frontend-type-check:
     needs: check-paths
