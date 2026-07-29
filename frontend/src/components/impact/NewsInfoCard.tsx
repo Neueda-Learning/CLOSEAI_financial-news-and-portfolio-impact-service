@@ -32,7 +32,7 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
     const x = nextPointer.clientX - bounds.left
     const y = nextPointer.clientY - bounds.top
     const edgeDistance = Math.min(x, y, bounds.width - x, bounds.height - y)
-    const edgeFocus = Math.min(1, Math.max(0, (150 - edgeDistance) / 150))
+    const edgeFocus = Math.min(1, Math.max(0, (450 - edgeDistance) / 450))
 
     setPointer({
       x: `${x}px`,
@@ -65,6 +65,18 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
             <span>Published</span>
             <b>{dateTime(event.publishedAt)}</b>
           </div>
+          <div className="news-info-flow">
+            <div>
+              <small>Document flow</small>
+              <strong>{sentimentLabel} news · {alignmentLabel} by market move</strong>
+            </div>
+            <p>
+              The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
+              {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
+              <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
+              .
+            </p>
+          </div>
           <div className="news-info-cell">
             <span>Source</span>
             <b>{event.source}</b>
@@ -81,18 +93,6 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
             <span>Confidence</span>
             <b>{event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`}</b>
           </div>
-        </div>
-        <div className="news-info-flow">
-          <div>
-            <small>Document flow</small>
-            <strong>{sentimentLabel} news · {alignmentLabel} by market move</strong>
-          </div>
-          <p>
-            The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
-            {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
-            <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
-            .
-          </p>
         </div>
       </div>
     </Card>
