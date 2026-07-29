@@ -1,4 +1,4 @@
-import type { SentimentState } from '../../types/domain'
+import type { AnalysisStatus, SentimentState } from '../../types/domain'
 
 const labels: Record<Exclude<SentimentState, null>, string> = {
   POSITIVE: 'Positive',
@@ -6,9 +6,10 @@ const labels: Record<Exclude<SentimentState, null>, string> = {
   NEUTRAL: 'Neutral',
 }
 
-export function SentimentBadge({ sentiment, score, confidence }: { sentiment: SentimentState; score?: number | null; confidence?: number | null }) {
+export function SentimentBadge({ sentiment, analysisStatus, score, confidence }: { sentiment: SentimentState; analysisStatus?: AnalysisStatus; score?: number | null; confidence?: number | null }) {
   if (sentiment === null) {
-    return <span className="sentiment sentiment-pending" title="Analysis in progress">Analyzing</span>
+    const failed = analysisStatus === 'FAILED'
+    return <span className={failed ? 'sentiment sentiment-negative' : 'sentiment sentiment-pending'} title={failed ? 'Analysis failed' : 'Analysis in progress'}>{failed ? 'Analysis failed' : 'Analyzing'}</span>
   }
 
   const opacity = confidence === undefined || confidence === null ? 1 : Math.min(1, 0.45 + confidence * 0.55)

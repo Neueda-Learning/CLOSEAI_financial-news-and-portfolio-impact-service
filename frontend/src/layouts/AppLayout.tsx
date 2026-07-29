@@ -7,6 +7,7 @@ export function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const location = useLocation()
   const isNewsDetail = location.pathname.startsWith('/impact/')
+  const isForestPreview = location.pathname === '/theme-preview/forest'
 
   if (isNewsDetail) {
     return (
@@ -17,7 +18,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className={sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}>
+    <div className={`${sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}${isForestPreview ? ' forest-theme-preview' : ''}`}>
       <aside className={sidebarCollapsed ? 'sidebar sidebar-collapsed' : 'sidebar'}>
         <div>
           <div className="brand brand-with-toggle">

@@ -15,9 +15,12 @@ const brandSurface: Record<string, { logo: string; tone: string }> = {
 export function NewsInfoCard({ event }: { event: ImpactEvent }) {
   const [pointer, setPointer] = useState({ x: '50%', y: '50%', active: 0 })
   const brand = brandSurface[event.ticker] ?? { logo: 'https://cdn.simpleicons.org/stock/29435a', tone: '#b7c6d7' }
-  const sentimentLabel = event.sentiment === null ? 'Analysis in progress' : event.sentiment
-  const alignmentLabel =
-    event.alignment === null ? 'pending verification' : event.alignment === 'CONFIRMED' ? 'confirmed' : event.alignment === 'DIVERGENT' ? 'divergent' : 'inconclusive'
+  const alignmentLabel = event.alignment === 'CONFIRMED' ? 'confirmed' : event.alignment === 'DIVERGENT' ? 'divergent' : 'inconclusive'
+  const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
+    POSITIVE: 'Positive',
+    NEGATIVE: 'Negative',
+    NEUTRAL: 'Neutral',
+  }
   const impactAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.portfolioImpact)
   const surfaceStyle = {
     '--news-pointer-x': pointer.x,
@@ -53,7 +56,7 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
       <div className="news-info-card-content">
         <div className="news-info-card-kicker">
           <p className="eyebrow">News Information</p>
-          <span>Edge glow marks the active surface</span>
+          <span>{event.affectedTickers.map((ticker) => `$${ticker}`).join(' ')}</span>
         </div>
         <h2>{event.headline}</h2>
         <div className="news-info-grid">
@@ -68,10 +71,10 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
           <div className="news-info-flow">
             <div>
               <small>Document flow</small>
-              <strong>{sentimentLabel} news · {alignmentLabel} by market move</strong>
+              <strong>{event.sentiment ?? (event.analysisStatus === 'FAILED' ? 'analysis failed' : 'analysis pending')} - {alignmentLabel} by market move</strong>
             </div>
             <p>
-              The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
+              The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} maps to {event.affectedTickers.join(', ')} with a {directionLabels[event.impactDirection].toLowerCase()} direction, then compares the same-day price path to calculate
               {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
               <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
               .
@@ -83,15 +86,15 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
           </div>
           <div className="news-info-cell">
             <span>Sentiment</span>
-            <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+            <SentimentBadge sentiment={event.sentiment} analysisStatus={event.analysisStatus} score={event.sentimentScore} confidence={event.confidence} />
           </div>
           <div className="news-info-cell">
             <span>Score</span>
-            <b>{event.sentimentScore === null ? 'Pending' : event.sentimentScore.toFixed(2)}</b>
+            <b>{event.sentimentScore.toFixed(2)}</b>
           </div>
           <div className="news-info-cell">
             <span>Confidence</span>
-            <b>{event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`}</b>
+            <b>{Math.round(event.confidence * 100)}%</b>
           </div>
         </div>
       </div>
