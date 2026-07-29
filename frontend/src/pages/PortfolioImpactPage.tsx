@@ -110,7 +110,7 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
 
   return (
     <article className={`news-impact-item ${sentimentTone}`}>
-      <Link className="news-impact-headline-link" to={`/impact/${event.id}`}>
+      <Link className="news-impact-headline-link" to={`/impact/${event.id}`} target="_blank" rel="noreferrer">
         <div className="news-impact-headline">{event.headline}</div>
       </Link>
       <div className="news-impact-meta">
@@ -126,7 +126,7 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
         <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
         <span>{event.alignment === null ? 'Analyzing alignment' : alignmentLabels[event.alignment]}</span>
         <a href={event.url} target="_blank" rel="noreferrer">Original</a>
-        <Link to={`/impact/${event.id}`}>View details</Link>
+        <Link to={`/impact/${event.id}`} target="_blank" rel="noreferrer">View details</Link>
       </div>
       <p className="news-impact-excerpt">{event.content}</p>
     </article>

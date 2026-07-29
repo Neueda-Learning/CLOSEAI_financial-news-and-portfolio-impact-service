@@ -1,10 +1,20 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTheme } from '../hooks/useTheme'
 
 export function AppLayout() {
   const { theme, toggleTheme } = useTheme()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const location = useLocation()
+  const isNewsDetail = location.pathname.startsWith('/impact/')
+
+  if (isNewsDetail) {
+    return (
+      <main className="main news-detail-main">
+        <Outlet />
+      </main>
+    )
+  }
 
   return (
     <div className={sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}>

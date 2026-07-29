@@ -20,28 +20,10 @@ export function ImpactDetailPage() {
     return <p>Loading...</p>
   }
 
-  const sentimentLabel = event.sentiment === null ? 'Analysis in progress' : event.sentiment
-  const alignmentLabel =
-    event.alignment === null ? 'pending verification' : event.alignment === 'CONFIRMED' ? 'confirmed' : event.alignment === 'DIVERGENT' ? 'divergent' : 'inconclusive'
-
   return (
     <div className="page-stack">
       <p className="eyebrow">Impact detail</p>
       <NewsInfoCard event={event} />
-      <Card className="analysis-note">
-        <div>
-          <small>Document flow</small>
-          <strong>{sentimentLabel} news · {alignmentLabel} by market move</strong>
-        </div>
-        <p>
-          The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
-          {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
-          <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>
-            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.portfolioImpact)}
-          </span>
-          .
-        </p>
-      </Card>
       <section className="grid-2">
         <Card>
           <h2>News Content</h2>

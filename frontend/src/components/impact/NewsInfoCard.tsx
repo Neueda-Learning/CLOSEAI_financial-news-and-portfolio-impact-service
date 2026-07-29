@@ -15,6 +15,10 @@ const brandSurface: Record<string, { logo: string; tone: string }> = {
 export function NewsInfoCard({ event }: { event: ImpactEvent }) {
   const [pointer, setPointer] = useState({ x: '50%', y: '50%', active: 0 })
   const brand = brandSurface[event.ticker] ?? { logo: 'https://cdn.simpleicons.org/stock/29435a', tone: '#b7c6d7' }
+  const sentimentLabel = event.sentiment === null ? 'Analysis in progress' : event.sentiment
+  const alignmentLabel =
+    event.alignment === null ? 'pending verification' : event.alignment === 'CONFIRMED' ? 'confirmed' : event.alignment === 'DIVERGENT' ? 'divergent' : 'inconclusive'
+  const impactAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(event.portfolioImpact)
   const surfaceStyle = {
     '--news-pointer-x': pointer.x,
     '--news-pointer-y': pointer.y,
@@ -22,14 +26,13 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
     '--news-brand-tone': brand.tone,
   } as CSSProperties
   const brandImage = `linear-gradient(120deg, rgba(248, 251, 255, .82), rgba(229, 238, 247, .58)), url("${brand.logo}")`
-  const revealImage = `linear-gradient(120deg, rgba(248, 251, 255, .28), rgba(229, 238, 247, .12)), url("${brand.logo}")`
 
   function handlePointerMove(nextPointer: PointerEvent<HTMLElement>) {
     const bounds = nextPointer.currentTarget.getBoundingClientRect()
     const x = nextPointer.clientX - bounds.left
     const y = nextPointer.clientY - bounds.top
     const edgeDistance = Math.min(x, y, bounds.width - x, bounds.height - y)
-    const edgeFocus = Math.min(1, Math.max(0, (132 - edgeDistance) / 132))
+    const edgeFocus = Math.min(1, Math.max(0, (150 - edgeDistance) / 150))
 
     setPointer({
       x: `${x}px`,
@@ -46,21 +49,50 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
       onPointerLeave={() => setPointer((current) => ({ ...current, active: 0 }))}
     >
       <div className="news-info-card-backdrop" style={{ backgroundImage: brandImage }} aria-hidden="true" />
-      <div className="news-info-card-reveal" style={{ backgroundImage: revealImage }} aria-hidden="true" />
       <div className="news-info-card-shade" aria-hidden="true" />
       <div className="news-info-card-content">
         <div className="news-info-card-kicker">
           <p className="eyebrow">News Information</p>
-          <span>Move toward the edge to inspect the signal</span>
+          <span>Edge glow marks the active surface</span>
         </div>
         <h2>{event.headline}</h2>
-        <div className="info-row">
-          <span>Source</span><b>{event.source}</b>
-          <span>Published</span><b>{dateTime(event.publishedAt)}</b>
-          <span>Sentiment</span><SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
-          <span>Score</span><b>{event.sentimentScore === null ? 'Pending' : event.sentimentScore.toFixed(2)}</b>
-          <span>Confidence</span><b>{event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`}</b>
-          <span>Original</span><a className="inline-link" href={event.url} target="_blank" rel="noreferrer">Open article</a>
+        <div className="news-info-grid">
+          <div className="news-info-cell">
+            <span>Original</span>
+            <a className="inline-link" href={event.url} target="_blank" rel="noreferrer">Open article</a>
+          </div>
+          <div className="news-info-cell">
+            <span>Published</span>
+            <b>{dateTime(event.publishedAt)}</b>
+          </div>
+          <div className="news-info-cell">
+            <span>Source</span>
+            <b>{event.source}</b>
+          </div>
+          <div className="news-info-cell">
+            <span>Sentiment</span>
+            <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+          </div>
+          <div className="news-info-cell">
+            <span>Score</span>
+            <b>{event.sentimentScore === null ? 'Pending' : event.sentimentScore.toFixed(2)}</b>
+          </div>
+          <div className="news-info-cell">
+            <span>Confidence</span>
+            <b>{event.confidence === null ? 'Pending' : `${Math.round(event.confidence * 100)}%`}</b>
+          </div>
+        </div>
+        <div className="news-info-flow">
+          <div>
+            <small>Document flow</small>
+            <strong>{sentimentLabel} news · {alignmentLabel} by market move</strong>
+          </div>
+          <p>
+            The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} is compared with the same-day price path to calculate
+            {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
+            <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
+            .
+          </p>
         </div>
       </div>
     </Card>
