@@ -9,8 +9,8 @@ export function ImpactSummaryCard({ event }: { event: ImpactEvent }) {
     INCONCLUSIVE: 'Inconclusive',
   }
   const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
-    BULLISH: 'Bullish',
-    BEARISH: 'Bearish',
+    POSITIVE: 'Positive',
+    NEGATIVE: 'Negative',
     NEUTRAL: 'Neutral',
   }
 

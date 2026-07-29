@@ -20,8 +20,8 @@ const viewLabels: Record<ViewMode, string> = {
 }
 
 const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
-  BULLISH: 'Bullish',
-  BEARISH: 'Bearish',
+  POSITIVE: 'Positive',
+  NEGATIVE: 'Negative',
   NEUTRAL: 'Neutral',
 }
 
@@ -100,18 +100,16 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
         <div className="news-impact-headline">{event.headline}</div>
       </Link>
       <div className="news-impact-meta">
-        <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
+        <SentimentBadge sentiment={event.sentiment} analysisStatus={event.analysisStatus} score={event.sentimentScore} confidence={event.confidence} />
         <span>{Math.round(event.confidence * 100)}% confidence</span>
         <span>Score {event.sentimentScore.toFixed(2)}</span>
-        <span>{directionLabels[event.impactDirection]} impact</span>
+        <span>{event.hasImpact ? `${directionLabels[event.impactDirection]} impact` : 'No portfolio impact assessed'}</span>
         <span>{event.source}</span>
         <span>{dateTime(event.publishedAt)}</span>
         <span className="ticker-tag">{event.affectedTickers.map((ticker) => `$${ticker}`).join(' ')}</span>
       </div>
       <div className="news-impact-summary">
-        <span className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)} price</span>
-        <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
-        <span>{alignmentLabels[event.alignment]}</span>
+        {event.hasImpact ? <><span className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)} price</span><span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span><span>{alignmentLabels[event.alignment]}</span></> : <span>Impact analysis pending</span>}
         <a href={event.url} target="_blank" rel="noreferrer">Original</a>
         <Link to={`/impact/${event.id}`} target="_blank" rel="noreferrer">View details</Link>
       </div>
@@ -136,13 +134,15 @@ export function PortfolioImpactPage() {
   } = usePortfolio()
   const [viewMode, setViewMode] = useState<ViewMode>('both')
   const [open, setOpen] = useState(false)
+  const [portfolioDetailsExpanded, setPortfolioDetailsExpanded] = useState(true)
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [newsPage, setNewsPage] = useState(1)
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
-  const activeHoldingTickers = useMemo(() => holdings.map((holding) => holding.ticker), [holdings])
+  const [newsTotalPages, setNewsTotalPages] = useState(1)
+  const [newsTotalElements, setNewsTotalElements] = useState(0)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
@@ -150,17 +150,17 @@ export function PortfolioImpactPage() {
     () => events.filter((event) => tickerFilter === 'ALL' || event.affectedTickers.includes(tickerFilter)),
     [events, tickerFilter],
   )
-  const pageSize = 20
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
-  const visibleEvents = filteredEvents.slice((newsPage - 1) * pageSize, newsPage * pageSize)
+  const totalPages = Math.max(1, newsTotalPages)
+  const visibleEvents = filteredEvents
 
   useEffect(() => {
     if (!activePortfolioId) return
-    impactService.getImpactEventsForTickers(activePortfolioId, activeHoldingTickers).then((nextEvents) => {
-      setEvents(nextEvents)
-      setNewsPage(1)
+    impactService.getImpactEvents(activePortfolioId, newsPage).then((nextPage) => {
+      setEvents(nextPage.content)
+      setNewsTotalPages(nextPage.totalPages)
+      setNewsTotalElements(nextPage.totalElements)
     })
-  }, [activeHoldingTickers, activePortfolioId])
+  }, [activePortfolioId, newsPage])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
@@ -180,7 +180,10 @@ export function PortfolioImpactPage() {
 
   async function refreshNewsNow() {
     await impactService.refreshNews()
-    setEvents(await impactService.getImpactEventsForTickers(activePortfolioId, activeHoldingTickers))
+    const nextPage = await impactService.getImpactEvents(activePortfolioId, 1)
+    setEvents(nextPage.content)
+    setNewsTotalPages(nextPage.totalPages)
+    setNewsTotalElements(nextPage.totalElements)
     setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     setNewsPage(1)
   }
@@ -189,6 +192,21 @@ export function PortfolioImpactPage() {
     const currentIndex = viewSequence.indexOf(viewMode)
     const nextMode = viewSequence[(currentIndex + 1) % viewSequence.length]
     setViewMode(nextMode)
+  }
+
+  function goToNewsPage(nextPage: number) {
+    setNewsPage(Math.min(totalPages, Math.max(1, Math.trunc(nextPage) || 1)))
+  }
+
+  function selectPortfolio(id: number) {
+    if (id === activePortfolioId) {
+      setPortfolioDetailsExpanded((expanded) => !expanded)
+      setOpen(false)
+      return
+    }
+    setOpen(false)
+    setPortfolioDetailsExpanded(true)
+    void setActivePortfolio(id)
   }
 
   return (
@@ -215,7 +233,6 @@ export function PortfolioImpactPage() {
           <div className="panel-header sticky-panel-header">
             <div>
               <span className="panel-title">Portfolio Market Data</span>
-              <p>Live-style prices, holdings value, and intraday movement.</p>
             </div>
             <span className="panel-badge live"><span className="status-dot green" />Quote monitor</span>
           </div>
@@ -234,8 +251,9 @@ export function PortfolioImpactPage() {
                   const isActive = portfolio.id === activePortfolioId
 
                   return (
-                    <article className={isActive ? 'portfolio-list-item active' : 'portfolio-list-item'} key={portfolio.id}>
-                      <button type="button" onClick={() => setActivePortfolio(portfolio.id)}>
+                    <div className="portfolio-list-entry" key={portfolio.id}>
+                    <article className={isActive ? 'portfolio-list-item active' : 'portfolio-list-item'}>
+                      <button type="button" onClick={() => selectPortfolio(portfolio.id)} aria-expanded={isActive ? portfolioDetailsExpanded : undefined}>
                         <strong>{portfolio.name}</strong>
                         <span>{currency(portfolioValue)} total value</span>
                       </button>
@@ -243,10 +261,19 @@ export function PortfolioImpactPage() {
                         Delete
                       </button>
                     </article>
+                    {isActive && open && portfolioDetailsExpanded && (
+                      <AddHoldingModal
+                        inline
+                        onClose={() => setOpen(false)}
+                        onSubmit={submitHolding}
+                      />
+                    )}
+                    </div>
                   )
                 })}
               </div>
             </div>
+            {portfolioDetailsExpanded && <>
             <div className="pane-summary">
               <div>
                 <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
@@ -278,6 +305,7 @@ export function PortfolioImpactPage() {
                 </article>
               )}
             </div>
+            </>}
           </div>
         </section>
 
@@ -293,7 +321,7 @@ export function PortfolioImpactPage() {
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
-                <strong>{filteredEvents.length}</strong>
+                <strong>{newsTotalElements}</strong>
               </div>
               <div>
                 <small>Largest impact</small>
@@ -322,7 +350,7 @@ export function PortfolioImpactPage() {
               </div>
               <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
             </div>
-            <div className="news-impact-list">
+            <div className="news-impact-list page-turn" key={newsPage}>
               {visibleEvents.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
               ))}
@@ -334,11 +362,11 @@ export function PortfolioImpactPage() {
               )}
             </div>
             <div className="pagination-row">
-              <button type="button" disabled={newsPage === 1} onClick={() => setNewsPage((page) => Math.max(1, page - 1))}>
+              <button type="button" disabled={newsPage === 1} onClick={() => goToNewsPage(newsPage - 1)}>
                 Previous
               </button>
-              <span>Page {newsPage} of {totalPages} - 20 per page</span>
-              <button type="button" disabled={newsPage === totalPages} onClick={() => setNewsPage((page) => Math.min(totalPages, page + 1))}>
+              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={totalPages} value={newsPage} onChange={(event) => goToNewsPage(Number(event.target.value))} /> of {totalPages} <span>- 20 per page</span></label>
+              <button type="button" disabled={newsPage === totalPages} onClick={() => goToNewsPage(newsPage + 1)}>
                 Next
               </button>
             </div>
@@ -346,7 +374,7 @@ export function PortfolioImpactPage() {
         </section>
       </section>
 
-      {(open || editingHolding) && (
+      {editingHolding && (
         <AddHoldingModal
           mode={editingHolding ? 'edit' : 'add'}
           initialValue={editingHolding ?? undefined}
