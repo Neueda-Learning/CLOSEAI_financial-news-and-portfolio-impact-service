@@ -112,6 +112,7 @@ jobs:
       - uses: oxc-project/oxlint-action@v2.0.1
         with:
           working-directory: frontend
+          all-files: true
 
   frontend-type-check:
     needs: check-paths
