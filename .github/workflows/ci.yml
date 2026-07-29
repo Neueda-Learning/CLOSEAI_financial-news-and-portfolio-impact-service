@@ -109,12 +109,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Official oxlint action bypasses npm entirely, avoiding the
-      # npm/cli#4828 optional-dep bug that drops native bindings on CI.
-      - uses: oxc-project/setup-oxlint@v1
-      - name: Run oxlint
-        working-directory: frontend
-        run: oxlint
+      - uses: oxc-project/oxlint-action@v2.0.1
+        with:
+          working-directory: frontend
 
   frontend-type-check:
     needs: check-paths
