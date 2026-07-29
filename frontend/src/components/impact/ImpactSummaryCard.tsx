@@ -3,37 +3,27 @@ import type { ImpactEvent } from '../../types/domain'
 import { Card } from '../common/Card'
 
 export function ImpactSummaryCard({ event }: { event: ImpactEvent }) {
-  const alignmentLabels: Record<NonNullable<ImpactEvent['alignment']>, string> = {
-    CONFIRMED: '✓ Confirmed',
-    DIVERGENT: '✕ Divergent',
-    INCONCLUSIVE: '— Inconclusive',
+  const alignmentLabels: Record<ImpactEvent['alignment'], string> = {
+    CONFIRMED: 'Confirmed',
+    DIVERGENT: 'Divergent',
+    INCONCLUSIVE: 'Inconclusive',
   }
-
-  if (event.sentiment === null || event.alignment === null) {
-    return (
-      <Card className="summary-strip impact-pending-strip">
-        <div>
-          <small>Impact status</small>
-          <strong>Analysis in progress</strong>
-        </div>
-        <div>
-          <small>Reason</small>
-          <strong>Sentiment result is not ready yet</strong>
-        </div>
-        <div>
-          <small>Portfolio impact</small>
-          <strong>Pending</strong>
-        </div>
-        <div>
-          <small>Next step</small>
-          <strong>Refresh after agent completes</strong>
-        </div>
-      </Card>
-    )
+  const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
+    BULLISH: 'Bullish',
+    BEARISH: 'Bearish',
+    NEUTRAL: 'Neutral',
   }
 
   return (
-    <Card className="summary-strip">
+    <Card className="summary-strip impact-summary-strip">
+      <div>
+        <small>Affected holdings</small>
+        <strong>{event.affectedTickers.join(', ')}</strong>
+      </div>
+      <div>
+        <small>Impact direction</small>
+        <strong>{directionLabels[event.impactDirection]}</strong>
+      </div>
       <div>
         <small>Impact strength</small>
         <strong>{event.strength}</strong>

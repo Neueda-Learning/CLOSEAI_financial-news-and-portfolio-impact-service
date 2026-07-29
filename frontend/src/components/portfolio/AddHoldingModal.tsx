@@ -38,11 +38,11 @@ export function AddHoldingModal({
         </label>
         <label>
           Shares
-          <input value={shares} onChange={(event) => setShares(event.target.value)} type="number" min="1" required />
+          <input value={shares} onChange={(event) => setShares(event.target.value)} type="number" min="1" step="1" required />
         </label>
         <label>
           Average Cost
-          <input value={averageCost} onChange={(event) => setAverageCost(event.target.value)} type="number" min="0" required />
+          <input value={averageCost} onChange={(event) => setAverageCost(event.target.value)} type="number" min="0" step="0.0001" required />
         </label>
         <Button type="submit">{mode === 'edit' ? 'Update Holding' : 'Submit'}</Button>
       </form>

@@ -9,6 +9,24 @@ export type Holding = {
   averageCost: number
   currentPrice: number
   dayChangePct: number
+  marketValue: number
+  totalCost: number
+  unrealizedPnL: number
+  unrealizedPnLPct: number | null
+  weight: number
+  quoteUpdatedAt: string | null
+  quoteSource: 'LIVE' | 'CACHE'
+}
+
+export type Portfolio = {
+  id: number
+  name: string
+  holdings: Holding[]
+  createdAt: string
+  totalMarketValue?: number
+  holdingCount?: number
+  stale?: boolean
+  asOf?: string | null
 }
 
 export type PortfolioSummary = {
@@ -26,18 +44,21 @@ export type PortfolioValuePoint = {
 
 export type ImpactEvent = {
   id: number
+  externalId: string
   ticker: string
+  affectedTickers: string[]
   headline: string
   source: string
   url: string
   publishedAt: string
-  sentiment: SentimentState
-  sentimentScore: number | null
-  confidence: number | null
+  sentiment: Sentiment
+  sentimentScore: number
+  confidence: number
+  impactDirection: 'BULLISH' | 'BEARISH' | 'NEUTRAL'
   priceChange: number
   portfolioImpact: number
   strength: 'Strong' | 'Moderate' | 'Watch'
-  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE' | null
+  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE'
   content: string
   summary?: string | null
   image?: string | null

@@ -71,3 +71,12 @@ team-constraints.md
 *.tsbuildinfo
 .next/
 .cache/
+
+# === Local Codex / design-tool artifacts ===
+.github/hooks/
+.github/skills/
+docs/ReadMe.zh-CN (1).md
+frontend/.agents/
+frontend/CODEX_HANDOFF.md
+frontend/design-system/
+frontend/skills-lock.json

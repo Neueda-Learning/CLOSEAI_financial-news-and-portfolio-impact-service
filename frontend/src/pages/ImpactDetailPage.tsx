@@ -6,15 +6,17 @@ import { ImpactSummaryCard } from '../components/impact/ImpactSummaryCard'
 import { NewsInfoCard } from '../components/impact/NewsInfoCard'
 import { impactService } from '../services/impactService'
 import type { ImpactEvent } from '../types/domain'
+import { usePortfolio } from '../hooks/usePortfolio'
 
 export function ImpactDetailPage() {
   const { id } = useParams()
   const [event, setEvent] = useState<ImpactEvent | undefined>(undefined)
+  const { activePortfolioId } = usePortfolio()
 
   useEffect(() => {
     const eventId = Number(id)
-    impactService.getImpactEvent(eventId).then(setEvent)
-  }, [id])
+    if (eventId && activePortfolioId) impactService.getImpactEvent(eventId, activePortfolioId).then(setEvent)
+  }, [id, activePortfolioId])
 
   if (!event) {
     return <p>Loading...</p>
@@ -36,7 +38,7 @@ export function ImpactDetailPage() {
               labels={event.priceSeries.map((point) => point.time)}
               datasets={[
                 {
-                  label: event.ticker,
+                  label: event.affectedTickers.join(', '),
                   data: event.priceSeries.map((point) => point.price),
                   borderColor: '#1f4e79',
                   backgroundColor: 'rgba(31, 78, 121, 0.15)',

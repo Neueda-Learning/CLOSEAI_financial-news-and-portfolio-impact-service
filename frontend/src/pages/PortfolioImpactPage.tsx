@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AddHoldingModal } from '../components/portfolio/AddHoldingModal'
 import { Button } from '../components/common/Button'
 import { SentimentBadge } from '../components/impact/SentimentBadge'
-import { impactEventsMock } from '../mock/impactMock'
-import { portfolioSummaryMock } from '../mock/portfolioMock'
+import { impactService } from '../services/impactService'
 import { usePortfolio } from '../hooks/usePortfolio'
 import { currency, dateTime, percent } from '../utils/formatters'
 import type { Holding, ImpactEvent } from '../types/domain'
@@ -19,56 +19,40 @@ const viewLabels: Record<ViewMode, string> = {
   news: 'News full',
 }
 
-function sparklinePath(values: number[]) {
-  const width = 320
-  const height = 58
-  const padding = 4
-  const min = Math.min(...values)
-  const max = Math.max(...values)
-  const range = max - min || 1
-
-  return values
-    .map((value, index) => {
-      const x = padding + (index / (values.length - 1)) * (width - padding * 2)
-      const y = height - padding - ((value - min) / range) * (height - padding * 2)
-      return `${x},${y}`
-    })
-    .join(' ')
+const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
+  BULLISH: 'Bullish',
+  BEARISH: 'Bearish',
+  NEUTRAL: 'Neutral',
 }
 
-function trendForHolding(holding: Holding) {
-  const base = holding.currentPrice
-  const direction = holding.dayChangePct >= 0 ? 1 : -1
-  return [base * (1 - direction * 0.025), base * (1 - direction * 0.012), base * (1 + direction * 0.004), base * (1 - direction * 0.006), base * (1 + direction * 0.016), base]
+function minutesAgo(value: string | null) {
+  if (!value) return 'Not available'
+  const diffMs = Date.now() - new Date(value).getTime()
+  const minutes = Math.max(1, Math.round(diffMs / 60000))
+  return `${minutes} min ago`
 }
 
 function PortfolioMarketCard({
   holding,
-  totalValue,
   onEdit,
   onDelete,
 }: {
   holding: Holding
-  totalValue: number
   onEdit: (holding: Holding) => void
   onDelete: (id: number) => void
 }) {
-  const marketValue = holding.currentPrice * holding.shares
-  const totalCost = holding.averageCost * holding.shares
-  const pnl = marketValue - totalCost
-  const pnlPct = totalCost === 0 ? 0 : (pnl / totalCost) * 100
-  const weight = totalValue === 0 ? 0 : (marketValue / totalValue) * 100
-  const high = holding.currentPrice * 1.018
-  const low = holding.currentPrice * 0.984
-  const trend = trendForHolding(holding)
-  const color = holding.dayChangePct >= 0 ? '#2f7d63' : '#b91c1c'
+  const marketValue = holding.marketValue
+  const totalCost = holding.totalCost
+  const pnl = holding.unrealizedPnL
+  const pnlPct = holding.unrealizedPnLPct
+  const weight = holding.weight
 
   return (
     <article className="market-card">
       <div className="market-card-top">
         <div>
           <div className="stock-symbol">${holding.ticker}</div>
-          <div className="stock-name">{holding.companyName} · NASDAQ</div>
+          <div className="stock-name">{holding.companyName} - NASDAQ</div>
         </div>
         <div className="market-actions">
           <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
@@ -81,32 +65,34 @@ function PortfolioMarketCard({
         <span className={pnl >= 0 ? 'positive' : 'negative'}>{currency(pnl)} unrealized</span>
       </div>
       <div className="stock-meta">
-        <span>High <strong>{high.toFixed(2)}</strong></span>
-        <span>Low <strong>{low.toFixed(2)}</strong></span>
         <span>Value <strong>{currency(marketValue)}</strong></span>
+        <span>Quote <strong>{holding.quoteSource === 'CACHE' ? 'Cached / pending' : 'Latest available'}</strong></span>
       </div>
       <div className="position-grid">
         <span><small>Shares</small><strong>{holding.shares}</strong></span>
         <span><small>Average cost</small><strong>{currency(holding.averageCost)}</strong></span>
         <span><small>Total cost</small><strong>{currency(totalCost)}</strong></span>
         <span><small>Weight</small><strong>{percent(weight)}</strong></span>
-        <span><small>P/L</small><strong className={pnl >= 0 ? 'positive' : 'negative'}>{percent(pnlPct)}</strong></span>
+        <span><small>P/L</small><strong className={pnl >= 0 ? 'positive' : 'negative'}>{pnlPct == null ? '—' : percent(pnlPct)}</strong></span>
+        <span><small>Data time</small><strong>{minutesAgo(holding.quoteUpdatedAt)}</strong></span>
       </div>
-      <svg className="mini-chart" viewBox="0 0 320 58" aria-label={`${holding.ticker} intraday trend`}>
-        <polyline points={sparklinePath(trend)} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <div className="quote-status-row">
+        <span className={holding.quoteSource === 'CACHE' ? 'panel-badge cache' : 'panel-badge live'}>
+          {holding.quoteSource === 'CACHE' ? 'Cached quote fallback' : 'Live quote'}
+        </span>
+        <span>Updated {holding.quoteUpdatedAt ? dateTime(holding.quoteUpdatedAt) : 'Not available'}</span>
+      </div>
     </article>
   )
 }
 
 function NewsImpactItem({ event }: { event: ImpactEvent }) {
-  const alignmentLabels: Record<NonNullable<ImpactEvent['alignment']>, string> = {
+  const alignmentLabels: Record<ImpactEvent['alignment'], string> = {
     CONFIRMED: 'Direction confirmed',
     DIVERGENT: 'Divergent move',
     INCONCLUSIVE: 'Inconclusive',
   }
-  const isPending = event.sentiment === null
-  const sentimentTone = isPending ? 'pending' : event.sentiment === 'POSITIVE' ? 'positive' : event.sentiment === 'NEGATIVE' ? 'negative' : 'neutral'
+  const sentimentTone = event.sentiment === 'POSITIVE' ? 'positive' : event.sentiment === 'NEGATIVE' ? 'negative' : 'neutral'
 
   return (
     <article className={`news-impact-item ${sentimentTone}`}>
@@ -115,43 +101,66 @@ function NewsImpactItem({ event }: { event: ImpactEvent }) {
       </Link>
       <div className="news-impact-meta">
         <SentimentBadge sentiment={event.sentiment} score={event.sentimentScore} confidence={event.confidence} />
-        <span>{event.confidence === null ? 'Pending analysis' : `${Math.round(event.confidence * 100)}% confidence`}</span>
-        <span>{event.sentimentScore === null ? 'Score pending' : `Score ${event.sentimentScore.toFixed(2)}`}</span>
+        <span>{Math.round(event.confidence * 100)}% confidence</span>
+        <span>Score {event.sentimentScore.toFixed(2)}</span>
+        <span>{directionLabels[event.impactDirection]} impact</span>
         <span>{event.source}</span>
         <span>{dateTime(event.publishedAt)}</span>
-        <span className="ticker-tag">${event.ticker}</span>
+        <span className="ticker-tag">{event.affectedTickers.map((ticker) => `$${ticker}`).join(' ')}</span>
       </div>
       <div className="news-impact-summary">
         <span className={event.priceChange >= 0 ? 'positive' : 'negative'}>{percent(event.priceChange)} price</span>
         <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{currency(event.portfolioImpact)} portfolio</span>
-        <span>{event.alignment === null ? 'Analyzing alignment' : alignmentLabels[event.alignment]}</span>
+        <span>{alignmentLabels[event.alignment]}</span>
         <a href={event.url} target="_blank" rel="noreferrer">Original</a>
         <Link to={`/impact/${event.id}`} target="_blank" rel="noreferrer">View details</Link>
       </div>
-      <p className="news-impact-excerpt">{event.content}</p>
+      {event.content && <p className="news-impact-excerpt">{event.content}</p>}
     </article>
   )
 }
 
 export function PortfolioImpactPage() {
-  const { holdings, addHolding, updateHolding, deleteHolding } = usePortfolio()
+  const {
+    portfolios,
+    activePortfolioId,
+    activePortfolio,
+    holdings,
+    summary,
+    createPortfolio,
+    deletePortfolio,
+    setActivePortfolio,
+    addHolding,
+    updateHolding,
+    deleteHolding,
+  } = usePortfolio()
   const [viewMode, setViewMode] = useState<ViewMode>('both')
   const [open, setOpen] = useState(false)
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [newsPage, setNewsPage] = useState(1)
-  const [lastRefresh, setLastRefresh] = useState('12:31')
-  const negativeCount = useMemo(() => impactEventsMock.filter((event) => event.sentiment === 'NEGATIVE').length, [])
-  const totalValue = useMemo(() => holdings.reduce((sum, holding) => sum + holding.currentPrice * holding.shares, 0), [holdings])
-  const totalCost = useMemo(() => holdings.reduce((sum, holding) => sum + holding.averageCost * holding.shares, 0), [holdings])
-  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(impactEventsMock.map((event) => event.ticker)))], [])
+  const [lastRefresh, setLastRefresh] = useState('—')
+  const [portfolioName, setPortfolioName] = useState('')
+  const [events, setEvents] = useState<ImpactEvent[]>([])
+  const activeHoldingTickers = useMemo(() => holdings.map((holding) => holding.ticker), [holdings])
+  const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
+  const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
+  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
   const filteredEvents = useMemo(
-    () => impactEventsMock.filter((event) => tickerFilter === 'ALL' || event.ticker === tickerFilter),
-    [tickerFilter],
+    () => events.filter((event) => tickerFilter === 'ALL' || event.affectedTickers.includes(tickerFilter)),
+    [events, tickerFilter],
   )
   const pageSize = 20
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
   const visibleEvents = filteredEvents.slice((newsPage - 1) * pageSize, newsPage * pageSize)
+
+  useEffect(() => {
+    if (!activePortfolioId) return
+    impactService.getImpactEventsForTickers(activePortfolioId, activeHoldingTickers).then((nextEvents) => {
+      setEvents(nextEvents)
+      setNewsPage(1)
+    })
+  }, [activeHoldingTickers, activePortfolioId])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
@@ -163,7 +172,15 @@ export function PortfolioImpactPage() {
     await addHolding(input)
   }
 
-  function refreshNewsNow() {
+  async function submitPortfolio(event: FormEvent) {
+    event.preventDefault()
+    await createPortfolio(portfolioName)
+    setPortfolioName('')
+  }
+
+  async function refreshNewsNow() {
+    await impactService.refreshNews()
+    setEvents(await impactService.getImpactEventsForTickers(activePortfolioId, activeHoldingTickers))
     setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     setNewsPage(1)
   }
@@ -200,29 +217,66 @@ export function PortfolioImpactPage() {
               <span className="panel-title">Portfolio Market Data</span>
               <p>Live-style prices, holdings value, and intraday movement.</p>
             </div>
-            <span className="panel-badge live"><span className="status-dot green" />Mock price cache</span>
+            <span className="panel-badge live"><span className="status-dot green" />Quote monitor</span>
           </div>
           <div className="split-scroll">
+            <div className="portfolio-management">
+              <form className="portfolio-create-form" onSubmit={submitPortfolio}>
+                <label>
+                  <span>Create portfolio</span>
+                  <input value={portfolioName} onChange={(event) => setPortfolioName(event.target.value)} placeholder="Income strategy" required />
+                </label>
+                <Button type="submit" className="compact-button">Create</Button>
+              </form>
+              <div className="portfolio-list" aria-label="All portfolios">
+                {portfolios.map((portfolio) => {
+                  const portfolioValue = portfolio.totalMarketValue ?? 0
+                  const isActive = portfolio.id === activePortfolioId
+
+                  return (
+                    <article className={isActive ? 'portfolio-list-item active' : 'portfolio-list-item'} key={portfolio.id}>
+                      <button type="button" onClick={() => setActivePortfolio(portfolio.id)}>
+                        <strong>{portfolio.name}</strong>
+                        <span>{currency(portfolioValue)} total value</span>
+                      </button>
+                      <button type="button" className="danger-text" onClick={() => deletePortfolio(portfolio.id)}>
+                        Delete
+                      </button>
+                    </article>
+                  )
+                })}
+              </div>
+            </div>
             <div className="pane-summary">
               <div>
-                <small>Total Value</small>
-                <strong>{currency(totalValue || portfolioSummaryMock.totalValue)}</strong>
+                <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
+                <strong>{currency(summary.totalValue)}</strong>
               </div>
               <div>
                 <small>Total Cost</small>
-                <strong>{currency(totalCost)}</strong>
+                <strong>{currency(summary.totalCost)}</strong>
+              </div>
+              <div>
+                <small>Total P/L</small>
+                <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
               </div>
               <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
             </div>
             <div className="portfolio-service-strip">
-              <span>Latest quotes updated 4 minutes ago</span>
-              <span>Cached fallback enabled</span>
-              <span>{holdings.length} holdings · weights recalculated</span>
+              <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
+              <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached fallback active' : 'Live quote feed active'}</span>
+              <span>{holdings.length} holdings - weights total {weightTotal.toFixed(1)}%</span>
             </div>
             <div className="market-stack">
               {holdings.map((holding) => (
-                <PortfolioMarketCard key={holding.id} holding={holding} totalValue={totalValue} onEdit={setEditingHolding} onDelete={deleteHolding} />
+                <PortfolioMarketCard key={holding.id} holding={holding} onEdit={setEditingHolding} onDelete={deleteHolding} />
               ))}
+              {holdings.length === 0 && (
+                <article className="empty-state">
+                  <strong>No holdings in this portfolio</strong>
+                  <span>Add a ticker, quantity, and cost basis to start valuation.</span>
+                </article>
+              )}
             </div>
           </div>
         </section>
@@ -243,7 +297,7 @@ export function PortfolioImpactPage() {
               </div>
               <div>
                 <small>Largest impact</small>
-                <strong className="positive">{currency(1614)}</strong>
+                <strong className="positive">{currency(Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))))}</strong>
               </div>
               <div>
                 <small>Last refresh</small>
@@ -270,14 +324,20 @@ export function PortfolioImpactPage() {
             </div>
             <div className="news-impact-list">
               {visibleEvents.map((event) => (
-                <NewsImpactItem key={event.id} event={event} />
+                <NewsImpactItem key={event.externalId} event={event} />
               ))}
+              {visibleEvents.length === 0 && (
+                <article className="empty-state">
+                  <strong>No matched news</strong>
+                  <span>Add holdings with supported tickers to populate the impact stream.</span>
+                </article>
+              )}
             </div>
             <div className="pagination-row">
               <button type="button" disabled={newsPage === 1} onClick={() => setNewsPage((page) => Math.max(1, page - 1))}>
                 Previous
               </button>
-              <span>Page {newsPage} of {totalPages}</span>
+              <span>Page {newsPage} of {totalPages} - 20 per page</span>
               <button type="button" disabled={newsPage === totalPages} onClick={() => setNewsPage((page) => Math.min(totalPages, page + 1))}>
                 Next
               </button>
