@@ -54,9 +54,9 @@ app:
   # Flip any of these to the mock/stub implementation. On demo day this is the
   # fallback path when quota is gone or a provider is down (decision 1, 8.1).
   providers:
-    news: ${PROVIDER_NEWS:finnhub}       # finnhub | mock
-    price: ${PROVIDER_PRICE:finnhub}     # finnhub | mock
-    sentiment: ${PROVIDER_SENTIMENT:agent}  # agent | stub
+    news: ${PROVIDER_NEWS:finnhub}       # finnhub (mock: reserved, not wired yet)
+    price: ${PROVIDER_PRICE:finnhub}     # finnhub | mock (mock wired via @ConditionalOnProperty)
+    sentiment: ${PROVIDER_SENTIMENT:agent}  # agent | stub (wired by D/E)
 
   sentiment:
     model: ${LLM_MODEL:}
