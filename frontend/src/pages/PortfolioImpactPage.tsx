@@ -138,12 +138,9 @@ export function PortfolioImpactPage() {
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
-  const [newsPage, setNewsPage] = useState(1)
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
-  const [newsTotalPages, setNewsTotalPages] = useState(1)
-  const [newsTotalElements, setNewsTotalElements] = useState(0)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
@@ -160,17 +157,15 @@ export function PortfolioImpactPage() {
     () => Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))),
     [filteredEvents],
   )
-  const totalPages = Math.max(1, newsTotalPages)
-  const visibleEvents = filteredEvents
+  const [visiblePage, setVisiblePage] = useState(0)
+  const pageSize = 20
+  const filteredPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
+  const visibleEvents = filteredEvents.slice(visiblePage * pageSize, (visiblePage + 1) * pageSize)
 
   useEffect(() => {
     if (!activePortfolioId) return
-    impactService.getImpactEvents(activePortfolioId, newsPage).then((nextPage) => {
-      setEvents(nextPage.content)
-      setNewsTotalPages(nextPage.totalPages)
-      setNewsTotalElements(nextPage.totalElements)
-    })
-  }, [activePortfolioId, newsPage])
+    impactService.getAllImpactEvents(activePortfolioId).then((all) => setEvents(all))
+  }, [activePortfolioId])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
@@ -190,22 +185,16 @@ export function PortfolioImpactPage() {
 
   async function refreshNewsNow() {
     await impactService.refreshNews()
-    const nextPage = await impactService.getImpactEvents(activePortfolioId, 1)
-    setEvents(nextPage.content)
-    setNewsTotalPages(nextPage.totalPages)
-    setNewsTotalElements(nextPage.totalElements)
+    const all = await impactService.getAllImpactEvents(activePortfolioId)
+    setEvents(all)
     setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setNewsPage(1)
+    setVisiblePage(0)
   }
 
   function cycleViewMode() {
     const currentIndex = viewSequence.indexOf(viewMode)
     const nextMode = viewSequence[(currentIndex + 1) % viewSequence.length]
     setViewMode(nextMode)
-  }
-
-  function goToNewsPage(nextPage: number) {
-    setNewsPage(Math.min(totalPages, Math.max(1, Math.trunc(nextPage) || 1)))
   }
 
   function selectPortfolio(id: number) {
@@ -351,7 +340,7 @@ export function PortfolioImpactPage() {
                     className={tickerFilter === ticker ? 'active' : ''}
                     onClick={() => {
                       setTickerFilter(ticker)
-                      setNewsPage(1)
+                      setVisiblePage(0)
                     }}
                   >
                     {ticker === 'ALL' ? 'All' : `$${ticker}`}
@@ -364,7 +353,7 @@ export function PortfolioImpactPage() {
                     type="button"
                     key={mode}
                     className={impactFilter === mode ? 'active' : ''}
-                    onClick={() => { setImpactFilter(mode); setNewsPage(1) }}
+                    onClick={() => { setImpactFilter(mode); setVisiblePage(0) }}
                   >
                     {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
                   </button>
@@ -384,11 +373,11 @@ export function PortfolioImpactPage() {
               )}
             </div>
             <div className="pagination-row">
-              <button type="button" disabled={newsPage === 1} onClick={() => goToNewsPage(newsPage - 1)}>
+              <button type="button" disabled={visiblePage === 0} onClick={() => setVisiblePage((p) => Math.max(0, p - 1))}>
                 Previous
               </button>
-              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={totalPages} value={newsPage} onChange={(event) => goToNewsPage(Number(event.target.value))} /> of {totalPages} <span>- 20 per page</span></label>
-              <button type="button" disabled={newsPage === totalPages} onClick={() => goToNewsPage(newsPage + 1)}>
+              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={filteredPages} value={visiblePage + 1} onChange={(e) => { const n = Number(e.target.value); if (n >= 1 && n <= filteredPages) setVisiblePage(n - 1) }} /> of {filteredPages} <span>- 20 per page</span></label>
+              <button type="button" disabled={visiblePage >= filteredPages - 1} onClick={() => setVisiblePage((p) => p + 1)}>
                 Next
               </button>
             </div>
