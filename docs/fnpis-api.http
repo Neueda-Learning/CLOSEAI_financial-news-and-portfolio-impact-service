@@ -61,6 +61,7 @@ POST http://localhost:8080/api/v1/quotes/refresh
 ### Concurrency test: fire twice rapidly — second should return 409
 ### (Run this immediately after the first one, or use a script)
 
+<<<<<<< HEAD
 ### Get latest quote for a symbol (B1)
 GET http://localhost:8080/api/v1/prices/AAPL/quote
 
