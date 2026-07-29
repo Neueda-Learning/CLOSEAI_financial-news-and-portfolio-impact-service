@@ -124,6 +124,10 @@ resilience4j:
         limit-for-period: 20
         limit-refresh-period: 60s
         timeout-duration: 5s
+      twelvedata:
+        limit-for-period: 8
+        limit-refresh-period: 60s
+        timeout-duration: 0s
 
   retry:
     instances:
@@ -140,6 +144,10 @@ resilience4j:
         ignore-exceptions:
           - org.springframework.web.client.HttpClientErrorException
 
+  # Circuit breaker instances are configured but @CircuitBreaker annotations
+  # are not wired yet — the rate limiter alone catches most quota issues.
+  # When wired, these open on sustained failures and stop the refresh cycle
+  # until the upstream is reachable again.
   circuitbreaker:
     instances:
       finnhub:

@@ -34,6 +34,7 @@ public class QuotePersistenceService {
     public boolean persist(String symbol, QuoteSnapshot s) {
         PriceQuote q = quoteRepo.findById(symbol)
                 .orElseGet(PriceQuote::new);
+        q.setSymbol(symbol);
         q.setPrice(s.price());
         if (s.previousClose() != null) {
             q.setPreviousClose(s.previousClose());

@@ -56,7 +56,7 @@ public class WritePriceProvider implements PriceProvider {
 
     @Override
     public List<DailyBar> fetchDailyBars(String symbol, LocalDate from, LocalDate to) {
-        throw new UnsupportedOperationException(
-                "Daily bars not implemented yet — see Module B5");
+        // Finnhub free tier has no candle endpoint; delegate directly to Twelve Data.
+        return twelvedata.fetchDailyBars(symbol, from, to);
     }
 }

@@ -3,6 +3,7 @@ package com.fnpis.integration.twelvedata;
 import com.fnpis.integration.DailyBar;
 import com.fnpis.integration.PriceProvider;
 import com.fnpis.integration.QuoteSnapshot;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ class TwelveDataPriceProvider implements PriceProvider {
     }
 
     @Override
+    @RateLimiter(name = "twelvedata")
     public Optional<QuoteSnapshot> fetchQuote(String symbol) {
         try {
             TwelveDataQuoteResponse r = restClient.get()
@@ -54,6 +56,7 @@ class TwelveDataPriceProvider implements PriceProvider {
     }
 
     @Override
+    @RateLimiter(name = "twelvedata")
     public List<DailyBar> fetchDailyBars(String symbol, LocalDate from, LocalDate to) {
         int days = (int) from.until(to).getDays() + 1;
         try {

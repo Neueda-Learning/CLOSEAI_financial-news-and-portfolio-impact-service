@@ -1,10 +1,9 @@
 package com.fnpis.scheduler;
 
 import com.fnpis.service.ClosingSnapshotService;
+import com.fnpis.service.ClosingSnapshotService;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Component;
 public class ClosingSnapshotScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(ClosingSnapshotScheduler.class);
-    private static final ZoneId MARKET_ZONE = ZoneId.of("America/New_York");
     private final ClosingSnapshotService service;
     private final Clock clock;
 
@@ -36,10 +34,5 @@ public class ClosingSnapshotScheduler {
     public void scheduledCapture() {
         log.info("Closing snapshot triggered at {}", Instant.now(clock));
         service.capture();
-    }
-
-    boolean isAfterClose(Instant now) {
-        ZonedDateTime et = now.atZone(MARKET_ZONE);
-        return et.getHour() >= 16;
     }
 }
