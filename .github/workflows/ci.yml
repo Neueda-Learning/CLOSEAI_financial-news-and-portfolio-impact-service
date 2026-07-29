@@ -80,7 +80,7 @@ jobs:
   # Skip frontend jobs until frontend files exist.
   frontend-lint:
     needs: commitlint
-    if: hashFiles('frontend/**') != ''
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,7 +96,7 @@ jobs:
 
   frontend-type-check:
     needs: commitlint
-    if: hashFiles('frontend/tsconfig.json') != ''
+    if: ${{ hashFiles('frontend/tsconfig.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +112,7 @@ jobs:
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
-    if: hashFiles('frontend/**') != ''
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +131,7 @@ jobs:
   # ------------------------------------------------------------------
   nlp-test:
     needs: commitlint
-    if: hashFiles('nlp-service/**') != ''
+    if: ${{ hashFiles('nlp-service/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
