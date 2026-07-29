@@ -11,7 +11,7 @@ This folder contains the **Swiss Modernist style presentation deck** for the Fin
 
 ### Files
 
-- `index.html` — Complete presentation (15 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
+- `index.html` — Complete presentation (14 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
 - `HANDOVER.md` — This document
 - `SPEAKER_RUNBOOK.md` — Team page ownership, timing, and rehearsal scripts
 - `images/` — Image assets folder (currently empty; deck uses CSS-drawn graphics)
@@ -88,17 +88,16 @@ To publish on GitHub Pages:
 | 2 | Our Team Members | S04/Grid | 5 member cards with placeholder portraits |
 | 3 | The Problem | S03 Split | Story-driven reason for the website |
 | 4 | User Journey | S06/Grid | Portfolio → news → sentiment → price → impact → verdict |
-| 5 | Requirements From README | S06/KPI Tower | P0 Browse, P1 Metrics, P2 Add, P3 Remove |
-| 6 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
-| 7 | What The Website Does | S11 Timeline | One endpoint-linked product loop |
-| 8 | Complete Demo Flow | S06/Grid | 6 live demo steps |
-| 9 | Architecture | S05 Three Layers | Frontend / Service / Data |
-| 10 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
-| 11 | Sentiment & Impact Engine | S08/Duo | Validated LLM Agent + stored results |
-| 12 | Honest Output | S06/KPI Tower | Direction vs alignment states |
-| 13 | Engineering Quality | S04/Grid | Precision, time, enum, refresh, CI reliability rules |
-| 14 | 5-Day Build Plan | S02/Timing | Working slice every day |
-| 15 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 5 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
+| 6 | What The Website Does | S11 Timeline | One endpoint-linked product loop |
+| 7 | Complete Demo Flow | S06/Grid | Timothy owns the live demo run |
+| 8 | Architecture | S05 Three Layers | Evan owns the system story |
+| 9 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
+| 10 | Sentiment & Impact Engine | S08/Duo | Validated LLM Agent + stored results |
+| 11 | Honest Output | S06/KPI Tower | Direction vs alignment states |
+| 12 | Engineering Quality | S04/Grid | Precision, time, enum, refresh, CI reliability rules |
+| 13 | 5-Day Build Plan | S02/Timing | Working slice every day |
+| 14 | Closing | S10 Split Closing | 3 takeaways + thank you |
 
 ## Team Speaker Ownership
 
@@ -108,9 +107,9 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 |---------|--------|
 | Venessa Feng | 1–3 |
 | David Hu | 4–6 |
-| Evan Li | 7–9 |
+| Timothy Xue | 7, 13–14 |
+| Evan Li | 8–9 |
 | Ethan Sun | 10–12 |
-| Timothy Xue | 13–15 |
 
 ---
 
@@ -122,7 +121,7 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 
 3. **No external images currently** — All diagrams/charts are CSS-drawn (grid layouts, color blocks, SVG icons). To add photos/screenshots, place them in `images/` and reference with `<img src="images/filename.png">`.
 
-4. **Slide count fixed at 15** — Modifying the deck structure (adding/removing slides) requires updating:
+4. **Slide count fixed at 14** — Modifying the deck structure (adding/removing slides) requires updating:
    - The slide counter display
    - Navigation dot count
    - Timeline/progression logic (if you add custom timing)
