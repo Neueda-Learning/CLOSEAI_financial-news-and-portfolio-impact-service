@@ -80,7 +80,7 @@ jobs:
   # Skip frontend jobs until frontend files exist.
   frontend-lint:
     needs: commitlint
-    if: hashFiles('frontend/**') != ''
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,7 +96,7 @@ jobs:
 
   frontend-type-check:
     needs: commitlint
-    if: hashFiles('frontend/tsconfig.json') != ''
+    if: ${{ hashFiles('frontend/tsconfig.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +112,7 @@ jobs:
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
-    if: hashFiles('frontend/**') != ''
+    if: ${{ hashFiles('frontend/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +131,7 @@ jobs:
   # ------------------------------------------------------------------
   nlp-test:
     needs: commitlint
-    if: hashFiles('nlp-service/**') != ''
+    if: ${{ hashFiles('nlp-service/**') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -152,6 +152,14 @@ jobs:
     needs: [backend-test]
     runs-on: ubuntu-latest
     if: always() && !cancelled()
+    env:
+      # Use deterministic placeholders — compose config validation and jar
+      # packaging don't need real API keys. Real keys are wired via .env at
+      # runtime. Using placeholders here keeps forks portable.
+      FINNHUB_KEY_NEWS: ci-placeholder
+      FINNHUB_KEY_PRICE: ci-placeholder
+      TWELVEDATA_API_KEY: ci-placeholder
+      LLM_API_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - name: Seed placeholder env
