@@ -17,5 +17,6 @@ public record NewsItem(
         String source,
         String url,
         String summary,
+        String image,
         Instant publishedAt) {
 }

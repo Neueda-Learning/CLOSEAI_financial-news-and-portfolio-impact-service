@@ -51,7 +51,7 @@ class TwelveDataPriceProvider implements PriceProvider {
                     r.timestamp() > 0
                             ? Instant.ofEpochSecond(r.timestamp()) : null));
         } catch (Exception e) {
-            log.warn("Twelve Data quote failed for {}: {}", symbol, e.getMessage());
+            log.warn("Twelve Data quote failed for {}: {}", symbol, e.getClass().getSimpleName());
             throw e;
         }
     }
@@ -80,7 +80,7 @@ class TwelveDataPriceProvider implements PriceProvider {
                             v.open(), v.high(), v.low(), v.close(), v.volume()))
                     .toList();
         } catch (Exception e) {
-            log.warn("Twelve Data daily bars failed for {}: {}", symbol, e.getMessage());
+            log.warn("Twelve Data daily bars failed for {}: {}", symbol, e.getClass().getSimpleName());
             throw e;
         }
     }

@@ -59,10 +59,11 @@ class FinnhubNewsProvider implements NewsProvider {
                             truncate(r.source(), SOURCE_MAX),
                             truncateUrl(r.url()),
                             r.summary(),
+                            r.image() != null ? r.image() : "",
                             Instant.ofEpochSecond(r.datetime())))
                     .toList();
         } catch (Exception e) {
-            log.warn("Finnhub news failed for {}: {}", symbol, e.getMessage());
+            log.warn("Finnhub news failed for {}: {}", symbol, e.getClass().getSimpleName());
             throw e;
         }
     }

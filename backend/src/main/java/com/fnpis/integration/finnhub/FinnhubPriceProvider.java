@@ -52,7 +52,7 @@ public class FinnhubPriceProvider implements PriceProvider {
                     r.pc() != null && r.pc().compareTo(BigDecimal.ZERO) > 0 ? r.pc() : null,
                     capturedAt));
         } catch (Exception e) {
-            log.warn("Finnhub quote failed for {}: {}", symbol, e.getMessage());
+            log.warn("Finnhub quote failed for {}: {}", symbol, e.getClass().getSimpleName());
             throw e;
         }
     }

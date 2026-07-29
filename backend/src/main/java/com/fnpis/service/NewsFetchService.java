@@ -39,7 +39,7 @@ public class NewsFetchService {
     }
 
     /** Result of one fetch cycle. */
-    public record FetchResult(Instant triggered, int fetched, int inserted,
+    public record FetchResult(boolean triggered, int fetched, int inserted,
             int skippedDuplicates) {}
 
     /**
@@ -48,12 +48,11 @@ public class NewsFetchService {
      * so {@code @Transactional} takes effect via Spring AOP.
      */
     public FetchResult fetchAll() {
-        Instant triggered = Instant.now();
         List<String> symbols = securityRepo.findAll()
                 .stream()
                 .map(s -> s.getSymbol())
                 .toList();
-        LocalDate today = LocalDate.ofInstant(triggered, ZoneOffset.UTC);
+        LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC);
         int fetched = 0;
         int inserted = 0;
         int skipped = 0;
@@ -68,7 +67,7 @@ public class NewsFetchService {
         }
         log.info("News fetch complete: {} symbols fetched, {} inserted, {} skipped",
                 fetched, inserted, skipped);
-        return new FetchResult(triggered, fetched, inserted, skipped);
+        return new FetchResult(true, fetched, inserted, skipped);
     }
 
     /** @return [inserted, skippedDuplicates] per article, or null if the provider failed */

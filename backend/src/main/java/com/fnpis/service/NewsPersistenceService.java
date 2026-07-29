@@ -62,6 +62,7 @@ public class NewsPersistenceService {
         a.setUrl(item.url());
         a.setPublishedAt(item.publishedAt());
         a.setSummary(item.summary());
+        a.setImage(item.image());
         return a;
     }
 }
