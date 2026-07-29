@@ -1,7 +1,6 @@
 package com.fnpis.scheduler;
 
 import com.fnpis.service.ClosingSnapshotService;
-import com.fnpis.service.ClosingSnapshotService;
 import java.time.Clock;
 import java.time.Instant;
 import org.slf4j.Logger;

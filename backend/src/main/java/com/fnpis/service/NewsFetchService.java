@@ -38,8 +38,9 @@ public class NewsFetchService {
         running.set(false);
     }
 
-    /** Result of one fetch cycle: how many new links were created vs skipped. */
-    public record FetchResult(int inserted, int skippedDuplicates) {}
+    /** Result of one fetch cycle. */
+    public record FetchResult(Instant triggered, int fetched, int inserted,
+            int skippedDuplicates) {}
 
     /**
      * Fetches news for every symbol in the watchlist.
@@ -47,38 +48,47 @@ public class NewsFetchService {
      * so {@code @Transactional} takes effect via Spring AOP.
      */
     public FetchResult fetchAll() {
+        Instant triggered = Instant.now();
         List<String> symbols = securityRepo.findAll()
                 .stream()
                 .map(s -> s.getSymbol())
                 .toList();
-        LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC);
+        LocalDate today = LocalDate.ofInstant(triggered, ZoneOffset.UTC);
+        int fetched = 0;
         int inserted = 0;
         int skipped = 0;
         for (String symbol : symbols) {
-            int result = fetchForSymbol(symbol, today.minusDays(7), today);
-            if (result > 0) {
-                inserted += result;
-            } else {
-                skipped++;
+            int[] r = fetchForSymbol(symbol, today.minusDays(7), today);
+            if (r == null) {
+                continue; // provider failed — don't count as fetched
             }
+            fetched++;
+            inserted += r[0];
+            skipped += r[1];
         }
-        log.info("News fetch complete: {} inserted, {} symbols all-duplicate",
-                inserted, skipped);
-        return new FetchResult(inserted, skipped);
+        log.info("News fetch complete: {} symbols fetched, {} inserted, {} skipped",
+                fetched, inserted, skipped);
+        return new FetchResult(triggered, fetched, inserted, skipped);
     }
 
-    private int fetchForSymbol(String symbol, LocalDate from, LocalDate to) {
+    /** @return [inserted, skippedDuplicates] per article, or null if the provider failed */
+    private int[] fetchForSymbol(String symbol, LocalDate from, LocalDate to) {
         List<NewsItem> items;
         try {
             items = newsProvider.fetchCompanyNews(symbol, from, to);
         } catch (Exception e) {
-            log.warn("News fetch failed for {} — skipping", symbol, e);
-            return 0;
+            log.warn("News fetch failed for {} — skipping", symbol, e.getClass().getSimpleName());
+            return null;
         }
-        int count = 0;
+        int ins = 0;
+        int skp = 0;
         for (NewsItem item : items) {
-            count += persistence.persist(symbol, item);
+            if (persistence.persist(symbol, item) > 0) {
+                ins++;
+            } else {
+                skp++;
+            }
         }
-        return count;
+        return new int[]{ins, skp};
     }
 }

@@ -44,7 +44,7 @@ public class ChainedPriceProvider implements PriceProvider {
                 return result;
             }
         } catch (Exception e) {
-            log.warn("Finnhub failed for {}, trying Twelve Data", symbol, e);
+            log.warn("Finnhub failed for {}, trying Twelve Data", symbol, e.getClass().getSimpleName());
         }
         try {
             Optional<QuoteSnapshot> result = twelvedata.fetchQuote(symbol);
@@ -52,7 +52,7 @@ public class ChainedPriceProvider implements PriceProvider {
                 return result;
             }
         } catch (Exception e2) {
-            log.warn("Twelve Data failed for {}, falling back to DB cache", symbol, e2);
+            log.warn("Twelve Data failed for {}, falling back to DB cache: {}", symbol, e2.getClass().getSimpleName());
         }
         return db.fetchQuote(symbol);
     }

@@ -177,6 +177,7 @@ README 相关章节已加醒目提示指向本文档，但请直接以本文档�
 | GET | `/api/v1/news` | 新闻列表（可按 symbol／情感筛选） | C3,C4 | P0 |
 | GET | `/api/v1/news/{id}` | 新闻详情含情感 | C5 | P0 |
 | POST | `/api/v1/news/refresh` | 手动刷新（演示用） | C6 | P1 |
+| POST | `/api/v1/quotes/refresh` | 手动刷新报价（演示用） | B6 | P1 |
 
 ## 影响评估（核心）
 

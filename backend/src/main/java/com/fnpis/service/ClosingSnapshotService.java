@@ -69,7 +69,7 @@ public class ClosingSnapshotService {
                 barRepo.save(new PriceBar(b.symbol(), b.date(), b.close()));
                 success++;
             } catch (Exception e) {
-                log.warn("Closing snapshot failed for {} — skipping", symbol, e);
+                log.warn("Closing snapshot failed for {} — skipping", symbol, e.getClass().getSimpleName());
             }
         }
         log.info("Closing snapshot complete: {}/{} symbols captured", success, symbols.size());

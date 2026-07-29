@@ -44,7 +44,7 @@ public class WritePriceProvider implements PriceProvider {
                 return result;
             }
         } catch (Exception e) {
-            log.warn("Finnhub failed for {}, trying Twelve Data", symbol, e);
+            log.warn("Finnhub failed for {}, trying Twelve Data: {}", symbol, e.getClass().getSimpleName());
         }
         try {
             return twelvedata.fetchQuote(symbol);

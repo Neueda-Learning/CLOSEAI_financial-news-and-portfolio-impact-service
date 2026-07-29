@@ -21,6 +21,7 @@ public class NewsFetchController {
     @PostMapping("/news/refresh")
     public ResponseEntity<NewsRefreshResponse> triggerRefresh() {
         FetchResult r = scheduler.manualFetch();
-        return ResponseEntity.ok(new NewsRefreshResponse(r.inserted(), r.skippedDuplicates()));
+        return ResponseEntity.ok(new NewsRefreshResponse(
+                r.triggered(), r.fetched(), r.inserted(), r.skippedDuplicates()));
     }
 }

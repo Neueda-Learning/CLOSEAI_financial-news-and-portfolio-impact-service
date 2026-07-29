@@ -73,7 +73,7 @@ public class QuoteRefreshService {
         try {
             snapshot = priceProvider.fetchQuote(symbol);
         } catch (Exception e) {
-            log.warn("Quote refresh failed for {} — skipping", symbol, e);
+            log.warn("Quote refresh failed for {} — skipping", symbol, e.getClass().getSimpleName());
             return false;
         }
         if (snapshot.isEmpty()) {

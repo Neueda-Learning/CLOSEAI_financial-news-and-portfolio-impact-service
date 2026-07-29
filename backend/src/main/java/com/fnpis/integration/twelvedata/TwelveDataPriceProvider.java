@@ -48,7 +48,8 @@ class TwelveDataPriceProvider implements PriceProvider {
                     r.close(),
                     r.previousClose() != null && r.previousClose().compareTo(BigDecimal.ZERO) > 0
                             ? r.previousClose() : null,
-                    Instant.ofEpochSecond(r.timestamp())));
+                    r.timestamp() > 0
+                            ? Instant.ofEpochSecond(r.timestamp()) : null));
         } catch (Exception e) {
             log.warn("Twelve Data quote failed for {}: {}", symbol, e.getMessage());
             throw e;
