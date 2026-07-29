@@ -554,6 +554,31 @@
   body.dark-bg #hint{color:var(--paper);opacity:.4}
   body.low-power #hint{color:var(--accent);opacity:.72}
   body.dark-bg.low-power #hint{color:var(--paper);opacity:.72}
+  #deck-controls{
+    position:fixed;right:2.5vw;top:2.4vh;z-index:40;
+    display:flex;gap:8px;align-items:center;
+  }
+  #deck-controls button{
+    width:38px;height:38px;border:1px solid rgba(127,127,127,.32);
+    background:rgba(250,250,248,.82);color:var(--ink);
+    font-family:var(--mono);font-size:18px;font-weight:600;
+    cursor:pointer;backdrop-filter:blur(10px);
+    transition:background .18s var(--ease-prod),color .18s var(--ease-prod),border-color .18s var(--ease-prod);
+  }
+  #deck-controls button:hover{border-color:var(--accent);color:var(--accent)}
+  #deck-controls button.active{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+  body.dark-bg #deck-controls button{background:rgba(10,10,10,.42);color:var(--paper);border-color:rgba(255,255,255,.28)}
+  body.dark-bg #deck-controls button:hover{border-color:rgba(255,255,255,.8);color:#fff}
+  body.dark-bg #deck-controls button.active{background:var(--paper);border-color:var(--paper);color:var(--accent)}
+  body.editing [data-editable="true"]{
+    outline:2px solid var(--accent);
+    outline-offset:4px;
+    background:rgba(250,250,248,.78);
+    box-decoration-break:clone;-webkit-box-decoration-break:clone;
+  }
+  body.dark-bg.editing [data-editable="true"]{background:rgba(255,255,255,.14)}
+  [contenteditable="true"]{caret-color:var(--accent)}
+  body.editing #hint{opacity:.76}
 
   /* ESC 索引页: 动画元素强制可见 (覆盖 motion-ready 的 opacity:0) */
   #overview [data-anim]{opacity:1!important;transform:none!important}
@@ -1163,7 +1188,7 @@
     window.__lowPowerMode = stored === '1' || (stored === null && reduced);
     function updateHint(){
       const hint = document.getElementById('hint');
-      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · ESC 索引`;
     }
     window.__setLowPowerMode = function(on, opts={}){
       window.__lowPowerMode = !!on;
@@ -1182,7 +1207,7 @@
 </script>
 
 <canvas id="bg-grid" class="bg"></canvas>
-<div id="hint">→ / Click 逐条揭示 · ← 收起 · B 静态 · ESC 索引</div>
+<div id="hint">→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · ESC 索引</div>
 
 <div id="deck">
 
@@ -1227,7 +1252,7 @@
       <div data-anim="bottom" style="display:grid;grid-template-rows:auto auto;gap:1.6vh;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh">
         <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86)">Connecting breaking news to the holdings it actually moves — automatically.</div>
         <div style="display:flex;justify-content:space-between;align-items:end">
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">Java · Spring Boot · React · finBERT</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">Java · Spring Boot · LLM Agent · Chart.js 4</div>
           <div class="t-meta" style="color:rgba(255,255,255,.6)">→ swipe / arrow keys</div>
         </div>
       </div>
@@ -1268,8 +1293,8 @@
       <div class="r">03 / 10</div>
     </div>
     <div data-anim="line">
-      <div class="t-cat">LOCKED STACK</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Six pieces, one pipeline</h2>
+      <div class="t-cat">VALIDATED STACK</div>
+      <h2 class="h-xl" style="margin-top:1.4vh">Six pieces, one impact loop</h2>
     </div>
     <div class="sub-grid-3-2">
       <article class="sub-card" data-pause>
@@ -1281,8 +1306,8 @@
       <article class="sub-card" data-pause>
         <span class="nb-corner">02</span>
         <i class="lucide" data-lucide="layout-dashboard"></i>
-        <h4 class="ttl">React</h4>
-        <p class="desc">Frontend dashboard — news &amp; price side by side.</p>
+        <h4 class="ttl">SPA + Chart.js 4</h4>
+        <p class="desc">Framework-flexible dashboard — holdings, news, and price impact side by side.</p>
       </article>
       <article class="sub-card" data-pause>
         <span class="nb-corner">03</span>
@@ -1293,20 +1318,20 @@
       <article class="sub-card" data-pause>
         <span class="nb-corner">04</span>
         <i class="lucide" data-lucide="brain-circuit"></i>
-        <h4 class="ttl">finBERT + Flask</h4>
-        <p class="desc">Local NLP microservice; LLM API as fallback only.</p>
+        <h4 class="ttl">Single LLM Agent</h4>
+        <p class="desc">Validated sentiment JSON, prompt boundaries, and stored model evidence.</p>
       </article>
       <article class="sub-card" data-pause>
         <span class="nb-corner">05</span>
         <i class="lucide" data-lucide="newspaper"></i>
-        <h4 class="ttl">Finnhub + Alpha Vantage</h4>
-        <p class="desc">Primary + fallback for news and price data.</p>
+        <h4 class="ttl">Finnhub + Twelve Data</h4>
+        <p class="desc">News provider plus quote fallback, wrapped behind replaceable interfaces.</p>
       </article>
       <article class="sub-card accent" data-pause>
         <span class="nb-corner">06</span>
         <i class="lucide" data-lucide="git-branch"></i>
-        <h4 class="ttl">Docker + GitHub Actions</h4>
-        <p class="desc">4-service Compose stack, 5-job CI pipeline.</p>
+        <h4 class="ttl">Mock Provider + Swagger</h4>
+        <p class="desc">Demo-safe fallback data and a public read-only API contract.</p>
       </article>
     </div>
   </div>
@@ -1328,25 +1353,25 @@
         <span class="layer-nb">LAYER 01</span>
         <div class="layer-icon"><i data-lucide="monitor"></i></div>
         <h3 class="layer-ttl">Experience</h3>
-        <p class="layer-desc">React dashboard — portfolio browser and the news / price side-by-side view.</p>
+        <p class="layer-desc">SPA dashboard — portfolio browser, linked headline view, and Chart.js impact markers.</p>
         <span class="layer-tag">FRONTEND</span>
       </div>
       <div class="stack-block b-grey" data-pause>
         <span class="layer-nb">LAYER 02</span>
         <div class="layer-icon"><i data-lucide="git-merge"></i></div>
         <h3 class="layer-ttl">Service</h3>
-        <p class="layer-desc">Spring Boot REST API + finBERT microservice; correlates sentiment with daily price shifts.</p>
-        <span class="layer-tag">BACKEND · NLP</span>
+        <p class="layer-desc">Spring Boot REST API; validates the LLM Agent result and persists impact state.</p>
+        <span class="layer-tag">BACKEND · AGENT</span>
       </div>
       <div class="stack-block b-accent" data-pause>
         <span class="layer-nb">LAYER 03</span>
         <div class="layer-icon"><i data-lucide="database"></i></div>
         <h3 class="layer-ttl">Data</h3>
-        <p class="layer-desc">MySQL 8 via JPA/Hibernate, caching every Finnhub / Alpha Vantage response.</p>
+        <p class="layer-desc">MySQL 8 via JPA/Hibernate, caching prices, news, sentiment, and impact rows.</p>
         <span class="layer-tag">MYSQL 8</span>
       </div>
     </div>
-    <div class="t-meta" style="margin-top:2.4vh">4 Docker Compose services: db · nlp-service · backend · frontend</div>
+    <div class="t-meta" style="margin-top:2.4vh">Scheduled ingestion · database-first reads · stale/asOf visible</div>
   </div>
 </section>
 
@@ -1359,29 +1384,29 @@
     </div>
     <div data-anim="line">
       <div class="t-cat">SENTIMENT → PRICE PIPELINE</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Four steps from headline to signal</h2>
+      <h2 class="h-xl" style="margin-top:1.4vh">Four steps from headline to impact</h2>
     </div>
     <div class="timeline-h" style="margin-top:2vh">
       <div class="tl-row" style="grid-template-columns:repeat(4,1fr)">
         <div class="th-node up" data-pause>
-          <span class="label"><span class="yr">STEP 01</span><span class="name">Ingest News</span><span class="desc">Finnhub headlines per ticker</span></span>
+          <span class="label"><span class="yr">STEP 01</span><span class="name">Ingest Event</span><span class="desc">Finnhub news plus quote provider snapshot</span></span>
           <span class="dot"></span>
         </div>
         <div class="th-node down" data-pause>
           <span class="dot"></span>
-          <span class="label"><span class="yr">STEP 02</span><span class="name">Score Sentiment</span><span class="desc">finBERT: positive / neutral / negative</span></span>
+          <span class="label"><span class="yr">STEP 02</span><span class="name">Score Sentiment</span><span class="desc">LLM Agent returns validated JSON</span></span>
         </div>
         <div class="th-node up" data-pause>
-          <span class="label"><span class="yr">STEP 03</span><span class="name">Correlate Price</span><span class="desc">Match sentiment to daily % change</span></span>
+          <span class="label"><span class="yr">STEP 03</span><span class="name">Confirm Price</span><span class="desc">Match sentiment to the quote window</span></span>
           <span class="dot"></span>
         </div>
         <div class="th-node down accent" data-pause>
           <span class="dot"></span>
-          <span class="label"><span class="yr">STEP 04</span><span class="name">Flag Holding</span><span class="desc">Surface the affected asset in-app</span></span>
+          <span class="label"><span class="yr">STEP 04</span><span class="name">Persist Impact</span><span class="desc">Store dollar impact + consistency state</span></span>
         </div>
       </div>
     </div>
-    <div class="t-meta" style="margin-top:auto">All responses cached · fallback path exercised live in demo</div>
+    <div class="t-meta" style="margin-top:auto">CONFIRMED · DIVERGENT · INCONCLUSIVE states stay visible</div>
   </div>
 </section>
 
@@ -1399,21 +1424,21 @@
     <div class="duo-compare">
       <div class="col" data-pause>
         <div class="col-tag"><span class="num">01</span> BREAKING NEWS</div>
-        <h3 class="col-ttl">Earnings miss</h3>
-        <p class="col-desc">A portfolio holding posts a surprise earnings miss; the headline lands in the feed within minutes.</p>
+        <h3 class="col-ttl">Seagate beats</h3>
+        <p class="col-desc">STX reported fiscal Q4 adjusted EPS of $5.71 on roughly $3.6B revenue, ahead of Wall Street expectations.</p>
         <ul class="col-list">
-          <li>Pulled straight from Finnhub's news endpoint</li>
-          <li>Scored instantly by the local finBERT service</li>
+          <li>Current demo candidate from July 28-29, 2026 coverage</li>
+          <li>LLM Agent labels the event POSITIVE with earnings evidence</li>
         </ul>
       </div>
       <span class="vrule"></span>
       <div class="col accent" data-pause>
         <div class="col-tag"><span class="num">02</span> PRICE REACTION</div>
-        <h3 class="col-ttl">−6.4% intraday</h3>
-        <p class="col-desc">The same ticker's real-time chart shows a sharp dip, flagged automatically next to the headline.</p>
+        <h3 class="col-ttl">+7% after-hours</h3>
+        <p class="col-desc">The provider-sourced quote reaction can turn a headline into a visible holding-level dollar impact.</p>
         <ul class="col-list">
-          <li>Negative sentiment matched to same-day price move</li>
-          <li>Holding highlighted in the portfolio view instantly</li>
+          <li>POSITIVE sentiment matched to upward price reaction</li>
+          <li>State shown as CONFIRMED, with stale/asOf still visible</li>
         </ul>
       </div>
     </div>
@@ -1429,28 +1454,28 @@
     </div>
     <div data-anim="line">
       <div class="t-cat">HOW WE SHIP</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Three pillars of delivery</h2>
+      <h2 class="h-xl" style="margin-top:1.4vh">Three delivery rails</h2>
     </div>
     <div data-anim="up" style="display:grid;grid-template-columns:5fr 11fr;gap:2.4vw;flex:1;margin-top:3vh;align-items:stretch">
       <div style="display:flex;flex-direction:column;justify-content:center;gap:1.6vh;border-top:2px solid var(--accent);padding-top:2.4vh" data-pause>
-        <div class="t-cat">6 WEEKS</div>
-        <p class="body" style="opacity:.85">5 people, one Kanban board, and a merge-commit-only Git flow keep every change reviewed and traceable.</p>
+        <div class="t-cat">5 DAYS</div>
+        <p class="body" style="opacity:.85">Keep every day demoable: first the data model, then quotes/news, then agent impact, then resilience.</p>
       </div>
       <div class="grid-3" style="gap:1.4vw">
         <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
           <div class="num-mega thin" style="font-size:5vw">01</div>
-          <h4 class="t-h-prod">Team</h4>
-          <p class="body-sm">5 members · roles (Backend / NLP / Frontend Lead) finalized in Week 1.</p>
+          <h4 class="t-h-prod">Backend + Data</h4>
+          <p class="body-sm">Provider interfaces, scheduled ingestion, database-first read paths, and Swagger.</p>
         </div>
         <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
           <div class="num-mega thin" style="font-size:5vw">02</div>
-          <h4 class="t-h-prod">Git Flow</h4>
-          <p class="body-sm">feature/* → dev → release/* → master, merge commit only, ≥1 review per PR.</p>
+          <h4 class="t-h-prod">Frontend + Demo</h4>
+          <p class="body-sm">Linked view, Chart.js price marker, portfolio CRUD, and clear state labels.</p>
         </div>
         <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
           <div class="num-mega thin" style="font-size:5vw;color:var(--accent)">03</div>
-          <h4 class="t-h-prod">CI Pipeline</h4>
-          <p class="body-sm">Commitlint, lint, test and Docker build — 5 GitHub Actions jobs on every PR.</p>
+          <h4 class="t-h-prod">Reliability + QA</h4>
+          <p class="body-sm">Mock Provider, stale/asOf handling, schema rejection, and rehearsal data.</p>
         </div>
       </div>
     </div>
@@ -1480,32 +1505,32 @@
       <div class="bar-tower" data-pause>
         <div class="cap"><i class="lucide" data-lucide="activity" style="width:1.6vw;height:1.6vw"></i></div>
         <div class="body-block h-3">
-          <span class="lbl">P1 · METRICS</span>
-          <span class="nb">Metrics</span>
-          <span class="sub">Sentiment + price impact</span>
+          <span class="lbl">P1 · LINKED VIEW</span>
+          <span class="nb">Impact</span>
+          <span class="sub">Headline + price + holding</span>
         </div>
       </div>
       <div class="bar-tower" data-pause>
         <div class="cap"><i class="lucide" data-lucide="circle-plus" style="width:1.6vw;height:1.6vw"></i></div>
         <div class="body-block h-2">
-          <span class="lbl">P2 · GROWTH</span>
-          <span class="nb">Add</span>
-          <span class="sub">Add a ticker to a portfolio</span>
+          <span class="lbl">P2 · AGENT</span>
+          <span class="nb">Score</span>
+          <span class="sub">LLM sentiment + rationale</span>
         </div>
       </div>
       <div class="bar-tower" data-pause>
         <div class="cap"><i class="lucide" data-lucide="circle-minus" style="width:1.6vw;height:1.6vw"></i></div>
         <div class="body-block h-1">
-          <span class="lbl">P3 · CLEANUP</span>
-          <span class="nb">Remove</span>
-          <span class="sub">Remove a holding</span>
+          <span class="lbl">P3 · RESILIENCE</span>
+          <span class="nb">Fallback</span>
+          <span class="sub">Mock data + stale flag</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ Slide 9 · S02 Vertical Timeline + KPI · 6-Week Roadmap ============ -->
+<!-- ============ Slide 9 · S02 Vertical Timeline + KPI · 5-Day Roadmap ============ -->
 <section class="slide" data-animate="progression" data-layout="S02">
   <div class="canvas-card">
     <div class="chrome-min">
@@ -1513,55 +1538,55 @@
       <div class="r">09 / 10</div>
     </div>
     <div data-anim="line">
-      <div class="t-cat">6-WEEK ROADMAP</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">From backlog to demo day</h2>
+      <div class="t-cat">5-DAY ROADMAP</div>
+      <h2 class="h-xl" style="margin-top:1.4vh">From schema to demo day</h2>
     </div>
     <div class="timeline-v">
       <div class="tl-node" data-pause>
         <div class="dot"></div>
-        <span class="yr">Week 1</span>
+        <span class="yr">Day 1</span>
         <span class="multi">01</span>
-        <p class="desc">Roles finalized, API keys registered, repo scaffolded.</p>
+        <p class="desc">Schema, portfolio CRUD, and provider contracts.</p>
       </div>
       <div class="tl-node" data-pause>
         <div class="dot"></div>
-        <span class="yr">Week 2-3</span>
+        <span class="yr">Days 2-3</span>
         <span class="multi">02</span>
-        <p class="desc">P0/P1 built — portfolio browsing + finBERT sentiment pipeline.</p>
+        <p class="desc">Quotes, news ingestion, scheduled cache, and linked read API.</p>
       </div>
       <div class="tl-node" data-pause>
         <div class="dot"></div>
-        <span class="yr">Week 4-5</span>
+        <span class="yr">Day 4</span>
         <span class="multi">03</span>
-        <p class="desc">Add/remove holdings; polish the news ↔ price hook.</p>
+        <p class="desc">LLM Agent sentiment, persisted impact, and state labeling.</p>
       </div>
       <div class="tl-node accent" data-pause>
         <div class="dot"></div>
-        <span class="yr">Week 6</span>
+        <span class="yr">Day 5</span>
         <span class="multi">04</span>
-        <p class="desc">Testing, bilingual docs, rehearse the 15-minute demo.</p>
+        <p class="desc">Mock fallback, tests, Swagger, and presentation rehearsal.</p>
       </div>
     </div>
     <div class="kpi-row-4" data-pause>
       <div class="kpi-cell">
-        <div class="lbl">TEAM</div>
+        <div class="lbl">DAYS</div>
         <div class="nb">5</div>
-        <div class="note">members, 3+ lead roles</div>
+        <div class="note">each leaves a runnable slice</div>
       </div>
       <div class="kpi-cell">
-        <div class="lbl">PRIORITIES</div>
-        <div class="nb">4</div>
-        <div class="note">P0 → P3 features</div>
+        <div class="lbl">STATES</div>
+        <div class="nb">3</div>
+        <div class="note">confirmed / divergent / inconclusive</div>
       </div>
       <div class="kpi-cell">
-        <div class="lbl">EXTERNAL APIS</div>
-        <div class="nb">2</div>
-        <div class="note">Finnhub + Alpha Vantage</div>
+        <div class="lbl">PROVIDERS</div>
+        <div class="nb">3</div>
+        <div class="note">Finnhub + Twelve Data + Mock</div>
       </div>
       <div class="kpi-cell">
-        <div class="lbl">DOC LANGUAGES</div>
-        <div class="nb">2</div>
-        <div class="note">English + 中文</div>
+        <div class="lbl">PUBLIC API</div>
+        <div class="nb">1</div>
+        <div class="note">read-only evidence surface</div>
       </div>
     </div>
   </div>
@@ -1584,8 +1609,8 @@
 
         <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br/>Trade on <span style="font-style:italic;font-weight:300">signal</span>.</h2>
-          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">Every headline in your portfolio, scored and matched to the holding it moves — in real time.</div>
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br/>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2>
+          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">Every headline in your portfolio, scored, price-checked, and connected to the holding it actually moves.</div>
         </div>
 
         <div data-anim="signature" style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
@@ -1605,22 +1630,22 @@
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">News → Sentiment → Price</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">A single automated pipeline turns headlines into a correlated, holding-level signal.</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">News → Sentiment → Impact</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">A single automated loop turns headlines into stored, holding-level evidence.</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">Built to survive rate limits</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Caching and a Finnhub → Alpha Vantage fallback keep the demo resilient live.</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">Built to survive stale data</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider interfaces, cached reads, stale/asOf, and Mock mode keep the demo honest.</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">Ship P0 → P3, in order</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Browse → View metrics → Add → Remove. Quality over quantity, always.</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">Demo one credible loop</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Show one headline, one quote reaction, one portfolio impact, and one state label.</p>
             </div>
           </div>
         </div>
@@ -1634,6 +1659,12 @@
 </div>
 
 <div id="nav"></div>
+<div id="deck-controls" aria-label="Deck controls">
+  <button id="prev-slide" type="button" title="Previous slide">‹</button>
+  <button id="next-slide" type="button" title="Next slide">›</button>
+  <button id="edit-toggle" type="button" title="Edit text">✎</button>
+  <button id="download-toggle" type="button" title="Download edited copy">⇩</button>
+</div>
 
 <script>
 /* =============== WebGL 网格背景 (瑞士风专用) ===============
@@ -1787,16 +1818,109 @@ addEventListener('swiss-low-power-change', e=>{e.detail.on ? stopGrid() : startG
 const deck=document.getElementById('deck');
 const slides=deck.querySelectorAll('.slide');
 const nav=document.getElementById('nav');
+const prevSlideBtn=document.getElementById('prev-slide');
+const nextSlideBtn=document.getElementById('next-slide');
+const editToggle=document.getElementById('edit-toggle');
+const downloadToggle=document.getElementById('download-toggle');
 let idx=0,total=slides.length,lock=false;
+let editing=false;
 
 deck.style.width=(total*100)+'vw';
 
-slides.forEach((s,i)=>{
-  const b=document.createElement('button');
-  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
-  b.onclick=()=>jumpTo(i);
-  nav.appendChild(b);
-});
+function syncNavDots(){
+  const dots=[...nav.querySelectorAll('.dot')];
+  if(dots.length===total){
+    dots.forEach((d,i)=>{
+      d.dataset.i=i;
+      d.setAttribute('aria-label','Page '+(i+1));
+      d.onclick=()=>jumpTo(i);
+    });
+    return;
+  }
+  nav.innerHTML='';
+  slides.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+    b.onclick=()=>jumpTo(i);
+    nav.appendChild(b);
+  });
+}
+syncNavDots();
+
+function editableTargets(){
+  const selector=[
+    '.chrome-min .l','.chrome-min .r',
+    'h1','h2','h3','h4','p','li',
+    '.t-cat','.t-meta','.lead','.body','.body-sm','.t-body','.t-body-sm','.t-body-emp','.t-h-prod',
+    '.ttl','.desc','.nb-corner',
+    '.layer-nb','.layer-ttl','.layer-desc','.layer-tag',
+    '.yr','.multi','.name','.label .desc',
+    '.col-tag','.col-ttl','.col-desc',
+    '.lbl','.nb','.sub','.note',
+    '.num-mega','.kpi-cell'
+  ].join(',');
+  const raw=[...deck.querySelectorAll(selector)].filter(el=>{
+    if(el.closest('svg,canvas,script,style')) return false;
+    if(!el.textContent || !el.textContent.trim()) return false;
+    return true;
+  });
+  return raw.filter(el=>!raw.some(other=>other!==el && other.contains(el)));
+}
+
+function setEditing(on){
+  editing=!!on;
+  document.body.classList.toggle('editing', editing);
+  if(editToggle){
+    editToggle.classList.toggle('active', editing);
+    editToggle.setAttribute('aria-pressed', editing ? 'true' : 'false');
+    editToggle.title=editing ? 'Exit edit mode' : 'Edit text';
+  }
+  editableTargets().forEach(el=>{
+    el.dataset.editable='true';
+    el.contentEditable=editing ? 'true' : 'false';
+    el.spellcheck=false;
+  });
+  const hint=document.getElementById('hint');
+  if(hint) hint.textContent=editing
+    ? '编辑模式 · 点击文字直接改 · ESC 退出'
+    : `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · ESC 索引`;
+}
+
+if(prevSlideBtn) prevSlideBtn.addEventListener('click', backward);
+if(nextSlideBtn) nextSlideBtn.addEventListener('click', forward);
+if(editToggle) editToggle.addEventListener('click', ()=>setEditing(!editing));
+function currentDeckHtml(){
+  const clone=document.documentElement.cloneNode(true);
+  clone.classList.remove('editing');
+  const body=clone.querySelector('body');
+  if(body){
+    body.classList.remove('editing');
+    body.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','false'));
+  }
+  const hint=clone.querySelector('#hint');
+  if(hint) hint.textContent='→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · ESC 索引';
+  clone.querySelectorAll('.dot').forEach((dot,i)=>{
+    dot.dataset.i=i;
+    dot.setAttribute('aria-label','Page '+(i+1));
+  });
+  return '<!DOCTYPE html>\n' + clone.outerHTML;
+}
+function downloadCurrentDeck(){
+  document.body.dataset.downloadReady='1';
+  const blob=new Blob([currentDeckHtml()],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const base=(document.title||'presentation-swiss').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase() || 'presentation-swiss';
+  a.href=url;
+  a.download=base+'-edited.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+window.__currentDeckHtml=currentDeckHtml;
+window.__downloadCurrentDeck=downloadCurrentDeck;
+if(downloadToggle) downloadToggle.addEventListener('click', downloadCurrentDeck);
 
 function go(n){
   if(lock)return;
@@ -1881,6 +2005,7 @@ function buildOverview(){
     wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(isDark?'var(--ink)':'var(--paper)');
     const clone=s.cloneNode(true);
     clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    clone.querySelectorAll('[contenteditable]').forEach(el=>{el.contentEditable='false'});
     wrap.appendChild(clone);
     const label=document.createElement('div');
     /* ESC 索引卡 label */
@@ -1901,7 +2026,24 @@ function toggleOverview(){
 }
 
 addEventListener('keydown',e=>{
+  if(editing){
+    if(e.key==='Escape'){
+      e.preventDefault();
+      setEditing(false);
+    }
+    return;
+  }
   if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='e' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    setEditing(true);
+    return;
+  }
+  if(e.key && e.key.toLowerCase()==='d' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    downloadCurrentDeck();
+    return;
+  }
   if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
     e.preventDefault();
     window.__setLowPowerMode(!window.__lowPowerMode);
@@ -1920,6 +2062,7 @@ addEventListener('keydown',e=>{
 
 let wheelTO=null,wheelAcc=0;
 addEventListener('wheel',e=>{
+  if(editing)return;
   if(overviewOn)return;
   wheelAcc+=e.deltaY+e.deltaX;
   if(Math.abs(wheelAcc)>50){
@@ -1932,6 +2075,7 @@ addEventListener('wheel',e=>{
 let tx=0,ty=0,lastTouchNavAt=0;
 addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
 addEventListener('touchend',e=>{
+  if(editing)return;
   if(overviewOn)return;
   const dx=(e.changedTouches[0].clientX-tx);
   const dy=(e.changedTouches[0].clientY-ty);
@@ -1943,6 +2087,7 @@ addEventListener('touchend',e=>{
 
 /* 点击页面空白处也可以像 LaTeX \pause 一样逐条揭示 / 翻下一页 */
 deck.addEventListener('click',e=>{
+  if(editing)return;
   if(overviewOn)return;
   if(Date.now()-lastTouchNavAt<500)return; // 避免触屏 tap 触发的合成 click 重复推进
   if(e.target.closest('#nav,.dot,button,a')) return;

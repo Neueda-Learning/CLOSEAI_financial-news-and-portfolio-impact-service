@@ -1,7 +1,7 @@
 # Presentation Deck Handover · FNPIS
 
-> Status: Swiss Modernist version ready for presentation
-> Last Updated: 2026-07-28
+> Status: Swiss Modernist version ready for presentation, with in-browser editable text mode
+> Last Updated: 2026-07-29
 
 ---
 
@@ -37,16 +37,25 @@ During presentation:
 | Input | Action |
 |-------|--------|
 | `→` / `Space` / Click | Reveal next bullet point (step through `/pause` markers) |
-| `←` / `Shift+Space` | Hide last revealed bullet |
-| `↑` / `↓` | Jump to previous/next slide |
+| `←` / `↑` | Hide last revealed bullet or move backward |
+| `↓` | Reveal forward or move to the next slide |
 | `Home` / `End` | Jump to first/last slide |
 | `ESC` | Toggle slide index overlay |
 | `B` | Toggle low-power mode (disables WebGL background) |
-| Number + `Enter` | Jump to specific slide |
+| `E` / top-right `✎` | Toggle in-browser text editing |
+| `D` / top-right `⇩` | Download the current edited HTML deck |
+| Top-right `‹` / `›` | Move backward / forward |
 
 ### Editing Content
 
-Open `index.html` in a text editor (VS Code, Sublime, etc.):
+For quick rehearsal edits, open the deck in a browser and press `E` or the top-right `✎` button:
+
+1. Click any highlighted text block
+2. Edit the wording directly on the slide
+3. Press `ESC` to exit editing mode and resume presenting
+4. Press `D` or click the top-right `⇩` button to download a copy with your edits
+
+For durable edits, open `index.html` in a text editor (VS Code, Sublime, etc.):
 
 1. Find the slide section you want to edit (search for the title text)
 2. Edit the text directly inside `<p>`, `<span>`, or other elements
@@ -79,9 +88,9 @@ To publish on GitHub Pages:
 | 3 | Tech Stack | S04 Six Cells | Java/Spring, MySQL, Finnhub, LLM, Chart.js |
 | 4 | Architecture | S05 Three Layers | Experience / Service / Data (Swiss grid) |
 | 5 | Pipeline | S11 Horizontal Timeline | News → Sentiment → Price → Impact (4-step flow) |
-| 6 | Wow Moment | S08 Duo Compare | Side-by-side: News vs Price Chart (presentation hook) |
-| 7 | Team & Delivery | S13 Three Forces | Parallel workstreams (Backend / Frontend / DB) |
-| 8 | Feature Priorities | S06 KPI Tower | P0 Browse → P1 Metrics → P2 Add → P3 Remove |
+| 6 | Wow Moment | S08 Duo Compare | Current Seagate/STX breaking-news demo candidate |
+| 7 | Team & Delivery | S13 Three Forces | 5-day delivery rails: backend/data, frontend/demo, reliability/QA |
+| 8 | Feature Priorities | S06 KPI Tower | P0 Browse → P1 Impact → P2 Score → P3 Fallback |
 | 9 | 5-Day Roadmap | S02 Vertical Timeline | Day 1 Foundations / Days 2-4 Dev / Day 5 Demo |
 | 10 | Closing | S10 Split Closing | 3 takeaways + thank you |
 
