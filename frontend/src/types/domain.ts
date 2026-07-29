@@ -39,5 +39,7 @@ export type ImpactEvent = {
   strength: 'Strong' | 'Moderate' | 'Watch'
   alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE' | null
   content: string
+  summary?: string | null
+  image?: string | null
   priceSeries: Array<{ time: string; price: number }>
 }
