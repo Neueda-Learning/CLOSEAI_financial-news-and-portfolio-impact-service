@@ -1,0 +1,119 @@
+### FNPIS API Test Collection
+### Base: http://localhost:8080
+### Swagger UI: http://localhost:8080/swagger-ui.html
+###
+### Usage:
+###   VS Code REST Client extension: open this file, click "Send Request" above each block.
+###   Postman: import as raw text (File > Import > Raw text).
+###   IntelliJ: built-in HTTP client supports this format natively.
+###   curl: copy the URL and body from each section.
+
+# ------------------------------------------------------------------
+# Health
+# ------------------------------------------------------------------
+
+### Health check
+GET http://localhost:8080/actuator/health
+
+# ------------------------------------------------------------------
+# Module A — Portfolios & Holdings
+# ------------------------------------------------------------------
+
+### List all portfolios
+GET http://localhost:8080/api/v1/portfolios
+
+### Create a portfolio
+POST http://localhost:8080/api/v1/portfolios
+Content-Type: application/json
+
+{
+  "name": "美股测试账户"
+}
+
+### Get portfolio summary (use the id from create response)
+GET http://localhost:8080/api/v1/portfolios/1/summary
+
+### Add a holding to portfolio 1
+POST http://localhost:8080/api/v1/portfolios/1/holdings
+Content-Type: application/json
+
+{
+  "symbol": "AAPL",
+  "quantity": 100,
+  "costBasis": "175.50"
+}
+
+### List holdings
+GET http://localhost:8080/api/v1/portfolios/1/holdings
+
+### Delete portfolio
+DELETE http://localhost:8080/api/v1/portfolios/1
+
+# ------------------------------------------------------------------
+# Module B — Quote Refresh (行情报价)
+# ------------------------------------------------------------------
+
+### Manual quote refresh — triggers fetch for all watchlist symbols.
+### Returns 202 Accepted immediately; the refresh runs asynchronously.
+### Returns 409 Conflict if a refresh is already running.
+POST http://localhost:8080/api/v1/quotes/refresh
+
+### Concurrency test: fire twice rapidly — second should return 409
+### (Run this immediately after the first one, or use a script)
+
+# ------------------------------------------------------------------
+# Module C — News Refresh (新闻聚合)
+# ------------------------------------------------------------------
+
+### Manual news refresh — fetches company news for every watchlist symbol.
+### Returns JSON: { triggered, fetched, inserted, skippedDuplicates, failures }
+###   triggered:          true if accepted, false on conflict
+###   fetched:            number of symbols successfully called
+###   inserted:           new article-link rows created
+###   skippedDuplicates:  links that already existed (dedup working)
+###   failures:           persistence attempts that threw an exception
+### Returns 409 Conflict if a fetch is already running.
+POST http://localhost:8080/api/v1/news/refresh
+
+### Dedupe test: fire twice — second should return inserted=0,
+### proving external_id uniqueness is working (SC-005).
+### All articles should appear as skippedDuplicates.
+
+### Concurrency test: fire twice rapidly — second should return 409.
+### (Run this immediately after the first one)
+
+# ------------------------------------------------------------------
+# Expected responses from running app (for quick reference)
+# ------------------------------------------------------------------
+#
+# POST /api/v1/news/refresh 200:
+# {
+#   "triggered": true,
+#   "fetched": 15,
+#   "inserted": 42,
+#   "skippedDuplicates": 3,
+#   "failures": 0
+# }
+#
+# POST /api/v1/news/refresh 409:
+# {
+#   "type": "https://api.fnpis.local/errors/task-already-running",
+#   "title": "Task already running",
+#   "status": 409,
+#   "detail": "Task 'news-fetch' is already running",
+#   "instance": "/api/v1/news/refresh",
+#   "code": "TASK_ALREADY_RUNNING"
+# }
+#
+# POST /api/v1/quotes/refresh 202:
+# (empty body)
+#
+# POST /api/v1/quotes/refresh 409:
+# {
+#   "type": "https://api.fnpis.local/errors/task-already-running",
+#   "title": "Task already running",
+#   "status": 409,
+#   "detail": "Task 'quote-refresh' is already running",
+#   "instance": "/api/v1/quotes/refresh",
+#   "code": "TASK_ALREADY_RUNNING"
+# }
