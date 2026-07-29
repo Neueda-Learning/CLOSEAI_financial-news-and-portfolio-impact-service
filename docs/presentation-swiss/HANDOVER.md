@@ -1,7 +1,7 @@
 # Presentation Deck Handover · FNPIS
 
-> Status: Swiss Modernist version ready for presentation
-> Last Updated: 2026-07-28
+> Status: Swiss Modernist version ready for a 15-minute team presentation, with in-browser editable text mode
+> Last Updated: 2026-07-29
 
 ---
 
@@ -11,8 +11,9 @@ This folder contains the **Swiss Modernist style presentation deck** for the Fin
 
 ### Files
 
-- `index.html` — Complete presentation (10 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
+- `index.html` — Complete presentation (14 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
 - `HANDOVER.md` — This document
+- `SPEAKER_RUNBOOK.md` — Team page ownership, timing, and rehearsal scripts
 - `images/` — Image assets folder (currently empty; deck uses CSS-drawn graphics)
 
 ---
@@ -37,16 +38,25 @@ During presentation:
 | Input | Action |
 |-------|--------|
 | `→` / `Space` / Click | Reveal next bullet point (step through `/pause` markers) |
-| `←` / `Shift+Space` | Hide last revealed bullet |
-| `↑` / `↓` | Jump to previous/next slide |
+| `←` / `↑` | Hide last revealed bullet or move backward |
+| `↓` | Reveal forward or move to the next slide |
 | `Home` / `End` | Jump to first/last slide |
 | `ESC` | Toggle slide index overlay |
 | `B` | Toggle low-power mode (disables WebGL background) |
-| Number + `Enter` | Jump to specific slide |
+| `E` / top-right `✎` | Toggle in-browser text editing |
+| `D` / top-right `⇩` | Download the current edited HTML deck |
+| Top-right `‹` / `›` | Move backward / forward |
 
 ### Editing Content
 
-Open `index.html` in a text editor (VS Code, Sublime, etc.):
+For quick rehearsal edits, open the deck in a browser and press `E` or the top-right `✎` button:
+
+1. Click any highlighted text block
+2. Edit the wording directly on the slide
+3. Press `ESC` to exit editing mode and resume presenting
+4. Press `D` or click the top-right `⇩` button to download a copy with your edits
+
+For durable edits, open `index.html` in a text editor (VS Code, Sublime, etc.):
 
 1. Find the slide section you want to edit (search for the title text)
 2. Edit the text directly inside `<p>`, `<span>`, or other elements
@@ -74,16 +84,32 @@ To publish on GitHub Pages:
 
 | # | Title | Layout | Notes |
 |----|-------|--------|-------|
-| 1 | Cover | S01 Hero | IKB blue accent background, ASCII dot matrix animation |
-| 2 | The Problem | S03 Split | Investors struggle to connect news → price impact |
-| 3 | Tech Stack | S04 Six Cells | Java/Spring, MySQL, Finnhub, LLM, Chart.js |
-| 4 | Architecture | S05 Three Layers | Experience / Service / Data (Swiss grid) |
-| 5 | Pipeline | S11 Horizontal Timeline | News → Sentiment → Price → Impact (4-step flow) |
-| 6 | Wow Moment | S08 Duo Compare | Side-by-side: News vs Price Chart (presentation hook) |
-| 7 | Team & Delivery | S13 Three Forces | Parallel workstreams (Backend / Frontend / DB) |
-| 8 | Feature Priorities | S06 KPI Tower | P0 Browse → P1 Metrics → P2 Add → P3 Remove |
-| 9 | 5-Day Roadmap | S02 Vertical Timeline | Day 1 Foundations / Days 2-4 Dev / Day 5 Demo |
-| 10 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 1 | Cover | S01 Hero | Product opener |
+| 2 | Our Team Members | S04/Grid | 5 member cards with placeholder portraits |
+| 3 | The Problem | S03 Split | Story-driven reason for the website |
+| 4 | User Journey | S06/Grid | Portfolio → news → sentiment → price → impact → verdict |
+| 5 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
+| 6 | What The Website Does | S11 Timeline | One endpoint-linked product loop |
+| 7 | Complete Demo Flow | S06/Grid | Timothy owns the live demo run |
+| 8 | Architecture | S05 Three Layers | Evan owns the system story |
+| 9 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
+| 10 | Sentiment & Impact Engine | S08/Duo | Validated LLM Agent + stored results |
+| 11 | Honest Output | S06/KPI Tower | Direction vs alignment states |
+| 12 | Engineering Quality | S04/Grid | Precision, time, enum, refresh, CI reliability rules |
+| 13 | 5-Day Build Plan | S02/Timing | Working slice every day |
+| 14 | Closing | S10 Split Closing | 3 takeaways + thank you |
+
+## Team Speaker Ownership
+
+Detailed scripts live in `SPEAKER_RUNBOOK.md`.
+
+| Speaker | Slides |
+|---------|--------|
+| Venessa Feng | 1–3 |
+| David Hu | 4–6 |
+| Timothy Xue | 7, 13–14 |
+| Evan Li | 8–9 |
+| Ethan Sun | 10–12 |
 
 ---
 
@@ -95,7 +121,7 @@ To publish on GitHub Pages:
 
 3. **No external images currently** — All diagrams/charts are CSS-drawn (grid layouts, color blocks, SVG icons). To add photos/screenshots, place them in `images/` and reference with `<img src="images/filename.png">`.
 
-4. **Slide count fixed at 10** — Modifying the deck structure (adding/removing slides) requires updating:
+4. **Slide count fixed at 14** — Modifying the deck structure (adding/removing slides) requires updating:
    - The slide counter display
    - Navigation dot count
    - Timeline/progression logic (if you add custom timing)
@@ -152,4 +178,4 @@ To disable the animated background by default:
 
 ---
 
-*Last Maintenance: 2026-07-28 · Questions? Check the repo's main README or ask the team.*
+*Last Maintenance: 2026-07-29 · Questions? Check the repo's main README or ask the team.*
