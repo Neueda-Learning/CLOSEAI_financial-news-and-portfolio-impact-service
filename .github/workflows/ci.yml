@@ -152,6 +152,10 @@ jobs:
     needs: [backend-test]
     runs-on: ubuntu-latest
     if: always() && !cancelled()
+    env:
+      FINNHUB_KEY_NEWS: ${{ secrets.FINNHUB_KEY_NEWS }}
+      FINNHUB_KEY_PRICE: ${{ secrets.FINNHUB_KEY_PRICE }}
+      TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API }}
     steps:
       - uses: actions/checkout@v4
       - name: Seed placeholder env
