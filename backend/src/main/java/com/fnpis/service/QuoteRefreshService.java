@@ -20,7 +20,7 @@ public class QuoteRefreshService {
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     public QuoteRefreshService(
-            PriceProvider priceProvider,
+            @org.springframework.beans.factory.annotation.Qualifier("writePriceProvider") PriceProvider priceProvider,
             QuotePersistenceService persistence,
             SecurityRepository securityRepo) {
         this.priceProvider = priceProvider;

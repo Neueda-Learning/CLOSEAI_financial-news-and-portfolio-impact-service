@@ -29,7 +29,15 @@ public class QuoteRefreshScheduler {
         if (!isTradingHours(Instant.now(clock))) {
             return;
         }
-        doRefresh();
+        if (!service.tryAcquire()) {
+            log.debug("Quote refresh skipped — already running");
+            return;
+        }
+        try {
+            service.refreshAll();
+        } finally {
+            service.release();
+        }
     }
 
     /** Manual trigger via HTTP. Returns 409 if a refresh is already running. */
@@ -38,7 +46,7 @@ public class QuoteRefreshScheduler {
             throw ApiException.taskAlreadyRunning("quote-refresh");
         }
         try {
-            doRefresh();
+            service.refreshAll();
         } finally {
             service.release();
         }
@@ -46,20 +54,11 @@ public class QuoteRefreshScheduler {
 
     boolean isTradingHours(Instant now) {
         ZonedDateTime et = now.atZone(MARKET_ZONE);
-        if (et.getDayOfWeek().getValue() > 5) { // Saturday = 6, Sunday = 7
+        if (et.getDayOfWeek().getValue() > 5) {
             return false;
         }
         int hour = et.getHour();
         int minute = et.getMinute();
         return (hour > 9 || (hour == 9 && minute >= 30)) && hour < 16;
-    }
-
-    private void doRefresh() {
-        service.tryAcquire();
-        try {
-            service.refreshAll();
-        } finally {
-            service.release();
-        }
     }
 }

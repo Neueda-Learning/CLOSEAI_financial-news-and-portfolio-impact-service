@@ -19,7 +19,15 @@ public class NewsFetchScheduler {
 
     @Scheduled(fixedDelayString = "${app.schedule.news-poll-delay}")
     public void scheduledFetch() {
-        doFetch();
+        if (!service.tryAcquire()) {
+            log.debug("News fetch skipped — already running");
+            return;
+        }
+        try {
+            service.fetchAll();
+        } finally {
+            service.release();
+        }
     }
 
     /** Manual trigger via HTTP. Returns 409 if a fetch is already running. */
@@ -27,15 +35,6 @@ public class NewsFetchScheduler {
         if (!service.tryAcquire()) {
             throw ApiException.taskAlreadyRunning("news-fetch");
         }
-        try {
-            doFetch();
-        } finally {
-            service.release();
-        }
-    }
-
-    private void doFetch() {
-        service.tryAcquire();
         try {
             service.fetchAll();
         } finally {
