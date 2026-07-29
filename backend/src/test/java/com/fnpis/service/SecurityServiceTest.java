@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * Search semantics for the add-holding picker (A4).
@@ -66,6 +67,22 @@ class SecurityServiceTest {
         List<SecurityOption> options = service.search("   ");
 
         assertThat(options).containsExactly(new SecurityOption("AAPL", "Apple Inc."));
+    }
+
+    @Test
+    @DisplayName("Both paths sort by symbol, so the order does not jump when the box is cleared")
+    void bothPathsSortBySymbol() {
+        given(securities.findAll(any(Pageable.class)))
+                .willReturn(new PageImpl<>(List.of(security("AAPL", "Apple Inc."))));
+
+        service.search("");
+
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        verify(securities).findAll(pageable.capture());
+        // The symbol is the primary key, so InnoDB returns these alphabetically
+        // whether or not we ask. Asserting the request rather than the result is
+        // the point: the guarantee has to be ours, not the storage engine's.
+        assertThat(pageable.getValue().getSort()).isEqualTo(Sort.by("symbol"));
     }
 
     @Test

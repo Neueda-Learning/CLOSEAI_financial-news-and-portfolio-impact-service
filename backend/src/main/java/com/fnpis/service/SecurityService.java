@@ -5,6 +5,7 @@ import com.fnpis.domain.Security;
 import com.fnpis.repository.SecurityRepository;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +55,13 @@ public class SecurityService {
     public List<SecurityOption> search(String query) {
         String trimmed = query == null ? "" : query.trim();
         if (trimmed.isEmpty()) {
-            return securities.findAll(PageRequest.of(0, MAX_SUGGESTIONS)).stream()
+            // Sorted explicitly, to match the ORDER BY on the search query. The
+            // symbol is the primary key, so InnoDB happens to return these in
+            // alphabetical order anyway and the two paths look identical today -
+            // but that is the storage engine's choice, not a guarantee. Without
+            // this the list could silently start arriving in a different order
+            // than the one the same user sees after typing one character.
+            return securities.findAll(PageRequest.of(0, MAX_SUGGESTIONS, Sort.by("symbol"))).stream()
                     .map(SecurityService::optionFor)
                     .toList();
         }

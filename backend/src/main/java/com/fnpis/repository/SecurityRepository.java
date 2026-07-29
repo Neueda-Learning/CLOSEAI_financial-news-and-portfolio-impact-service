@@ -50,11 +50,26 @@ public interface SecurityRepository extends JpaRepository<Security, String> {
      * migration that changes collation would silently turn this case-sensitive,
      * and a search box that stops matching lowercase input is the kind of break
      * nobody notices in review.
+     *
+     * <p>{@code ESCAPE '\'} is stated rather than assumed. Backslash is MySQL's
+     * default LIKE escape, so omitting the clause works here - until a server
+     * runs with {@code NO_BACKSLASH_ESCAPES} in its sql_mode, where the escapes
+     * the caller added become literal characters and the wildcards they were
+     * meant to neutralise go back to being wildcards. That failure is silent:
+     * the query still runs and still returns rows, just the wrong ones.
+     *
+     * <p>The escape literal is written {@code '\\'} because a text block still
+     * processes escape sequences: those two characters reach the JPQL parser as
+     * one backslash, which is what it requires - it rejects anything longer with
+     * "Escape character literals must have exactly a single character". Four
+     * backslashes looks more correct and does not parse.
+     * {@code SecuritySearchQueryTest} compiles this query so that mistake fails
+     * a test rather than application startup.
      */
     @Query("""
             SELECT s FROM Security s
-            WHERE LOWER(s.symbol) LIKE LOWER(:symbolPrefix)
-               OR LOWER(s.companyName) LIKE LOWER(:namePattern)
+            WHERE LOWER(s.symbol) LIKE LOWER(:symbolPrefix) ESCAPE '\\'
+               OR LOWER(s.companyName) LIKE LOWER(:namePattern) ESCAPE '\\'
             ORDER BY s.symbol
             """)
     List<Security> search(
