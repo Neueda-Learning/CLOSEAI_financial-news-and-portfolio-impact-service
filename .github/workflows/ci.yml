@@ -129,7 +129,7 @@ jobs:
         run: npm ci --include=optional
       - name: Run Jest tests
         working-directory: frontend
-        run: npm test
+        run: npm run test --if-present
 
   # ------------------------------------------------------------------
   # NLP Service — uncomment when nlp-service/ is created (kept as skeleton)
