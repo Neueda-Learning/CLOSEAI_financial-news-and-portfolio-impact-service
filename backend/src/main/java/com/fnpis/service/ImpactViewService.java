@@ -1,6 +1,5 @@
 package com.fnpis.service;
 
-import com.fnpis.api.internal.dto.ImpactRow;
 import com.fnpis.api.internal.dto.ImpactViewResponse;
 import com.fnpis.common.Freshness;
 import com.fnpis.common.error.ApiException;
@@ -20,7 +19,6 @@ import com.fnpis.repository.PriceQuoteRepository;
 import com.fnpis.repository.SecurityRepository;
 import com.fnpis.repository.SentimentScoreRepository;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -49,9 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ImpactViewService {
-
-    /** Percentage scale, matching {@link ImpactQueryService}. */
-    private static final int PCT_SCALE = 4;
 
     private final NewsArticleRepository articles;
     private final SentimentScoreRepository sentiments;
@@ -125,7 +120,7 @@ public class ImpactViewService {
                 session,
                 impactedSymbols,
                 selected,
-                rows.stream().map(row -> toRow(row, names)).toList(),
+                rows.stream().map(row -> ImpactRowMapper.toRow(row, names)).toList(),
                 selected == null ? null : priceSeries(selected, session, article.getPublishedAt()),
                 freshness.asOf(),
                 freshness.stale());
@@ -239,8 +234,21 @@ public class ImpactViewService {
                 article.getUrl(),
                 article.getPublishedAt(),
                 verdict.map(s -> new ImpactViewResponse.Sentiment(
-                                s.getLabel(), s.getScore(), s.getConfidence(), s.getModelVersion()))
+                                s.getLabel(),
+                                score(s.getScore()),
+                                score(s.getConfidence()),
+                                s.getModelVersion()))
                         .orElse(null));
+    }
+
+    /**
+     * A stored sentiment figure as a wire number, preserving null.
+     *
+     * <p>No rescaling: the validator already constrained the range, and rounding
+     * a verdict on the way out would publish a number the model never produced.
+     */
+    private Double score(BigDecimal value) {
+        return value == null ? null : value.doubleValue();
     }
 
     private Map<String, String> companyNames(List<String> symbols) {
@@ -253,29 +261,6 @@ public class ImpactViewService {
             names.put(security.getSymbol(), security.getCompanyName());
         }
         return names;
-    }
-
-    /** Same mapping and the same ratio-to-percentage conversion as the list endpoint. */
-    private ImpactRow toRow(ImpactAssessment row, Map<String, String> names) {
-        return new ImpactRow(
-                row.getSymbol(),
-                names.getOrDefault(row.getSymbol(), row.getSymbol()),
-                row.getHoldingWeight(),
-                toPct(row.getPriceChangeRatio()),
-                row.getExpectedImpact(),
-                row.getObservedContribution(),
-                row.getValueImpact(),
-                row.getDirection(),
-                row.getAlignment());
-    }
-
-    private Double toPct(BigDecimal ratio) {
-        if (ratio == null) {
-            return null;
-        }
-        return ratio.multiply(BigDecimal.valueOf(100))
-                .setScale(PCT_SCALE, RoundingMode.HALF_UP)
-                .doubleValue();
     }
 
     /** Oldest computation in the set - a mixed set is only as fresh as its stalest row. */

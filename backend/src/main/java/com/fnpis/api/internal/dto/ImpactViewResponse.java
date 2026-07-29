@@ -62,12 +62,18 @@ public record ImpactViewResponse(
      *
      * <p>{@code modelVersion} travels because it is the only way to tell which
      * model and prompt produced this score after either changes.
+     *
+     * <p>{@code score} and {@code confidence} are numbers on the wire, not
+     * strings: contract 1.2 lists a sentiment score as a number in -1..1, and the
+     * frontend colours the label by comparing it against thresholds. Stored as
+     * {@code DECIMAL} and narrowed here, because {@code JacksonConfig} quotes
+     * every {@code BigDecimal} and a quoted score compares as text.
      */
     @Schema(description = "已落库的情绪判定")
     public record Sentiment(
             SentimentLabel label,
-            BigDecimal score,
-            BigDecimal confidence,
+            Double score,
+            Double confidence,
             String modelVersion) {
     }
 

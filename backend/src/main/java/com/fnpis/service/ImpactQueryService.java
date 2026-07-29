@@ -99,7 +99,7 @@ public class ImpactQueryService {
                                 portfolioId, session, alignment, request);
 
         Map<String, String> names = companyNames(found.getContent());
-        Page<ImpactRow> rows = found.map(row -> toRow(row, names));
+        Page<ImpactRow> rows = found.map(row -> ImpactRowMapper.toRow(row, names));
 
         // The rows were computed by a job, so their age is the freshness that
         // matters here - not a quote's.
@@ -237,37 +237,6 @@ public class ImpactQueryService {
             names.put(security.getSymbol(), security.getCompanyName());
         }
         return names;
-    }
-
-    /**
-     * Entity to DTO, converting the stored ratio into the percentage the contract
-     * publishes.
-     *
-     * <p>A missing name falls back to the symbol rather than null: the row is
-     * still a valid assessment, and a blank company column would look like a
-     * defect to anyone watching the demo.
-     */
-    private ImpactRow toRow(ImpactAssessment row, Map<String, String> names) {
-        return new ImpactRow(
-                row.getSymbol(),
-                names.getOrDefault(row.getSymbol(), row.getSymbol()),
-                row.getHoldingWeight(),
-                toPct(row.getPriceChangeRatio()),
-                row.getExpectedImpact(),
-                row.getObservedContribution(),
-                row.getValueImpact(),
-                row.getDirection(),
-                row.getAlignment());
-    }
-
-    /** Ratio to percentage, preserving null - no return means no percentage. */
-    private Double toPct(BigDecimal ratio) {
-        if (ratio == null) {
-            return null;
-        }
-        return ratio.multiply(BigDecimal.valueOf(100))
-                .setScale(PCT_SCALE, RoundingMode.HALF_UP)
-                .doubleValue();
     }
 
     /**
