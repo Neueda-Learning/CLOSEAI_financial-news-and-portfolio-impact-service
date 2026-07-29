@@ -137,6 +137,7 @@ export function PortfolioImpactPage() {
   const [portfolioDetailsExpanded, setPortfolioDetailsExpanded] = useState(true)
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
+  const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
   const [newsPage, setNewsPage] = useState(1)
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
@@ -147,8 +148,17 @@ export function PortfolioImpactPage() {
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
   const filteredEvents = useMemo(
-    () => events.filter((event) => tickerFilter === 'ALL' || event.affectedTickers.includes(tickerFilter)),
-    [events, tickerFilter],
+    () => events.filter((event) => {
+      if (tickerFilter !== 'ALL' && !event.affectedTickers.includes(tickerFilter)) return false
+      if (impactFilter === 'ANALYZED') return event.hasImpact || event.analysisStatus === null
+      if (impactFilter === 'PENDING') return !event.hasImpact && event.analysisStatus !== null
+      return true
+    }),
+    [events, tickerFilter, impactFilter],
+  )
+  const largestImpact = useMemo(
+    () => Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))),
+    [filteredEvents],
   )
   const totalPages = Math.max(1, newsTotalPages)
   const visibleEvents = filteredEvents
@@ -321,11 +331,11 @@ export function PortfolioImpactPage() {
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
-                <strong>{newsTotalElements}</strong>
+                <strong>{filteredEvents.length}</strong>
               </div>
               <div>
                 <small>Largest impact</small>
-                <strong className="positive">{currency(Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))))}</strong>
+                <strong className="positive">{currency(largestImpact)}</strong>
               </div>
               <div>
                 <small>Last refresh</small>
@@ -345,6 +355,18 @@ export function PortfolioImpactPage() {
                     }}
                   >
                     {ticker === 'ALL' ? 'All' : `$${ticker}`}
+                  </button>
+                ))}
+              </div>
+              <div className="impact-filter">
+                {(['ALL', 'ANALYZED', 'PENDING'] as const).map((mode) => (
+                  <button
+                    type="button"
+                    key={mode}
+                    className={impactFilter === mode ? 'active' : ''}
+                    onClick={() => { setImpactFilter(mode); setNewsPage(1) }}
+                  >
+                    {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
                   </button>
                 ))}
               </div>

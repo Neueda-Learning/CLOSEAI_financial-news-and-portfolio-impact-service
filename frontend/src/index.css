@@ -849,12 +849,12 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   justify-content: space-between;
   margin-bottom: 12px;
 }
-.ticker-filter {
+.ticker-filter, .impact-filter {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
-.ticker-filter button,
+.ticker-filter button, .impact-filter button,
 .pagination-row button,
 .market-actions button {
   border: 1px solid var(--line);
@@ -865,7 +865,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   font-size: .78rem;
   font-weight: 650;
 }
-.ticker-filter button.active {
+.ticker-filter button.active, .impact-filter button.active {
   color: var(--accent);
   background: var(--accent-soft);
   border-color: rgba(39, 80, 111, .16);
