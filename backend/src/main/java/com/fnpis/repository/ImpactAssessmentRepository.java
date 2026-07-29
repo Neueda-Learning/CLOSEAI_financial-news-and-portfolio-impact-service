@@ -1,9 +1,12 @@
 package com.fnpis.repository;
 
+import com.fnpis.domain.Alignment;
 import com.fnpis.domain.ImpactAssessment;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -34,4 +37,27 @@ public interface ImpactAssessmentRepository extends JpaRepository<ImpactAssessme
 
     /** Whether any assessment exists for this article (drives hasImpact in news lists). */
     boolean existsByArticleId(Long articleId);
+
+    /**
+     * One session's assessments for a portfolio, newest-written first and paged
+     * (E1-E3 list endpoint).
+     *
+     * <p>Ordering by {@code computedAt} rather than by impact size on purpose:
+     * the service sorts by magnitude when it needs to, and a stable database
+     * order keeps pagination from repeating or dropping rows between pages the
+     * way an order-by-computed-value would.
+     */
+    Page<ImpactAssessment> findByPortfolioIdAndAttributionDateOrderByComputedAtDesc(
+            Long portfolioId, LocalDate attributionDate, Pageable page);
+
+    /** The same page narrowed to one alignment, for the contract's filter. */
+    Page<ImpactAssessment> findByPortfolioIdAndAttributionDateAndAlignmentOrderByComputedAtDesc(
+            Long portfolioId, LocalDate attributionDate, Alignment alignment, Pageable page);
+
+    /**
+     * Every assessment a story produced in one portfolio, across all symbols it
+     * touched (EC-24). Backs the linked view's {@code impacts} array and its
+     * {@code impactedSymbols} list.
+     */
+    List<ImpactAssessment> findByArticleIdAndPortfolioId(Long articleId, Long portfolioId);
 }

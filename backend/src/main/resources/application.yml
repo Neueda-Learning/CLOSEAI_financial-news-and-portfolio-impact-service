@@ -64,6 +64,10 @@ app:
     prompt-version: v1
     # Each article costs one LLM call, so cap parallelism (decision 5, cost 2)
     max-concurrency: 3
+    # How many headlines one analysis run pays for. Below the llmSentiment
+    # limiter's 20/min so a run cannot exhaust it, and a longer backlog just
+    # drains over successive runs instead of spending the quota in one pass.
+    batch-size: ${SENTIMENT_BATCH_SIZE:15}
 
   impact:
     # Below this absolute price move the result is INCONCLUSIVE - the swing is
@@ -81,6 +85,26 @@ app:
     # finished, so a task can never overlap itself (EC-23).
     news-poll-delay: 900000      # 15 min
     quote-refresh-delay: 60000   # 1 min, trading hours only
+    # Faster than the news poll on purpose: a batch is capped, so a burst of
+    # articles needs several runs to drain and waiting a full poll interval
+    # between them would leave stories unscored for an hour.
+    sentiment-delay: 300000      # 5 min
+    # Last in the chain, and it keeps running rather than firing once at close:
+    # a session assessed before the snapshot lands falls back to the live quote,
+    # and a later pass upgrades those rows to the real close (E4, EC-18).
+    impact-recompute-delay: 600000   # 10 min
+
+  admin:
+    # Off by default (contract 4.4 requirement 1). The destructive endpoints -
+    # recompute overwrites a whole session's assessments - only exist when this
+    # is explicitly switched on, and a disabled endpoint answers 404 rather than
+    # 403 so its existence is not advertised.
+    enabled: ${ADMIN_ENABLED:false}
+    # No default: enabling admin without setting a token would leave the
+    # endpoint open, so startup fails instead (same rule as the API keys below).
+    token: ${ADMIN_TOKEN:}
+    # Shown in the audit fields of a recompute response. Never the token itself.
+    identity: ${ADMIN_IDENTITY:admin-token:demo}
 
 finnhub:
   base-url: https://finnhub.io/api/v1
