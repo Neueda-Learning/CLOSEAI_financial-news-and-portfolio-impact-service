@@ -89,6 +89,10 @@ app:
     # articles needs several runs to drain and waiting a full poll interval
     # between them would leave stories unscored for an hour.
     sentiment-delay: 300000      # 5 min
+    # Last in the chain, and it keeps running rather than firing once at close:
+    # a session assessed before the snapshot lands falls back to the live quote,
+    # and a later pass upgrades those rows to the real close (E4, EC-18).
+    impact-recompute-delay: 600000   # 10 min
 
   admin:
     # Off by default (contract 4.4 requirement 1). The destructive endpoints -

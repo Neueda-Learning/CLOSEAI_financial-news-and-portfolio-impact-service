@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,6 +73,9 @@ public class ImpactAssessmentService {
      */
     private final BigDecimal epsilon;
 
+    /** Guards against two runs upserting the same session's rows at once. */
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
     ImpactAssessmentService(
             NewsArticleRepository articles,
             ArticleSecurityLinkRepository links,
@@ -95,6 +99,45 @@ public class ImpactAssessmentService {
         this.attributionDates = attributionDates;
         this.engine = engine;
         this.epsilon = epsilon;
+    }
+
+    /**
+     * Claims the right to run, as module BC's poll does.
+     *
+     * <p>The lock lives on the service rather than on the scheduler so the timer
+     * and the admin endpoint contend for one lock instead of two. It has to exist
+     * even though the run is transactional: two concurrent recomputes of the same
+     * session would each upsert the same rows, and the loser's numbers would
+     * silently replace the winner's rather than colliding on the unique
+     * constraint (EC-20, EC-23).
+     */
+    public boolean tryAcquire() {
+        return running.compareAndSet(false, true);
+    }
+
+    public void release() {
+        running.set(false);
+    }
+
+    /**
+     * Recomputes one portfolio's impacts for one session.
+     *
+     * <p>The admin endpoint's narrow path. Kept separate from the all-portfolios
+     * run rather than folded in behind a nullable id, so neither caller can reach
+     * the other's scope by passing the wrong thing.
+     *
+     * @throws ApiException 404 when the portfolio does not exist - a silent zero
+     *         would read as "recomputed, nothing to do" for a typo'd id
+     */
+    @Transactional
+    public int recomputeOne(Long portfolioId, LocalDate session, Instant now) {
+        if (!portfolios.existsById(portfolioId)) {
+            throw ApiException.portfolioNotFound(portfolioId);
+        }
+        int written = recomputePortfolio(portfolioId, session, sessionArticles(session, now), now);
+        log.info("Impact recompute for portfolio {} on {} complete: {} rows",
+                portfolioId, session, written);
+        return written;
     }
 
     /**
@@ -133,14 +176,7 @@ public class ImpactAssessmentService {
             return 0;
         }
 
-        // Every story charged to this session. The attribution date is derived,
-        // not stored, so this filters in memory rather than in SQL - the window
-        // is one poll's worth of articles, small enough that the extra rows cost
-        // nothing next to a second round-trip.
-        List<NewsArticle> sessionArticles = articles.findByPublishedAtBetween(
-                        windowStart(session), windowEnd(now)).stream()
-                .filter(a -> attributionDates.resolve(a.getPublishedAt()).equals(session))
-                .toList();
+        List<NewsArticle> sessionArticles = sessionArticles(session, now);
 
         int written = 0;
         for (Long portfolioId : portfolioIds) {
@@ -149,6 +185,20 @@ public class ImpactAssessmentService {
         log.info("Impact recompute for {} complete: {} rows across {} portfolios",
                 session, written, portfolioIds.size());
         return written;
+    }
+
+    /**
+     * Every story charged to {@code session}.
+     *
+     * <p>The attribution date is derived rather than stored, so the filter runs in
+     * memory: the window is a few days of articles, small enough that the extra
+     * rows cost less than a second round-trip would. The window opens before the
+     * session because a Friday-evening story is charged to Monday.
+     */
+    private List<NewsArticle> sessionArticles(LocalDate session, Instant now) {
+        return articles.findByPublishedAtBetween(windowStart(session), windowEnd(now)).stream()
+                .filter(a -> attributionDates.resolve(a.getPublishedAt()).equals(session))
+                .toList();
     }
 
     private int recomputePortfolio(
