@@ -44,9 +44,9 @@ services:
       SERVER_PORT: 8080
       # Three separate secrets. No defaults anywhere - a default is the same
       # exposure as committing the key (architecture 7.5).
-      FINNHUB_KEY_NEWS: ${FINNHUB_KEY_NEWS:-}
-      FINNHUB_KEY_PRICE: ${FINNHUB_KEY_PRICE:-}
-      LLM_API_KEY: ${LLM_API_KEY:-}
+      FINNHUB_KEY_NEWS: ${FINNHUB_KEY_NEWS:?set FINNHUB_KEY_NEWS in .env}
+      FINNHUB_KEY_PRICE: ${FINNHUB_KEY_PRICE:?set FINNHUB_KEY_PRICE in .env}
+      LLM_API_KEY: ${LLM_API_KEY:?set LLM_API_KEY in .env}
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_MODEL: ${LLM_MODEL:-}
       TWELVEDATA_API_KEY: ${TWELVEDATA_API_KEY:-}
