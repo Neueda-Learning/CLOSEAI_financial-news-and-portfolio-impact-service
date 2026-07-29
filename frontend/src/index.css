@@ -60,7 +60,23 @@ th, td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--li
 th { color: var(--muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; background: var(--surface-strong); color: var(--text); }
 input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid rgba(31, 78, 121, 0.28); outline-offset: 3px; }
-
+.ticker-search { position: relative; }
+.ticker-search input { text-transform: uppercase; }
+.ticker-search-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+  max-height: 220px; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); box-shadow: 0 8px 24px rgba(17, 24, 39, .10);
+  display: grid; gap: 1px;
+}
+.ticker-search-dropdown button {
+  all: unset; display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 12px; cursor: pointer; border-radius: 4px;
+  transition: background-color 120ms var(--spring);
+}
+.ticker-search-dropdown button:hover { background: var(--accent-soft); }
+.ticker-search-dropdown strong { font-size: .88rem; font-weight: 650; color: var(--accent); }
+.ticker-search-dropdown span { font-size: .76rem; color: var(--muted); }
 .shell { display: grid; grid-template-columns: 198px minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns 220ms var(--spring); }
 .shell.shell-collapsed { grid-template-columns: 66px minmax(0, 1fr); }
 .sidebar {
