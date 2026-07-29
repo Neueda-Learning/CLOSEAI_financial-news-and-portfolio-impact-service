@@ -361,7 +361,7 @@ export function PortfolioImpactPage() {
               </div>
               <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
             </div>
-            <div className="news-impact-list page-turn" key={newsPage}>
+            <div className="news-impact-list page-turn" key={visiblePage}>
               {visibleEvents.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
               ))}
