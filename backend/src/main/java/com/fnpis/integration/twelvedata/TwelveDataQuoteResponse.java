@@ -13,5 +13,6 @@ public record TwelveDataQuoteResponse(
         @JsonProperty("low") BigDecimal low,
         @JsonProperty("close") BigDecimal close,
         @JsonProperty("previous_close") BigDecimal previousClose,
-        @JsonProperty("datetime") String datetime) {
+        @JsonProperty("datetime") String datetime,
+        @JsonProperty("timestamp") long timestamp) {
 }

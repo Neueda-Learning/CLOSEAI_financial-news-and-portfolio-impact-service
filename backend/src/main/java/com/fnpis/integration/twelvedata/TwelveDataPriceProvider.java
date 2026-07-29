@@ -24,9 +24,9 @@ class TwelveDataPriceProvider implements PriceProvider {
     private final String apiKey;
 
     TwelveDataPriceProvider(
-            RestClient twelvedataRestClient,
+            @Qualifier("twelvedataRestClient") RestClient restClient,
             @Value("${twelvedata.key:}") String apiKey) {
-        this.restClient = twelvedataRestClient;
+        this.restClient = restClient;
         this.apiKey = apiKey;
     }
 
@@ -46,7 +46,7 @@ class TwelveDataPriceProvider implements PriceProvider {
                     r.close(),
                     r.previousClose() != null && r.previousClose().compareTo(BigDecimal.ZERO) > 0
                             ? r.previousClose() : null,
-                    parseDatetime(r.datetime())));
+                    Instant.ofEpochSecond(r.timestamp())));
         } catch (Exception e) {
             log.warn("Twelve Data quote failed for {}: {}", symbol, e.getMessage());
             throw e;
@@ -59,15 +59,4 @@ class TwelveDataPriceProvider implements PriceProvider {
                 "Twelve Data daily bars not implemented yet — see Module B5");
     }
 
-    private Instant parseDatetime(String dt) {
-        if (dt == null || dt.isBlank()) {
-            return Instant.now();
-        }
-        try {
-            return Instant.parse(dt + "Z");
-        } catch (Exception e) {
-            log.warn("Failed to parse Twelve Data datetime '{}', falling back to now", dt);
-            return Instant.now();
-        }
-    }
 }

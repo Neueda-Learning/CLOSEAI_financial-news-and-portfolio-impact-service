@@ -21,6 +21,12 @@ import org.springframework.web.client.RestClient;
 class FinnhubNewsProvider implements NewsProvider {
 
     private static final Logger log = LoggerFactory.getLogger(FinnhubNewsProvider.class);
+
+    /** V2 column widths — keep in sync with the migration scripts. */
+    private static final int HEADLINE_MAX = 512;
+    private static final int SOURCE_MAX = 64;
+    private static final int URL_MAX = 1024;
+
     private final RestClient restClient;
     private final String apiKey;
 
@@ -47,8 +53,8 @@ class FinnhubNewsProvider implements NewsProvider {
             return Arrays.stream(responses)
                     .map(r -> new NewsItem(
                             String.valueOf(r.id()),
-                            truncate(r.headline(), NewsItemHeadlineMax),
-                            truncate(r.source(), 64),
+                            truncate(r.headline(), HEADLINE_MAX),
+                            truncate(r.source(), SOURCE_MAX),
                             truncateUrl(r.url()),
                             r.summary(),
                             Instant.ofEpochSecond(r.datetime())))
@@ -63,7 +69,7 @@ class FinnhubNewsProvider implements NewsProvider {
         if (url == null) {
             return "";
         }
-        return url.length() > 1024 ? url.substring(0, 1024) : url;
+        return url.length() > URL_MAX ? url.substring(0, URL_MAX) : url;
     }
 
     private String truncate(String value, int max) {
@@ -72,6 +78,4 @@ class FinnhubNewsProvider implements NewsProvider {
         }
         return value.length() > max ? value.substring(0, max) : value;
     }
-
-    private static final int NewsItemHeadlineMax = 512;
 }

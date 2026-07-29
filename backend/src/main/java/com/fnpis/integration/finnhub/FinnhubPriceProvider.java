@@ -26,9 +26,9 @@ public class FinnhubPriceProvider implements PriceProvider {
     private final String apiKey;
 
     FinnhubPriceProvider(
-            RestClient finnhubRestClient,
+            @Qualifier("finnhubRestClient") RestClient restClient,
             @Value("${finnhub.keys.price}") String apiKey) {
-        this.restClient = finnhubRestClient;
+        this.restClient = restClient;
         this.apiKey = apiKey;
     }
 
@@ -41,15 +41,16 @@ public class FinnhubPriceProvider implements PriceProvider {
                     .uri("/quote?symbol={symbol}&token={token}", symbol, apiKey)
                     .retrieve()
                     .body(FinnhubQuoteResponse.class);
-            if (r == null || r.c() == null) {
-                log.info("Finnhub returned no data for {}, likely halted or unknown", symbol);
+            if (r == null || r.c() == null || r.c().signum() <= 0) {
+                log.info("Finnhub returned no valid price for {}, likely halted or unknown", symbol);
                 return Optional.empty();
             }
+            Instant capturedAt = r.t() > 0 ? Instant.ofEpochSecond(r.t()) : null;
             return Optional.of(new QuoteSnapshot(
                     symbol,
                     r.c(),
                     r.pc() != null && r.pc().compareTo(BigDecimal.ZERO) > 0 ? r.pc() : null,
-                    Instant.ofEpochSecond(r.t())));
+                    capturedAt));
         } catch (Exception e) {
             log.warn("Finnhub quote failed for {}: {}", symbol, e.getMessage());
             throw e;
