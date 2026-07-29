@@ -22,6 +22,6 @@ public class NewsFetchController {
     public ResponseEntity<NewsRefreshResponse> triggerRefresh() {
         FetchResult r = scheduler.manualFetch();
         return ResponseEntity.ok(new NewsRefreshResponse(
-                r.triggered(), r.fetched(), r.inserted(), r.skippedDuplicates()));
+                r.triggered(), r.fetched(), r.inserted(), r.skippedDuplicates(), r.failures()));
     }
 }

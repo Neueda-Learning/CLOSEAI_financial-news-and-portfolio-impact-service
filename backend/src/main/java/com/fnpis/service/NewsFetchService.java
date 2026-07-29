@@ -40,7 +40,7 @@ public class NewsFetchService {
 
     /** Result of one fetch cycle. */
     public record FetchResult(boolean triggered, int fetched, int inserted,
-            int skippedDuplicates) {}
+            int skippedDuplicates, int failures) {}
 
     /**
      * Fetches news for every symbol in the watchlist.
@@ -56,6 +56,7 @@ public class NewsFetchService {
         int fetched = 0;
         int inserted = 0;
         int skipped = 0;
+        int failures = 0;
         for (String symbol : symbols) {
             int[] r = fetchForSymbol(symbol, today.minusDays(7), today);
             if (r == null) {
@@ -64,13 +65,14 @@ public class NewsFetchService {
             fetched++;
             inserted += r[0];
             skipped += r[1];
+            failures += r[2];
         }
-        log.info("News fetch complete: {} symbols fetched, {} inserted, {} skipped",
-                fetched, inserted, skipped);
-        return new FetchResult(true, fetched, inserted, skipped);
+        log.info("News fetch complete: {} symbols fetched, {} inserted, {} skipped, {} failures",
+                fetched, inserted, skipped, failures);
+        return new FetchResult(true, fetched, inserted, skipped, failures);
     }
 
-    /** @return [inserted, skippedDuplicates] per article, or null if the provider failed */
+    /** @return [inserted, skippedDuplicates, failures] per article, or null if the provider failed */
     private int[] fetchForSymbol(String symbol, LocalDate from, LocalDate to) {
         List<NewsItem> items;
         try {
@@ -81,13 +83,20 @@ public class NewsFetchService {
         }
         int ins = 0;
         int skp = 0;
+        int fail = 0;
         for (NewsItem item : items) {
-            if (persistence.persist(symbol, item) > 0) {
-                ins++;
-            } else {
-                skp++;
+            try {
+                if (persistence.persist(symbol, item) > 0) {
+                    ins++;
+                } else {
+                    skp++;
+                }
+            } catch (Exception e) {
+                log.warn("News persistence failed for {} article {} — skipping",
+                        symbol, item.externalId(), e.getClass().getSimpleName());
+                fail++;
             }
         }
-        return new int[]{ins, skp};
+        return new int[]{ins, skp, fail};
     }
 }

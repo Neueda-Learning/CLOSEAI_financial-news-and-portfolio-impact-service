@@ -153,9 +153,13 @@ jobs:
     runs-on: ubuntu-latest
     if: always() && !cancelled()
     env:
-      FINNHUB_KEY_NEWS: ${{ secrets.FINNHUB_KEY_NEWS }}
-      FINNHUB_KEY_PRICE: ${{ secrets.FINNHUB_KEY_PRICE }}
-      TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API }}
+      # Use deterministic placeholders — compose config validation and jar
+      # packaging don't need real API keys. Real keys are wired via .env at
+      # runtime. Using placeholders here keeps forks portable.
+      FINNHUB_KEY_NEWS: ci-placeholder
+      FINNHUB_KEY_PRICE: ci-placeholder
+      TWELVEDATA_API_KEY: ci-placeholder
+      LLM_API_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - name: Seed placeholder env

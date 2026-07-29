@@ -80,6 +80,11 @@ public class QuoteRefreshService {
             log.debug("No quote returned for {} — halted or unknown, skipping", symbol);
             return false;
         }
-        return persistence.persist(symbol, snapshot.get());
+        try {
+            return persistence.persist(symbol, snapshot.get());
+        } catch (Exception e) {
+            log.warn("Quote persistence failed for {} — skipping", symbol, e.getClass().getSimpleName());
+            return false;
+        }
     }
 }

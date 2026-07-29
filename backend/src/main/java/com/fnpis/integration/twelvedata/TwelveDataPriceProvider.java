@@ -7,6 +7,7 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -59,11 +60,12 @@ class TwelveDataPriceProvider implements PriceProvider {
     @Override
     @RateLimiter(name = "twelvedata")
     public List<DailyBar> fetchDailyBars(String symbol, LocalDate from, LocalDate to) {
-        int days = (int) from.until(to).getDays() + 1;
+        long days = ChronoUnit.DAYS.between(from, to);
+        int size = (int) Math.max(1, days + 1);
         try {
             TwelveDataTimeSeriesResponse r = restClient.get()
                     .uri("/time_series?symbol={symbol}&interval=1day&outputsize={size}&apikey={apikey}",
-                            symbol, days, apiKey)
+                            symbol, size, apiKey)
                     .retrieve()
                     .body(TwelveDataTimeSeriesResponse.class);
             if (r == null || r.values() == null) {
