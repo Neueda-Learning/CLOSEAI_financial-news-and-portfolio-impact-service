@@ -132,6 +132,26 @@ in `.env.example` and this goes red.
 **CI needs no real API keys.** Finnhub is stubbed with WireMock, sentiment with
 `StubSentimentEngine` (architecture §7.5).
 
+### Push Checklist
+
+**Before every `git push`, verify these CI jobs are green.** Do not push if any is red.
+
+| Job | Required | Notes |
+|-----|:--:|------|
+| `commitlint` | ✅ | Commit messages must follow Conventional Commits |
+| `backend-lint` | ✅ | Checkstyle — no unused imports, braces required, no `double` for money |
+| `backend-type-check` | ✅ | `./mvnw compile` must pass |
+| `backend-test` | ✅ | JUnit 5 tests must pass |
+| `build` | ✅ | Docker compose + `./mvnw package -DskipTests` must pass |
+| `frontend-lint` | ⏭️ | Skipped until `frontend/` exists |
+| `frontend-type-check` | ⏭️ | Skipped until `frontend/tsconfig.json` exists |
+| `frontend-test` | ⏭️ | Skipped until `frontend/` exists |
+
+**Check CI status before pushing:**
+```bash
+gh run list --repo Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service --branch $(git branch --show-current) -L 1
+```
+
 ## Jira Setup
 
 - **Project type**: Kanban (not Scrum)
