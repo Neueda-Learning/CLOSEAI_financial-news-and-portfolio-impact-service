@@ -70,6 +70,12 @@ app:
     # noise, not a reaction. Tunable before the demo (requirements 5.3).
     epsilon: 0.005
 
+  valuation:
+    # How old a quote may be before a valuation reports stale: true. Five times
+    # the one-minute refresh interval, so a few missed cycles do not cry wolf
+    # while a genuinely dead provider still surfaces within minutes (B4, SC-009).
+    quote-freshness-budget-seconds: 300
+
   schedule:
     # fixedDelay, not fixedRate: a run only starts after the previous one
     # finished, so a task can never overlap itself (EC-23).

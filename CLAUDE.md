@@ -32,6 +32,9 @@ file disagrees with it, the architecture document wins and this file is the bug.
 | [`docs/项目15-①需求文档.md`](docs/项目15-①需求文档.md) | Requirements A–G, sentiment rules (§5.2), impact formulas with worked examples (§5.3), edge cases EC-01–EC-24 (§8) |
 | [`docs/项目15-②架构设计.md`](docs/项目15-②架构设计.md) | **Layering, decisions 1–6, data model, project structure. Read this before writing code.** |
 | [`docs/项目15-③API契约.md`](docs/项目15-③API契约.md) | Endpoints, pagination, error format. Superseded by Swagger once the backend is implemented (G3) |
+| [`docs/项目15-④数据库说明.md`](docs/项目15-④数据库说明.md) | How to start the database, what each of the eleven tables is for, how to change one later |
+| [`docs/项目15-⑤实体使用说明.md`](docs/项目15-⑤实体使用说明.md) | Using the entities: no associations, `compareTo` for `BigDecimal`, the two timestamps, why `@Data` must not go on a JPA entity |
+| [`docs/项目15-⑥模块B报价刷新需求.md`](docs/项目15-⑥模块B报价刷新需求.md) | Module B's quote refresh task — the job that fills `price_point`. Time-sensitive: unrecorded sessions are lost |
 
 ## Tech Stack (LOCKED)
 
@@ -43,7 +46,7 @@ Per architecture §0 and §6.1.
 | Frontend | SPA, framework chosen by the frontend dev | **Chart.js 4** + annotation plugin is required (the news marker line in F4) |
 | Database | **MySQL 8** + Flyway | utf8mb4 throughout; `ddl-auto: validate` — Flyway owns the schema |
 | Sentiment | **LLM Agent, single engine** | No finBERT, no Python service, no multi-engine comparison (decision 5) |
-| External APIs | **Finnhub only** — separate key for news and for prices | Two endpoints, two accounts, one rate limiter per key (§6.5) |
+| External APIs | **Finnhub (primary) + Twelve Data (backup quotes) + yfinance (offline prep)** | Finnhub news + quotes on separate keys; Twelve Data for quote fallback; yfinance for bulk history download when seeding |
 | HTTP client | RestClient (Spring 6.1+) | — |
 | Resilience | Resilience4j | Rate limit, retry, circuit breaker (decision 1) |
 | Local cache | Caffeine + Spring Cache | In front of outbound provider calls only, never read endpoints (decision 2) |
@@ -155,20 +158,20 @@ in `.env.example` and this goes red.
 
 ## Backend Package Layout
 
-Per architecture §7.1. Packages marked *pending* are absent on purpose — every one of
-them references `@Entity` in its method signatures, and the entities are not written
-yet, so creating them now would leave the repo non-compiling for everyone.
+Per architecture §7.1. All eight directories now exist — the empty ones hold a `.gitkeep`
+so everyone puts their code in the same place instead of inventing a layout. Delete the
+`.gitkeep` when you add the first real class to that package.
 
 | Package | Status | Contents |
 |---------|--------|----------|
 | `config/` | done | Jackson, Caffeine, OpenAPI |
-| `domain/` | enums done, **entities pending** | `@Entity` + enums |
+| `domain/` | done | 11 `@Entity` + 4 enums |
 | `common/` | done | Paging envelope, `Freshness`, RFC 7807 types |
-| `api/` | pending | `@RestController` + DTO; `internal/` for `/api/v1/**`, `pub/` for `/public/v1/**` |
-| `service/` | pending | Business logic |
-| `integration/` | pending | Provider interfaces + `finnhub/`, `mock/`, `sentiment/` |
-| `scheduler/` | pending | `@Scheduled` tasks |
-| `repository/` | pending | Spring Data JPA interfaces |
+| `api/` | empty | `@RestController` + DTO; `internal/` for `/api/v1/**`, `pub/` for `/public/v1/**` |
+| `service/` | empty | Business logic |
+| `integration/` | empty | Provider interfaces + `finnhub/`, `mock/`, `sentiment/` |
+| `scheduler/` | empty | `@Scheduled` tasks |
+| `repository/` | empty | Spring Data JPA interfaces |
 
 > `common/` is **not** in architecture §7.1 — it is an addition. The paging envelope,
 > `Freshness`, and the error types are imported by all three developers, and putting
@@ -182,11 +185,11 @@ yet, so creating them now would leave the repo non-compiling for everyone.
 | Flyway scripts + `@Entity` classes | requirement A's owner | **Nobody else touches these.** One person owns the schema |
 | `repository/` interfaces | each developer | Write your own against the shared entities |
 | Requirements B, C | second developer | — |
-| Requirements D, E (sentiment + impact) | third developer | Blocked until entities land |
+| Requirements D, E (sentiment + impact) | third developer | Unblocked — entities landed 2026-07-28 |
 
-**Flyway rules.** V1–V6 are reserved (see `backend/src/main/resources/db/migration/`).
+**Flyway rules.** V1–V7 are applied (see `backend/src/main/resources/db/migration/`).
 Never edit a committed script — Flyway stores a checksum, so a changed file makes every
-other checkout fail on startup. Claim V7+ for later changes and tell the team.
+other checkout fail on startup. Claim V8+ for later changes and tell the team.
 
 ## Known Decisions
 

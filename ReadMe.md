@@ -83,10 +83,10 @@ starve the other. Rate limiters are configured per key, never shared — otherwi
 15-minute news poll saturates the limiter and quote refresh gets rejected alongside it,
 which defeats the whole point of two accounts.
 
-Single-vendor dependency is a real risk, and multiple keys do nothing about it: if
-Finnhub itself goes down, both chains go down together. The `PriceProvider` interface is
-what actually contains that risk — adding another vendor's implementation touches no
-business logic and no table.
+Single-vendor dependency is addressed by the `PriceProvider` interface: Twelve Data
+is a ready second implementation for quotes. When Finnhub goes down, the price chain
+cuts over to Twelve Data (configuration change, not a code change); news degrades to
+the `news_article` cache.
 
 ---
 
@@ -149,7 +149,7 @@ everyone's checkout fail to start.
 | **Charts** | Chart.js 4 + annotation plugin | The annotation plugin draws the news marker line on the price chart; this is the one frontend constraint |
 | **Database** | MySQL 8 + Flyway | Versioned SQL migrations; utf8mb4 throughout |
 | **Sentiment** | LLM agent, single engine | See [Sentiment Analysis](#sentiment-analysis) |
-| **External APIs** | Finnhub — separate key for news and prices | Per-purpose quota isolation |
+| **External APIs** | Finnhub (primary) + Twelve Data (backup quotes) + yfinance (offline prep) | Finnhub for news and quotes on separate keys; Twelve Data for quote fallback (800/day); yfinance for seeding historical data |
 | **HTTP client** | RestClient (Spring 6.1+) | — |
 | **Resilience** | Resilience4j | Rate limiting, retry, circuit breaking |
 | **Local cache** | Caffeine + Spring Cache | Wraps outbound provider calls |
@@ -475,6 +475,9 @@ news_article n──n article_security_link
 
 security 1──n price_quote    (latest quote, one row per symbol)
 security 1──n price_bar      (historical daily bars)
+security 1──n price_point    (intraday points, the linked view's curve)
+
+portfolio 1──n portfolio_valuation_snapshot   (daily close total value)
 
 impact_assessment ──► news_article + security + portfolio
 ```
@@ -489,6 +492,7 @@ impact_assessment ──► news_article + security + portfolio
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — single engine, one score per article |
 | `price_quote` | `symbol` | Latest row only, written by upsert |
 | `price_bar` | (symbol, trade_date) | Composite |
+| `price_point` | (symbol, captured_at) | Composite — key order is query order, no secondary index needed |
 | `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + index on (portfolio_id, attribution_date) |
 | `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK to portfolio, composite PK |
 
@@ -512,7 +516,7 @@ version produced a given verdict.
 
 - **Never edit a committed script.** Flyway stores a checksum, so a modified file makes
   every other checkout fail at startup. Add a new version instead.
-- V1–V6 are reserved. Claim V7+ and tell the team.
+- V1–V7 are applied. Claim V8+ and tell the team.
 - `ddl-auto: validate` — Hibernate never creates or alters tables, it only verifies that
   the entities match what Flyway built. A mismatch fails startup, which is the point.
 

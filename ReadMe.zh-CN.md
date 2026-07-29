@@ -82,9 +82,7 @@ FNPIS 集成了两类不同的外部数据接口，加一个 LLM API：
 **限流器按 key 分别配置，绝不共用** —— 共用的话 15 分钟一次的新闻轮询会把限流器打满，
 报价刷新跟着被拒，那两个账号就白开了。
 
-单一服务商依赖是真风险，而且多个 key 解决不了：Finnhub 自己挂掉时两条链路一起断。
-真正兜住这个风险的是 `PriceProvider` 接口 —— 换一家数据源只需新增一个实现类，
-业务逻辑和数据表都不用动。
+单一服务商依赖已通过 `PriceProvider` 接口缓解：Twelve Data 是行情第二个现成实现。Finnhub 挂掉时行情链路切到 Twelve Data（配置切换，不是代码改动），新闻降级到 `news_article` 缓存。
 
 ---
 
@@ -146,7 +144,7 @@ FNPIS 集成了两类不同的外部数据接口，加一个 LLM API：
 | **图表** | Chart.js 4 + annotation 插件 | 联动视图要在折线图上画新闻时刻竖线，这是前端唯一的硬约束 |
 | **数据库** | MySQL 8 + Flyway | 版本化 SQL 迁移；全库 utf8mb4 |
 | **情感分析** | LLM Agent，单一引擎 | 见[情感分析](#情感分析) |
-| **外部 API** | Finnhub，新闻与行情各用独立 key | 按用途隔离额度 |
+| **外部 API** | Finnhub（主）+ Twelve Data（备用行情）+ yfinance（离线准备） | Finnhub 负责新闻和行情主力（独立 key）；Twelve Data 做行情 fallback（800/天）；yfinance 用于播种期批量下载历史数据 |
 | **HTTP 客户端** | RestClient (Spring 6.1+) | — |
 | **韧性组件** | Resilience4j | 限流、重试、熔断 |
 | **本地缓存** | Caffeine + Spring Cache | 包在对外调用外层 |
@@ -460,6 +458,9 @@ news_article n──n article_security_link
 
 security 1──n price_quote    （最新报价，每个代码一条）
 security 1──n price_bar      （历史日线）
+security 1──n price_point    （日内价格点，联动视图曲线）
+
+portfolio 1──n portfolio_valuation_snapshot   （每日收盘总市值）
 
 impact_assessment ──► news_article + security + portfolio
 ```
@@ -474,6 +475,7 @@ impact_assessment ──► news_article + security + portfolio
 | `sentiment_score` | `id` | **UNIQUE (article_id)** — 单引擎，一篇一条 |
 | `price_quote` | `symbol` | 只留最新一条，写入走 upsert |
 | `price_bar` | (symbol, trade_date) | 复合主键 |
+| `price_point` | (symbol, captured_at) | 复合主键，主键顺序即查询顺序，无需额外索引 |
 | `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + 索引 (portfolio_id, attribution_date) |
 | `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK portfolio，复合主键 |
 
@@ -495,7 +497,7 @@ impact_assessment ──► news_article + security + portfolio
 
 - **已提交的脚本永不修改。** Flyway 存了校验和，改动过的文件会让其他人的 checkout
   在启动时全部失败。要改就加新版本。
-- V1–V6 已保留。后续变更从 V7 开始，并通知团队。
+- V1–V7 已落地。后续变更从 V8 开始，并通知团队。
 - `ddl-auto: validate` —— Hibernate 不建表也不改表，只校验实体和 Flyway 建出来的
   schema 是否一致。不一致就启动失败，这正是想要的效果。
 
