@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Financial News &amp; Portfolio Impact Service · Project 15</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&family=Noto+Sans+SC:wght@200;300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@300;400;500;600&amp;family=Noto+Sans+SC:wght@200;300;400;500;700;900&amp;display=swap" rel="stylesheet">
 <style>
   :root{
     /* ============ 主题色(默认: 🔵 克莱因蓝 IKB) ============
@@ -550,20 +549,17 @@
   body.dark-bg #nav .dot{background:rgba(255,255,255,.32)}
   body.dark-bg #nav .dot.active{background:var(--accent)}
 
-  #hint{position:fixed;bottom:2.4vh;right:2.5vw;z-index:30;font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;opacity:.4}
+  #hint{position:fixed;bottom:.9vh;right:1.4vw;z-index:30;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.34}
   body.dark-bg #hint{color:var(--paper);opacity:.4}
-  body.low-power #hint{color:var(--accent);opacity:.72}
-  body.dark-bg.low-power #hint{color:var(--paper);opacity:.72}
-  #deck-controls{
-    position:fixed;right:2.5vw;top:2.4vh;z-index:40;
-    display:flex;gap:8px;align-items:center;
-  }
+  body.low-power #hint{color:var(--accent);opacity:.5}
+  body.dark-bg.low-power #hint{color:var(--paper);opacity:.5}
+  #deck-controls{position:fixed;right:1.4vw;top:1.2vh;z-index:40;display:flex;gap:6px;align-items:center}
   #deck-controls button{
-    width:38px;height:38px;border:1px solid rgba(127,127,127,.32);
+    width:30px;height:30px;border:1px solid rgba(127,127,127,.28);
     background:rgba(250,250,248,.82);color:var(--ink);
-    font-family:var(--mono);font-size:18px;font-weight:600;
+    font-family:var(--mono);font-size:14px;font-weight:600;
     cursor:pointer;backdrop-filter:blur(10px);
-    transition:background .18s var(--ease-prod),color .18s var(--ease-prod),border-color .18s var(--ease-prod);
+    transition:background .18s var(--ease-prod),color .18s var(--ease-prod),border-color .18s var(--ease-prod)
   }
   #deck-controls button:hover{border-color:var(--accent);color:var(--accent)}
   #deck-controls button.active{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
@@ -571,10 +567,9 @@
   body.dark-bg #deck-controls button:hover{border-color:rgba(255,255,255,.8);color:#fff}
   body.dark-bg #deck-controls button.active{background:var(--paper);border-color:var(--paper);color:var(--accent)}
   body.editing [data-editable="true"]{
-    outline:2px solid var(--accent);
-    outline-offset:4px;
+    outline:2px solid var(--accent);outline-offset:4px;
     background:rgba(250,250,248,.78);
-    box-decoration-break:clone;-webkit-box-decoration-break:clone;
+    box-decoration-break:clone;-webkit-box-decoration-break:clone
   }
   body.dark-bg.editing [data-editable="true"]{background:rgba(255,255,255,.14)}
   [contenteditable="true"]{caret-color:var(--accent)}
@@ -711,6 +706,223 @@
   .kpi-cell .nb{font-family:var(--sans);font-weight:250;font-size:3.2vw;line-height:1;letter-spacing:-.025em;font-feature-settings:"tnum"}
   .kpi-cell .nb .unit{font-size:.32em;font-weight:300;opacity:.6;margin-left:.1em;vertical-align:.4em}
   .kpi-cell .note{font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.05vw);line-height:1.5;opacity:.7;margin-top:1.2vh}
+
+  .team-grid{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:1.2vw;
+    flex:1;
+    align-items:stretch;
+    margin-top:3vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .55);
+    min-height:0
+  }
+  .team-card{
+    background:#f5f5f4;
+    border-top:2px solid var(--border-subtle);
+    padding:2.2vh 1.2vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:1.4vh;
+    min-width:0
+  }
+  .team-card.accent{background:var(--accent);color:var(--accent-on);border-top-color:var(--accent)}
+  .avatar-placeholder{
+    width:100%;
+    aspect-ratio:1/1.08;
+    background:linear-gradient(135deg,rgba(0,47,167,.12),rgba(10,10,10,.05));
+    display:grid;
+    place-items:center;
+    position:relative;
+    overflow:hidden
+  }
+  .team-card.accent .avatar-placeholder{background:rgba(255,255,255,.16)}
+  .avatar-placeholder::before{
+    content:"";position:absolute;width:38%;height:38%;top:18%;border-radius:50%;
+    background:currentColor;opacity:.18
+  }
+  .avatar-placeholder::after{
+    content:"";position:absolute;width:72%;height:42%;bottom:-12%;border-radius:50% 50% 0 0;
+    background:currentColor;opacity:.14
+  }
+  .avatar-placeholder span{font-family:var(--mono);font-size:max(16px,1vw);letter-spacing:.16em;z-index:1;opacity:.62}
+  .member-name{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(20px,1.5vw);
+    font-weight:500;
+    line-height:1.12;
+    letter-spacing:-.015em
+  }
+
+  .news-board{
+    display:grid;
+    grid-template-columns:minmax(0,1.35fr) minmax(280px,.9fr);
+    gap:1.4vw;
+    flex:1;
+    align-items:stretch;
+    margin-top:3vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .55);
+    min-height:0
+  }
+  .headline-panel{
+    background:var(--accent);
+    color:var(--accent-on);
+    padding:3vh 2.4vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:2vh;
+    min-width:0;
+    min-height:0;
+    overflow:hidden
+  }
+  .news-tag{
+    font-family:var(--mono);
+    font-size:max(11px,.78vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.7);
+    margin-bottom:1.2vh
+  }
+  .news-title{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:min(2.6vw,4.8vh);
+    line-height:1.04;
+    letter-spacing:-.025em;
+    font-weight:300;
+    color:#fff
+  }
+  .news-meta{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(16px,1.05vw);
+    line-height:1.55;
+    color:rgba(255,255,255,.82);
+    margin-top:1.8vh;
+    max-width:62ch
+  }
+  .signal-stack{
+    background:#f5f5f4;
+    display:grid;
+    grid-template-rows:repeat(4,minmax(0,1fr));
+    border-top:2px solid var(--border-subtle);
+    min-height:0
+  }
+  .signal-stack>div{
+    border-bottom:1px solid var(--border-subtle);
+    padding:2.2vh 1.7vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:.8vh;
+    min-width:0
+  }
+  .signal-stack>div:last-child{border-bottom:0}
+  .signal-stack span{
+    font-family:var(--mono);
+    font-size:max(11px,.78vw);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-helper)
+  }
+  .signal-stack strong{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(18px,1.35vw);
+    line-height:1.18;
+    letter-spacing:-.015em;
+    font-weight:500;
+    color:var(--text-primary)
+  }
+
+  .demo-step-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-rows:repeat(2,minmax(0,1fr));
+    gap:1.1vw;
+    flex:1;
+    align-items:stretch;
+    margin-top:3vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .55);
+    min-height:0
+  }
+  .demo-step{
+    background:#f5f5f4;
+    border-top:2px solid var(--border-subtle);
+    padding:2vh 1.35vw;
+    display:flex;
+    flex-direction:column;
+    gap:1vh;
+    min-width:0;
+    min-height:0
+  }
+  .demo-step.accent{background:var(--accent);color:var(--accent-on);border-top-color:var(--accent)}
+  .step-num{
+    font-family:var(--mono);
+    font-size:max(12px,.84vw);
+    letter-spacing:.16em;
+    color:var(--text-helper)
+  }
+  .demo-step.accent .step-num{color:rgba(255,255,255,.7)}
+  .step-title{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(20px,1.45vw);
+    line-height:1.12;
+    letter-spacing:-.015em;
+    font-weight:500
+  }
+  .step-note{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(15px,1vw);
+    line-height:1.45;
+    color:var(--text-secondary);
+    margin-top:auto
+  }
+  .demo-step.accent .step-note{color:rgba(255,255,255,.82)}
+
+  .time-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:1.2vw;
+    flex:1;
+    align-items:stretch;
+    margin-top:3vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .55);
+    min-height:0
+  }
+  .time-card{
+    background:#f5f5f4;
+    border-top:2px solid var(--border-subtle);
+    padding:2.4vh 1.5vw;
+    display:flex;
+    flex-direction:column;
+    gap:1.4vh;
+    min-width:0;
+    min-height:0
+  }
+  .time-card.accent{background:var(--accent);color:var(--accent-on);border-top-color:var(--accent)}
+  .time-code{
+    font-family:var(--mono);
+    font-size:max(12px,.84vw);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-helper)
+  }
+  .time-card.accent .time-code{color:rgba(255,255,255,.72)}
+  .time-line{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(22px,1.65vw);
+    line-height:1.08;
+    letter-spacing:-.02em;
+    font-weight:500
+  }
+  .time-note{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(15px,1.02vw);
+    line-height:1.48;
+    color:var(--text-secondary);
+    margin-top:auto
+  }
+  .time-card.accent .time-note{color:rgba(255,255,255,.82)}
 
   /* 时间线轴 — 通用 axis token, 横纵共享
      axis 列 = 24px 固定宽,dot 直径 8px,绝对居中在 axis 列中线 (12px)
@@ -1188,7 +1400,7 @@
     window.__lowPowerMode = stored === '1' || (stored === null && reduced);
     function updateHint(){
       const hint = document.getElementById('hint');
-      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · ESC 索引`;
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · D 下载 · ESC 索引`;
     }
     window.__setLowPowerMode = function(on, opts={}){
       window.__lowPowerMode = !!on;
@@ -1206,8 +1418,8 @@
   })();
 </script>
 
-<canvas id="bg-grid" class="bg"></canvas>
-<div id="hint">→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · ESC 索引</div>
+
+<div id="hint">← → 翻页 · B 动态 · E 编辑 · D 下载 · ESC 索引</div>
 
 <div id="deck">
 
@@ -1239,421 +1451,189 @@
   <div class="canvas-card">
     <canvas class="ascii-bg" aria-hidden="true"></canvas>
     <div class="chrome-min">
-      <div class="l">Project 15 · Financial News &amp; Portfolio Impact</div>
-      <div class="r">CLOSEAI · 01 / 10</div>
+      <div class="l">Project 15 · CLOSEAI</div>
+      <div class="r">01 / 12</div>
     </div>
-
-    <!-- 主体:padding 必须为 0,不要再叠 5vw,否则左右对不齐 chrome-min -->
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
-      <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em">Team CLOSEAI · Portfolio Intelligence</div>
-
-      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(9.6vw,17vh);line-height:.96;letter-spacing:-.025em;color:#fff">Financial News &amp;<br/>Portfolio <span style="font-style:italic;font-weight:300">Impact</span> Service</h1>
-
-      <div data-anim="bottom" style="display:grid;grid-template-rows:auto auto;gap:1.6vh;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh">
-        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86)">Connecting breaking news to the holdings it actually moves — automatically.</div>
+      <div data-anim="kicker" class="t-meta" style="color: rgba(255, 255, 255, 0.78); letter-spacing: 0.22em">15-MINUTE PITCH · SWISS EDITION</div>
+      <h1 data-anim="title" style="align-self: center; font-family: var(--sans),var(--sans-zh); font-weight: 200; font-size: min(9.2vw, 16.5vh); line-height: 0.96; letter-spacing: -0.03em; color: rgb(255, 255, 255)">Financial News &amp;<br>Portfolio <span style="font-style:italic;font-weight:300">Impact</span> Service</h1>
+      <div data-anim="bottom" style="display: grid; grid-template-rows: auto auto; gap: 1.6vh; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh">
+        <div data-anim="lead" class="lead" style="max-width: 54ch; color: rgba(255, 255, 255, 0.86)">We turn breaking finance news into a clear answer: what moved, why it moved, and what it means for the holdings a team actually owns.</div>
         <div style="display:flex;justify-content:space-between;align-items:end">
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">Java · Spring Boot · LLM Agent · Chart.js 4</div>
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">→ swipe / arrow keys</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">5 days · 5 people · 1 credible impact loop</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">E edit · D download · arrow keys present</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-
-<!-- ============ Slide 2 · S03 Split Statement · The Problem ============ -->
-<section class="slide" data-animate="statement" data-layout="S03">
-  <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · The Problem</div>
-      <div class="r">02 / 10</div>
-    </div>
-    <div class="split-half" style="margin-top:2vh">
-      <div class="half" style="padding:0 3.6vw 0 0;justify-content:center">
-        <div class="t-cat" style="margin-bottom:2vh">THE PROBLEM</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8.2vh);line-height:1.05;letter-spacing:-.03em;color:var(--text-primary)">News moves markets<br/>faster than investors<br/>can <span style="font-style:italic;font-weight:300;color:var(--accent)">read</span> it.</h2>
-      </div>
-      <div class="half r-border" style="padding:0 0 0 3.6vw;justify-content:center;gap:2.4vh">
-        <p class="body">A portfolio of a dozen tickers means a dozen separate news feeds — with no direct line back to what an investor actually holds.</p>
-        <div style="display:flex;flex-direction:column;gap:0">
-          <div data-pause style="padding:2vh 0;border-top:1px solid var(--border-subtle)"><span class="t-body-emp">Scattered sources</span> — no single view of news across a portfolio.</div>
-          <div data-pause style="padding:2vh 0;border-top:1px solid var(--border-subtle)"><span class="t-body-emp">Manual judgment</span> — bullish or bearish is slow, inconsistent, and late.</div>
-          <div data-pause style="padding:2vh 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)"><span class="t-body-emp" style="color:var(--accent)">No causal link</span> — sentiment is rarely tied back to price movement.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ Slide 3 · S04 Six Cells · Tech Stack ============ -->
 <section class="slide" data-animate="grid-reveal" data-layout="S04">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Tech Stack</div>
-      <div class="r">03 / 10</div>
-    </div>
+    <div class="chrome-min"><div class="l">Section · Team</div><div class="r">02 / 12</div></div>
     <div data-anim="line">
-      <div class="t-cat">VALIDATED STACK</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Six pieces, one impact loop</h2>
+      <div class="t-cat">OUR TEAM MEMBERS</div>
+      <h2 class="h-xl" style="margin-top:1.4vh">Five people, five angles on the same product</h2>
     </div>
-    <div class="sub-grid-3-2">
-      <article class="sub-card" data-pause>
-        <span class="nb-corner">01</span>
-        <i class="lucide" data-lucide="server"></i>
-        <h4 class="ttl">Java 17 + Spring Boot 3</h4>
-        <p class="desc">Backend API — non-negotiable per team standard.</p>
-      </article>
-      <article class="sub-card" data-pause>
-        <span class="nb-corner">02</span>
-        <i class="lucide" data-lucide="layout-dashboard"></i>
-        <h4 class="ttl">SPA + Chart.js 4</h4>
-        <p class="desc">Framework-flexible dashboard — holdings, news, and price impact side by side.</p>
-      </article>
-      <article class="sub-card" data-pause>
-        <span class="nb-corner">03</span>
-        <i class="lucide" data-lucide="database"></i>
-        <h4 class="ttl">MySQL 8</h4>
-        <p class="desc">Dockerized store, JPA/Hibernate ORM.</p>
-      </article>
-      <article class="sub-card" data-pause>
-        <span class="nb-corner">04</span>
-        <i class="lucide" data-lucide="brain-circuit"></i>
-        <h4 class="ttl">Single LLM Agent</h4>
-        <p class="desc">Validated sentiment JSON, prompt boundaries, and stored model evidence.</p>
-      </article>
-      <article class="sub-card" data-pause>
-        <span class="nb-corner">05</span>
-        <i class="lucide" data-lucide="newspaper"></i>
-        <h4 class="ttl">Finnhub + Twelve Data</h4>
-        <p class="desc">News provider plus quote fallback, wrapped behind replaceable interfaces.</p>
-      </article>
-      <article class="sub-card accent" data-pause>
-        <span class="nb-corner">06</span>
-        <i class="lucide" data-lucide="git-branch"></i>
-        <h4 class="ttl">Mock Provider + Swagger</h4>
-        <p class="desc">Demo-safe fallback data and a public read-only API contract.</p>
-      </article>
+    <div class="team-grid">
+      <div class="team-card"><div class="avatar-placeholder"><span>EL</span></div><div class="member-name">Evan Li</div></div>
+      <div class="team-card"><div class="avatar-placeholder"><span>DH</span></div><div class="member-name">David Hu</div></div>
+      <div class="team-card accent"><div class="avatar-placeholder"><span>VF</span></div><div class="member-name">Venessa Feng</div></div>
+      <div class="team-card"><div class="avatar-placeholder"><span>ES</span></div><div class="member-name">Ethan Sun</div></div>
+      <div class="team-card"><div class="avatar-placeholder"><span>TX</span></div><div class="member-name">Timothy Xue</div></div>
     </div>
   </div>
 </section>
 
-<!-- ============ Slide 4 · S05 Three Layers · Architecture ============ -->
-<section class="slide" data-animate="stack-build" data-layout="S05">
+<section class="slide" data-animate="statement" data-layout="S03">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Architecture</div>
-      <div class="r">04 / 10</div>
-    </div>
-    <div data-anim="line">
-      <div class="t-cat">SYSTEM ARCHITECTURE</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Three layers, one flow</h2>
-    </div>
-    <div class="stack-row">
-      <div class="stack-block b-ink" data-pause>
-        <span class="layer-nb">LAYER 01</span>
-        <div class="layer-icon"><i data-lucide="monitor"></i></div>
-        <h3 class="layer-ttl">Experience</h3>
-        <p class="layer-desc">SPA dashboard — portfolio browser, linked headline view, and Chart.js impact markers.</p>
-        <span class="layer-tag">FRONTEND</span>
+    <div class="chrome-min"><div class="l">Section · Problem</div><div class="r">03 / 12</div></div>
+    <div class="split-half" style="margin-top:2vh">
+      <div class="half" style="padding:0 3.6vw 0 0;justify-content:center">
+        <div class="t-cat" style="margin-bottom:2vh">THE STORY</div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:1.05;letter-spacing:-.03em;color:var(--text-primary)">A headline can move a holding<br>before a person has time to<br>connect the dots.</h2>
       </div>
-      <div class="stack-block b-grey" data-pause>
-        <span class="layer-nb">LAYER 02</span>
-        <div class="layer-icon"><i data-lucide="git-merge"></i></div>
-        <h3 class="layer-ttl">Service</h3>
-        <p class="layer-desc">Spring Boot REST API; validates the LLM Agent result and persists impact state.</p>
-        <span class="layer-tag">BACKEND · AGENT</span>
-      </div>
-      <div class="stack-block b-accent" data-pause>
-        <span class="layer-nb">LAYER 03</span>
-        <div class="layer-icon"><i data-lucide="database"></i></div>
-        <h3 class="layer-ttl">Data</h3>
-        <p class="layer-desc">MySQL 8 via JPA/Hibernate, caching prices, news, sentiment, and impact rows.</p>
-        <span class="layer-tag">MYSQL 8</span>
+      <div class="half r-border" style="padding:0 0 0 3.6vw;justify-content:center;gap:2.4vh">
+        <p class="body">Imagine reading: "Apple cuts iPhone production forecast." The story is important, but the investor still needs the answer that matters: which holding is affected, how much, and whether the market agreed.</p>
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div data-pause="" style="padding:2vh 0;border-top:1px solid var(--border-subtle)"><span class="t-body-emp">Too many feeds</span> — investors see headlines in scattered places.</div>
+          <div data-pause="" style="padding:2vh 0;border-top:1px solid var(--border-subtle)"><span class="t-body-emp">Too much guessing</span> — sentiment is still a manual judgment call.</div>
+          <div data-pause="" style="padding:2vh 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)"><span class="t-body-emp" style="color:var(--accent)">No impact loop</span> — the news is not tied back to the portfolio view.</div>
+        </div>
       </div>
     </div>
-    <div class="t-meta" style="margin-top:2.4vh">Scheduled ingestion · database-first reads · stale/asOf visible</div>
   </div>
 </section>
 
-<!-- ============ Slide 5 · S11 Horizontal Timeline · Pipeline ============ -->
-<section class="slide" data-animate="timeline-walk" data-layout="S11">
-  <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Implementation</div>
-      <div class="r">05 / 10</div>
-    </div>
-    <div data-anim="line">
-      <div class="t-cat">SENTIMENT → PRICE PIPELINE</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Four steps from headline to impact</h2>
-    </div>
-    <div class="timeline-h" style="margin-top:2vh">
-      <div class="tl-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="th-node up" data-pause>
-          <span class="label"><span class="yr">STEP 01</span><span class="name">Ingest Event</span><span class="desc">Finnhub news plus quote provider snapshot</span></span>
-          <span class="dot"></span>
-        </div>
-        <div class="th-node down" data-pause>
-          <span class="dot"></span>
-          <span class="label"><span class="yr">STEP 02</span><span class="name">Score Sentiment</span><span class="desc">LLM Agent returns validated JSON</span></span>
-        </div>
-        <div class="th-node up" data-pause>
-          <span class="label"><span class="yr">STEP 03</span><span class="name">Confirm Price</span><span class="desc">Match sentiment to the quote window</span></span>
-          <span class="dot"></span>
-        </div>
-        <div class="th-node down accent" data-pause>
-          <span class="dot"></span>
-          <span class="label"><span class="yr">STEP 04</span><span class="name">Persist Impact</span><span class="desc">Store dollar impact + consistency state</span></span>
-        </div>
-      </div>
-    </div>
-    <div class="t-meta" style="margin-top:auto">CONFIRMED · DIVERGENT · INCONCLUSIVE states stay visible</div>
-  </div>
-</section>
-
-<!-- ============ Slide 6 · S08 Duo Compare · Presentation Hook ============ -->
 <section class="slide" data-animate="duo-mirror" data-layout="S08">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Presentation Hook</div>
-      <div class="r">06 / 10</div>
-    </div>
-    <div data-anim="line">
-      <div class="t-cat">THE WOW MOMENT</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Side by side, in real time</h2>
-    </div>
-    <div class="duo-compare">
-      <div class="col" data-pause>
-        <div class="col-tag"><span class="num">01</span> BREAKING NEWS</div>
-        <h3 class="col-ttl">Seagate beats</h3>
-        <p class="col-desc">STX reported fiscal Q4 adjusted EPS of $5.71 on roughly $3.6B revenue, ahead of Wall Street expectations.</p>
-        <ul class="col-list">
-          <li>Current demo candidate from July 28-29, 2026 coverage</li>
-          <li>LLM Agent labels the event POSITIVE with earnings evidence</li>
-        </ul>
+    <div class="chrome-min"><div class="l">Section · Breaking News</div><div class="r">04 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">BREAKING NEWS PAGE</div><h2 class="h-xl" style="margin-top:1.4vh">One live story can prove the product</h2></div>
+    <div class="news-board">
+      <div class="headline-panel" data-pause="">
+        <div><div class="news-tag">JUL 28-29, 2026 · DEMO CANDIDATE</div><div class="news-title">Seagate beats fiscal Q4 estimates on cloud-storage demand</div><div class="news-meta">STX reported adjusted EPS of $5.71 on roughly $3.6B revenue. That is the kind of headline that should show up inside the portfolio view immediately.</div></div>
+        <div class="t-meta" style="color:rgba(255,255,255,.62)">Live quote comes from the provider, so the displayed price reaction stays honest and asOf-aware.</div>
       </div>
-      <span class="vrule"></span>
-      <div class="col accent" data-pause>
-        <div class="col-tag"><span class="num">02</span> PRICE REACTION</div>
-        <h3 class="col-ttl">+7% after-hours</h3>
-        <p class="col-desc">The provider-sourced quote reaction can turn a headline into a visible holding-level dollar impact.</p>
-        <ul class="col-list">
-          <li>POSITIVE sentiment matched to upward price reaction</li>
-          <li>State shown as CONFIRMED, with stale/asOf still visible</li>
-        </ul>
+      <div class="signal-stack" data-pause="">
+        <div><span>Headline</span><strong>POSITIVE</strong></div>
+        <div><span>Evidence</span><strong>EPS $5.71 vs $5.04 expected</strong></div>
+        <div><span>Market response</span><strong>About +7.4% after-hours</strong></div>
+        <div><span>State</span><strong>CONFIRMED</strong></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ Slide 7 · S13 Three Forces · Team & Delivery ============ -->
-<section class="slide" data-animate="three-forces" data-layout="S13">
+<section class="slide" data-animate="timeline-walk" data-layout="S11">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Team &amp; Delivery</div>
-      <div class="r">07 / 10</div>
-    </div>
-    <div data-anim="line">
-      <div class="t-cat">HOW WE SHIP</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">Three delivery rails</h2>
-    </div>
-    <div data-anim="up" style="display:grid;grid-template-columns:5fr 11fr;gap:2.4vw;flex:1;margin-top:3vh;align-items:stretch">
-      <div style="display:flex;flex-direction:column;justify-content:center;gap:1.6vh;border-top:2px solid var(--accent);padding-top:2.4vh" data-pause>
-        <div class="t-cat">5 DAYS</div>
-        <p class="body" style="opacity:.85">Keep every day demoable: first the data model, then quotes/news, then agent impact, then resilience.</p>
-      </div>
-      <div class="grid-3" style="gap:1.4vw">
-        <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
-          <div class="num-mega thin" style="font-size:5vw">01</div>
-          <h4 class="t-h-prod">Backend + Data</h4>
-          <p class="body-sm">Provider interfaces, scheduled ingestion, database-first read paths, and Swagger.</p>
-        </div>
-        <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
-          <div class="num-mega thin" style="font-size:5vw">02</div>
-          <h4 class="t-h-prod">Frontend + Demo</h4>
-          <p class="body-sm">Linked view, Chart.js price marker, portfolio CRUD, and clear state labels.</p>
-        </div>
-        <div class="card-fill" style="padding:2.6vh 1.8vw;display:flex;flex-direction:column;gap:1vh" data-pause>
-          <div class="num-mega thin" style="font-size:5vw;color:var(--accent)">03</div>
-          <h4 class="t-h-prod">Reliability + QA</h4>
-          <p class="body-sm">Mock Provider, stale/asOf handling, schema rejection, and rehearsal data.</p>
-        </div>
-      </div>
-    </div>
+    <div class="chrome-min"><div class="l">Section · Product</div><div class="r">05 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">WHAT THE WEBSITE DOES</div><h2 class="h-xl" style="margin-top:1.4vh">It turns a headline into a holding-level answer</h2></div>
+    <div class="timeline-h" style="margin-top:2vh"><div class="tl-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="th-node up" data-pause=""><span class="label"><span class="yr">01</span><span class="name">Watch holdings</span><span class="desc">User stores the portfolio first</span></span><span class="dot"></span></div>
+      <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">02</span><span class="name">Pull news</span><span class="desc">Company stories are fetched per ticker</span></span></div>
+      <div class="th-node up" data-pause=""><span class="label"><span class="yr">03</span><span class="name">Score sentiment</span><span class="desc">The LLM Agent returns validated JSON</span></span><span class="dot"></span></div>
+      <div class="th-node down accent" data-pause=""><span class="dot"></span><span class="label"><span class="yr">04</span><span class="name">Compute impact</span><span class="desc">Price move, dollar impact, and alignment are stored</span></span></div>
+    </div></div>
+    <div class="t-meta" style="margin-top:auto">The linked view is the point: the user sees the story, the market response, and the impact in one place.</div>
   </div>
 </section>
 
-<!-- ============ Slide 8 · S06 KPI Tower · Feature Priorities ============ -->
 <section class="slide" data-animate="measure-up" data-layout="S06">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Roadmap</div>
-      <div class="r">08 / 10</div>
+    <div class="chrome-min"><div class="l">Section · Demo Steps</div><div class="r">06 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">COMPLETE DEMO FLOW</div><h2 class="h-xl" style="margin-top:1.4vh">The 6 clicks we show live</h2></div>
+    <div class="demo-step-grid">
+      <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Open the portfolio</div><div class="step-note">Start from the normal holdings dashboard so the audience sees a calm baseline.</div></div>
+      <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Trigger breaking news</div><div class="step-note">Load the Seagate/STX example and show the headline inside the portfolio context.</div></div>
+      <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">Reveal sentiment</div><div class="step-note">The LLM Agent gives a validated label, not a vague paragraph.</div></div>
+      <div class="demo-step" data-pause=""><div class="step-num">04</div><div class="step-title">Show the chart marker</div><div class="step-note">The price line and news marker make the timing obvious.</div></div>
+      <div class="demo-step" data-pause=""><div class="step-num">05</div><div class="step-title">Read impact</div><div class="step-note">Direction, alignment, and dollar impact are separated on purpose.</div></div>
+      <div class="demo-step" data-pause=""><div class="step-num">06</div><div class="step-title">Flip to Mock</div><div class="step-note">Show that the page still works when upstream data is stale or unavailable.</div></div>
     </div>
-    <div data-anim="line">
-      <div class="t-cat">FEATURE PRIORITIES</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">P0 → P3, built in order</h2>
+  </div>
+</section>
+
+<section class="slide" data-animate="stack-build" data-layout="S05">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">Section · Architecture</div><div class="r">07 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">CACHE-FIRST ARCHITECTURE</div><h2 class="h-xl" style="margin-top:1.4vh">Read fast, stay honest, recover gracefully</h2></div>
+    <div class="stack-row">
+      <div class="stack-block b-ink" data-pause=""><span class="layer-nb">LAYER 01</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="monitor" aria-hidden="true" class="lucide lucide-monitor"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></div><h3 class="layer-ttl">Frontend</h3><p class="layer-desc">Swiss-style SPA with editable text, step-by-step reveal, and a download button for the edited copy.</p><span class="layer-tag">EXPERIENCE</span></div>
+      <div class="stack-block b-grey" data-pause=""><span class="layer-nb">LAYER 02</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="git-merge" aria-hidden="true" class="lucide lucide-git-merge"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M6 21V9a9 9 0 0 0 9 9"></path></svg></div><h3 class="layer-ttl">Service</h3><p class="layer-desc">Spring Boot validates sentiment, stores impact, and exposes a read-only API for the presentation.</p><span class="layer-tag">API + LOGIC</span></div>
+      <div class="stack-block b-accent" data-pause=""><span class="layer-nb">LAYER 03</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="database" aria-hidden="true" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></div><h3 class="layer-ttl">Data</h3><p class="layer-desc">MySQL keeps prices, news, sentiment, and impact rows cached so the UI can read from one place.</p><span class="layer-tag">CACHE + FRESHNESS</span></div>
     </div>
-    <div class="bar-towers">
-      <div class="bar-tower" data-pause>
-        <div class="cap"><i class="lucide" data-lucide="list" style="width:1.6vw;height:1.6vw"></i></div>
-        <div class="body-block h-4 b-accent">
-          <span class="lbl">P0 · CORE</span>
-          <span class="nb">Browse</span>
-          <span class="sub">View portfolio &amp; holdings</span>
-        </div>
+    <div class="t-meta" style="margin-top:2.4vh">Scheduled ingestion · database-first reads · stale/asOf visible · Mock Provider fallback</div>
+  </div>
+</section>
+
+<section class="slide" data-animate="duo-mirror" data-layout="S08">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">Section · Engine</div><div class="r">08 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">SENTIMENT &amp; IMPACT ENGINE</div><h2 class="h-xl" style="margin-top:1.4vh">The agent is powerful only when boxed in</h2></div>
+    <div class="news-board">
+      <div class="headline-panel" data-pause="">
+        <div><div class="news-tag">VALIDATION FIRST</div><div class="news-title" style="font-size:min(3.6vw,6.8vh)">One LLM Agent, one JSON shape, one stored result</div><div class="news-meta">We reject malformed output, guard against prompt injection in headlines, and keep the model version visible so the result is reproducible.</div></div>
+        <pre style="margin:0;padding:1.6vh 0 0;font-family:var(--mono);font-size:max(14px,1vw);line-height:1.55;white-space:pre-wrap;color:rgba(255,255,255,.82)">{
+  "label": "NEGATIVE",
+  "score": -0.82,
+  "confidence": 0.97,
+  "rationale": "forecast cut"
+}</pre>
       </div>
-      <div class="bar-tower" data-pause>
-        <div class="cap"><i class="lucide" data-lucide="activity" style="width:1.6vw;height:1.6vw"></i></div>
-        <div class="body-block h-3">
-          <span class="lbl">P1 · LINKED VIEW</span>
-          <span class="nb">Impact</span>
-          <span class="sub">Headline + price + holding</span>
-        </div>
-      </div>
-      <div class="bar-tower" data-pause>
-        <div class="cap"><i class="lucide" data-lucide="circle-plus" style="width:1.6vw;height:1.6vw"></i></div>
-        <div class="body-block h-2">
-          <span class="lbl">P2 · AGENT</span>
-          <span class="nb">Score</span>
-          <span class="sub">LLM sentiment + rationale</span>
-        </div>
-      </div>
-      <div class="bar-tower" data-pause>
-        <div class="cap"><i class="lucide" data-lucide="circle-minus" style="width:1.6vw;height:1.6vw"></i></div>
-        <div class="body-block h-1">
-          <span class="lbl">P3 · RESILIENCE</span>
-          <span class="nb">Fallback</span>
-          <span class="sub">Mock data + stale flag</span>
-        </div>
+      <div class="signal-stack" data-pause="">
+        <div><span>CONFIRMED</span><strong>sentiment and price agree</strong></div>
+        <div><span>DIVERGENT</span><strong>market moved the other way</strong></div>
+        <div><span>INCONCLUSIVE</span><strong>not enough data to force a verdict</strong></div>
+        <div><span>Why it matters</span><strong>Divergence is a product signal, not an error</strong></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ Slide 9 · S02 Vertical Timeline + KPI · 5-Day Roadmap ============ -->
+<section class="slide" data-animate="measure-up" data-layout="S06">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">Section · Priorities</div><div class="r">09 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">FEATURE PRIORITIES</div><h2 class="h-xl" style="margin-top:1.4vh">What we built first, and why</h2></div>
+    <div class="bar-towers">
+      <div class="bar-tower" data-pause=""><div class="cap"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="list" aria-hidden="true" class="lucide lucide-list" style="width:1.6vw;height:1.6vw"><path d="M3 5h.01"></path><path d="M3 12h.01"></path><path d="M3 19h.01"></path><path d="M8 5h13"></path><path d="M8 12h13"></path><path d="M8 19h13"></path></svg></div><div class="body-block h-4 b-accent"><span class="lbl">P0 · CORE</span><span class="nb">Browse</span><span class="sub">Holdings and news feed</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="activity" aria-hidden="true" class="lucide lucide-activity" style="width:1.6vw;height:1.6vw"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg></div><div class="body-block h-3"><span class="lbl">P1 · LINKED VIEW</span><span class="nb">Impact</span><span class="sub">Headline + price + holding</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="circle-plus" aria-hidden="true" class="lucide lucide-circle-plus" style="width:1.6vw;height:1.6vw"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg></div><div class="body-block h-2"><span class="lbl">P2 · AGENT</span><span class="nb">Score</span><span class="sub">Validated sentiment and rationale</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="circle-minus" aria-hidden="true" class="lucide lucide-circle-minus" style="width:1.6vw;height:1.6vw"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path></svg></div><div class="body-block h-1"><span class="lbl">P3 · RESILIENCE</span><span class="nb">Fallback</span><span class="sub">Mock data + stale flag</span></div></div>
+    </div>
+  </div>
+</section>
+
 <section class="slide" data-animate="progression" data-layout="S02">
   <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">Section · Roadmap</div>
-      <div class="r">09 / 10</div>
-    </div>
-    <div data-anim="line">
-      <div class="t-cat">5-DAY ROADMAP</div>
-      <h2 class="h-xl" style="margin-top:1.4vh">From schema to demo day</h2>
-    </div>
-    <div class="timeline-v">
-      <div class="tl-node" data-pause>
-        <div class="dot"></div>
-        <span class="yr">Day 1</span>
-        <span class="multi">01</span>
-        <p class="desc">Schema, portfolio CRUD, and provider contracts.</p>
-      </div>
-      <div class="tl-node" data-pause>
-        <div class="dot"></div>
-        <span class="yr">Days 2-3</span>
-        <span class="multi">02</span>
-        <p class="desc">Quotes, news ingestion, scheduled cache, and linked read API.</p>
-      </div>
-      <div class="tl-node" data-pause>
-        <div class="dot"></div>
-        <span class="yr">Day 4</span>
-        <span class="multi">03</span>
-        <p class="desc">LLM Agent sentiment, persisted impact, and state labeling.</p>
-      </div>
-      <div class="tl-node accent" data-pause>
-        <div class="dot"></div>
-        <span class="yr">Day 5</span>
-        <span class="multi">04</span>
-        <p class="desc">Mock fallback, tests, Swagger, and presentation rehearsal.</p>
-      </div>
-    </div>
-    <div class="kpi-row-4" data-pause>
-      <div class="kpi-cell">
-        <div class="lbl">DAYS</div>
-        <div class="nb">5</div>
-        <div class="note">each leaves a runnable slice</div>
-      </div>
-      <div class="kpi-cell">
-        <div class="lbl">STATES</div>
-        <div class="nb">3</div>
-        <div class="note">confirmed / divergent / inconclusive</div>
-      </div>
-      <div class="kpi-cell">
-        <div class="lbl">PROVIDERS</div>
-        <div class="nb">3</div>
-        <div class="note">Finnhub + Twelve Data + Mock</div>
-      </div>
-      <div class="kpi-cell">
-        <div class="lbl">PUBLIC API</div>
-        <div class="nb">1</div>
-        <div class="note">read-only evidence surface</div>
-      </div>
+    <div class="chrome-min"><div class="l">Section · Build Plan</div><div class="r">10 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">5-DAY BUILD PLAN</div><h2 class="h-xl" style="margin-top:1.4vh">A working slice every day</h2></div>
+    <div class="time-grid">
+      <div class="time-card" data-pause=""><div class="time-code">Day 1</div><div class="time-line">Schema and portfolio CRUD</div><div class="time-note">Start with the tables and the holdings flow.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Days 2-3</div><div class="time-line">Quotes, news, and cache</div><div class="time-note">Pull external data behind provider interfaces.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 4</div><div class="time-line">Agent + impact engine</div><div class="time-note">Connect sentiment to price movement and state labels.</div></div>
+      <div class="time-card accent" data-pause=""><div class="time-code">Day 5</div><div class="time-line">Mock fallback and rehearsal</div><div class="time-note">Lock in the demo path and keep it stable.</div></div>
     </div>
   </div>
 </section>
 
-
-<!-- ============ 示例:最后一页 · Closing Manifesto · 左 IKB+ASCII / 右白底 takeaway ============
-     与封面 IKB 首尾呼应,但收束更克制:左半保留 ASCII 呼吸场承载宣言,右半白底列 3 条 takeaway.
-     第 03 条用 var(--accent) IKB 蓝强调("单一锚点"原则),首尾形成"色彩闭环". -->
-<section class="slide split" data-animate="split-statement" data-layout="S10">
+<section class="slide" data-animate="three-forces" data-layout="S13">
   <div class="canvas-card">
-    <div class="split-half">
-      <!-- 左半 · IKB 宣言 + ASCII 呼吸场 -->
-      <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden">
-        <canvas class="ascii-bg" aria-hidden="true"></canvas>
-        <div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1">
-          <div class="l">10 / 10</div>
-          <div class="r">CLOSING</div>
-        </div>
-
-        <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
-          <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br/>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2>
-          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">Every headline in your portfolio, scored, price-checked, and connected to the holding it actually moves.</div>
-        </div>
-
-        <div data-anim="signature" style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
-          <div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI · 5 members</div>
-          <div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div>
-        </div>
-      </div>
-
-      <!-- 右半 · 三条 takeaway · 白底承载理性收束 -->
-      <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between">
-        <div class="chrome-min">
-          <div class="l">TAKEAWAYS</div>
-          <div class="r">03 RULES</div>
-        </div>
-
-        <div data-anim="rules" style="display:flex;flex-direction:column;gap:0">
-          <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div>
-            <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">News → Sentiment → Impact</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">A single automated loop turns headlines into stored, holding-level evidence.</p>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div>
-            <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">Built to survive stale data</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider interfaces, cached reads, stale/asOf, and Mock mode keep the demo honest.</p>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div>
-            <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">Demo one credible loop</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Show one headline, one quote reaction, one portfolio impact, and one state label.</p>
-            </div>
-          </div>
-        </div>
-
-        <div data-anim="foot" class="t-meta" style="color:var(--text-helper);text-align:right">→ 完 · END OF FIELD NOTE</div>
-      </div>
+    <div class="chrome-min"><div class="l">Section · Presentation Run</div><div class="r">11 / 12</div></div>
+    <div data-anim="line"><div class="t-cat">15-MINUTE RUN</div><h2 class="h-xl" style="margin-top:1.4vh">This pacing fills the full slot cleanly</h2></div>
+    <div class="time-grid">
+      <div class="time-card" data-pause=""><div class="time-code">0:00-1:00</div><div class="time-line">Open with the team and the goal</div><div class="time-note">Say what we built and why it matters.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">1:00-3:00</div><div class="time-line">Team, problem, and breaking news</div><div class="time-note">Show the story before the system.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">3:00-8:00</div><div class="time-line">Demo the loop end to end</div><div class="time-note">Holdings → news → sentiment → impact → fallback.</div></div>
+      <div class="time-card accent" data-pause=""><div class="time-code">8:00-15:00</div><div class="time-line">Architecture, plan, and questions</div><div class="time-note">Keep the ending calm, short, and confident.</div></div>
     </div>
   </div>
+</section>
+
+<section class="slide split" data-animate="split-statement" data-layout="S10">
+  <div class="canvas-card"><div class="split-half">
+    <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden"><canvas class="ascii-bg" aria-hidden="true"></canvas><div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1"><div class="l">12 / 12</div><div class="r">CLOSING</div></div><div data-anim="manifesto" style="display: flex; flex-direction: column; gap: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div><h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2><div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">The deck ends where the product should: one story, one chart, one portfolio impact, and one honest state.</div></div><div data-anim="signature" style="display: flex; justify-content: space-between; align-items: end; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI</div><div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div></div></div>
+    <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between"><div class="chrome-min"><div class="l">TAKEAWAYS</div><div class="r">03 RULES</div></div><div data-anim="rules" style="display: flex; flex-direction: column; gap: 0px"><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One linked view</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The user sees the headline and the holding in the same breath.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One resilient path</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider fallback and stale/asOf keep the demo alive and honest.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">One 15-minute story</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The pace is fixed: team, problem, news, demo, engine, roadmap, close.</p></div></div></div><div data-anim="foot" class="t-meta" style="color: var(--text-helper); text-align: right">→ 完 · END OF FIELD NOTE</div></div>
+  </div></div>
 </section>
 
 </div>
@@ -1827,32 +1807,23 @@ let editing=false;
 
 deck.style.width=(total*100)+'vw';
 
-function syncNavDots(){
-  const dots=[...nav.querySelectorAll('.dot')];
-  if(dots.length===total){
-    dots.forEach((d,i)=>{
-      d.dataset.i=i;
-      d.setAttribute('aria-label','Page '+(i+1));
-      d.onclick=()=>jumpTo(i);
-    });
-    return;
-  }
-  nav.innerHTML='';
-  slides.forEach((s,i)=>{
-    const b=document.createElement('button');
-    b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
-    b.onclick=()=>jumpTo(i);
-    nav.appendChild(b);
-  });
-}
-syncNavDots();
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>jumpTo(i);
+  nav.appendChild(b);
+});
 
 function editableTargets(){
   const selector=[
     '.chrome-min .l','.chrome-min .r',
-    'h1','h2','h3','h4','p','li',
+    'h1','h2','h3','h4','p','li','strong','pre',
     '.t-cat','.t-meta','.lead','.body','.body-sm','.t-body','.t-body-sm','.t-body-emp','.t-h-prod',
     '.ttl','.desc','.nb-corner',
+    '.member-name','.avatar-placeholder span',
+    '.news-tag','.news-title','.news-meta',
+    '.step-num','.step-title','.step-note',
+    '.time-code','.time-line','.time-note',
     '.layer-nb','.layer-ttl','.layer-desc','.layer-tag',
     '.yr','.multi','.name','.label .desc',
     '.col-tag','.col-ttl','.col-desc',
@@ -1883,28 +1854,23 @@ function setEditing(on){
   const hint=document.getElementById('hint');
   if(hint) hint.textContent=editing
     ? '编辑模式 · 点击文字直接改 · ESC 退出'
-    : `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · ESC 索引`;
+    : `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · D 下载 · ESC 索引`;
 }
 
-if(prevSlideBtn) prevSlideBtn.addEventListener('click', backward);
-if(nextSlideBtn) nextSlideBtn.addEventListener('click', forward);
-if(editToggle) editToggle.addEventListener('click', ()=>setEditing(!editing));
 function currentDeckHtml(){
   const clone=document.documentElement.cloneNode(true);
   clone.classList.remove('editing');
   const body=clone.querySelector('body');
   if(body){
     body.classList.remove('editing');
+    body.removeAttribute('data-download-ready');
     body.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','false'));
   }
   const hint=clone.querySelector('#hint');
-  if(hint) hint.textContent='→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · ESC 索引';
-  clone.querySelectorAll('.dot').forEach((dot,i)=>{
-    dot.dataset.i=i;
-    dot.setAttribute('aria-label','Page '+(i+1));
-  });
+  if(hint) hint.textContent='→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · D 下载 · ESC 索引';
   return '<!DOCTYPE html>\n' + clone.outerHTML;
 }
+
 function downloadCurrentDeck(){
   document.body.dataset.downloadReady='1';
   const blob=new Blob([currentDeckHtml()],{type:'text/html;charset=utf-8'});
@@ -1918,9 +1884,13 @@ function downloadCurrentDeck(){
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
+if(prevSlideBtn) prevSlideBtn.addEventListener('click', backward);
+if(nextSlideBtn) nextSlideBtn.addEventListener('click', forward);
+if(editToggle) editToggle.addEventListener('click', ()=>setEditing(!editing));
+if(downloadToggle) downloadToggle.addEventListener('click', downloadCurrentDeck);
 window.__currentDeckHtml=currentDeckHtml;
 window.__downloadCurrentDeck=downloadCurrentDeck;
-if(downloadToggle) downloadToggle.addEventListener('click', downloadCurrentDeck);
 
 function go(n){
   if(lock)return;
@@ -2005,7 +1975,6 @@ function buildOverview(){
     wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(isDark?'var(--ink)':'var(--paper)');
     const clone=s.cloneNode(true);
     clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
-    clone.querySelectorAll('[contenteditable]').forEach(el=>{el.contentEditable='false'});
     wrap.appendChild(clone);
     const label=document.createElement('div');
     /* ESC 索引卡 label */
@@ -2097,7 +2066,7 @@ deck.addEventListener('click',e=>{
 const initialSlideParam = new URLSearchParams(location.search).get('slide');
 const initialSlide = initialSlideParam ? Number(initialSlideParam) - 1 : 0;
 jumpTo(Number.isFinite(initialSlide) ? initialSlide : 0);
-</script>
+</script><div id="overview" style="position: fixed; inset: 0px; z-index: 100; background: rgba(250, 250, 248, 0.96); backdrop-filter: blur(12px); display: none; overflow-y: auto; padding: 4vh 4vw"></div>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
 
@@ -2142,7 +2111,7 @@ if(motion){
       el.style.transform='';
     });
     /* 同时复位需要被 recipe 接管的元素 */
-    slide.querySelectorAll('.row-fill,.tl-node,.stack-block,.bar-tower,.sub-card,.col,.vrule,.kpi-cell')
+    slide.querySelectorAll('.row-fill,.tl-node,.stack-block,.bar-tower,.sub-card,.team-card,.col,.vrule,.kpi-cell')
       .forEach(el=>{el.style.cssText = el.dataset._origCss || el.style.cssText;});
   }
 
@@ -2222,7 +2191,7 @@ if(motion){
   function rGridReveal(slide, all){
     const head = slide.querySelector('[data-anim="line"]');
     if(head) fade(head, {duration:.6, y:10});
-    const cards = [...slide.querySelectorAll('.sub-card')];
+    const cards = [...slide.querySelectorAll('.sub-card,.team-card')];
     cards.forEach((card, i)=>{
       animate(card, {opacity:[0,1], y:[20,0], scale:[.96, 1]},
         {duration:.5, delay:.3 + i*.09, easing:EASE_ENTRY_EXP});
@@ -2775,7 +2744,7 @@ if(motion){
   function revealStatic(slide){
     resetAnims(slide);
     document.getAnimations?.().forEach(a=>a.cancel());
-    slide.querySelectorAll('[data-anim],.row-fill,.tl-node,.stack-block,.bar-tower,.sub-card,.col,.vrule,.kpi-cell,.card-fill,.card-accent,.card-ink')
+    slide.querySelectorAll('[data-anim],.row-fill,.tl-node,.stack-block,.bar-tower,.sub-card,.team-card,.col,.vrule,.kpi-cell,.card-fill,.card-accent,.card-ink')
       .forEach(el=>{
         el.style.opacity='1';
         el.style.transform='none';
@@ -2921,5 +2890,6 @@ if(motion){
   start();
 })();
 </script>
-</body>
-</html>
+
+
+</body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483647"></div></html>
