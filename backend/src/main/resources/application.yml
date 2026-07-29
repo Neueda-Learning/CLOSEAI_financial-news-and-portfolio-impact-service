@@ -64,6 +64,10 @@ app:
     prompt-version: v1
     # Each article costs one LLM call, so cap parallelism (decision 5, cost 2)
     max-concurrency: 3
+    # How many headlines one analysis run pays for. Below the llmSentiment
+    # limiter's 20/min so a run cannot exhaust it, and a longer backlog just
+    # drains over successive runs instead of spending the quota in one pass.
+    batch-size: ${SENTIMENT_BATCH_SIZE:15}
 
   impact:
     # Below this absolute price move the result is INCONCLUSIVE - the swing is
@@ -81,6 +85,10 @@ app:
     # finished, so a task can never overlap itself (EC-23).
     news-poll-delay: 900000      # 15 min
     quote-refresh-delay: 60000   # 1 min, trading hours only
+    # Faster than the news poll on purpose: a batch is capped, so a burst of
+    # articles needs several runs to drain and waiting a full poll interval
+    # between them would leave stories unscored for an hour.
+    sentiment-delay: 300000      # 5 min
 
   admin:
     # Off by default (contract 4.4 requirement 1). The destructive endpoints -
