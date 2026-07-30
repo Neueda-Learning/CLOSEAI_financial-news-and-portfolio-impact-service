@@ -72,9 +72,15 @@ export const impactService = {
       if (symbol) q.set('symbol', symbol)
       try { const page = await apiFetch<PagedResponse<NewsRow>>(`/news?${q}`); allRows.push(...page.content) } catch { break }
     }
-    const results = await Promise.all(allRows.map(async (row) => {
-      try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
-    }))
+    const results: ImpactEvent[] = []
+    const batchSize = 20
+    for (let i = 0; i < allRows.length; i += batchSize) {
+      const batch = allRows.slice(i, i + batchSize)
+      const batchResults = await Promise.all(batch.map(async (row) => {
+        try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
+      }))
+      results.push(...batchResults)
+    }
     return results
   },
   async getImpactEvent(id: number, portfolioId: number) {
