@@ -36,10 +36,14 @@ function PortfolioMarketCard({
   holding,
   onEdit,
   onDelete,
+  onSelect,
+  isSelected,
 }: {
   holding: Holding
   onEdit: (holding: Holding) => void
   onDelete: (id: number) => void
+  onSelect: (ticker: string) => void
+  isSelected: boolean
 }) {
   const marketValue = holding.marketValue
   const totalCost = holding.totalCost
@@ -48,7 +52,18 @@ function PortfolioMarketCard({
   const weight = holding.weight
 
   return (
-    <article className="market-card">
+    <article
+      className={isSelected ? 'market-card holding-filter-trigger is-selected' : 'market-card holding-filter-trigger'}
+      tabIndex={0}
+      aria-label={`Filter news by ${holding.ticker}`}
+      onClick={() => onSelect(holding.ticker)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(holding.ticker)
+        }
+      }}
+    >
       <div className="market-card-top">
         <div>
           <div className="stock-symbol">${holding.ticker}</div>
@@ -56,8 +71,8 @@ function PortfolioMarketCard({
         </div>
         <div className="market-actions">
           <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
-          <button type="button" onClick={() => onEdit(holding)}>Edit</button>
-          <button type="button" className="danger-text" onClick={() => onDelete(holding.id)}>Delete</button>
+          <button type="button" onClick={(event) => { event.stopPropagation(); onEdit(holding) }}>Edit</button>
+          <Button type="button" variant="danger" className="compact-button" onClick={(event) => { event.stopPropagation(); onDelete(holding.id) }}>Delete</Button>
         </div>
       </div>
       <div className="stock-price-row">
@@ -143,7 +158,7 @@ export function PortfolioImpactPage() {
   const [events, setEvents] = useState<ImpactEvent[]>([])
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
-  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
+  const tickers = useMemo(() => ['ALL', ...Array.from(new Set([...holdings.map((holding) => holding.ticker), ...events.flatMap((event) => event.affectedTickers)]))], [events, holdings])
   const filteredEvents = useMemo(
     () => events.filter((event) => {
       if (tickerFilter !== 'ALL' && !event.affectedTickers.includes(tickerFilter)) return false
@@ -213,7 +228,7 @@ export function PortfolioImpactPage() {
       <header className="module-topbar">
         <div>
           <p className="eyebrow">Portfolio Impact</p>
-          <h1>Holdings and news impact, side by side</h1>
+          <h1>News Impact</h1>
         </div>
         <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
           <span className={`view-cycle-glyph mode-${viewMode}`} aria-hidden="true">
@@ -256,9 +271,7 @@ export function PortfolioImpactPage() {
                         <strong>{portfolio.name}</strong>
                         <span>{currency(portfolioValue)} total value</span>
                       </button>
-                      <button type="button" className="danger-text" onClick={() => deletePortfolio(portfolio.id)}>
-                        Delete
-                      </button>
+                      <Button type="button" variant="danger" className="compact-button" onClick={() => deletePortfolio(portfolio.id)}>Delete</Button>
                     </article>
                     {isActive && open && portfolioDetailsExpanded && (
                       <AddHoldingModal
@@ -295,7 +308,14 @@ export function PortfolioImpactPage() {
             </div>
             <div className="market-stack">
               {holdings.map((holding) => (
-                <PortfolioMarketCard key={holding.id} holding={holding} onEdit={setEditingHolding} onDelete={deleteHolding} />
+                <PortfolioMarketCard
+                  key={holding.id}
+                  holding={holding}
+                  isSelected={tickerFilter === holding.ticker}
+                  onEdit={setEditingHolding}
+                  onDelete={deleteHolding}
+                  onSelect={(ticker) => { setTickerFilter(ticker); setVisiblePage(0) }}
+                />
               ))}
               {holdings.length === 0 && (
                 <article className="empty-state">
@@ -332,35 +352,26 @@ export function PortfolioImpactPage() {
               </div>
             </div>
             <div className="news-controls" aria-label="News filters and refresh controls">
-              <div className="ticker-filter">
-                {tickers.map((ticker) => (
-                  <button
-                    type="button"
-                    key={ticker}
-                    className={tickerFilter === ticker ? 'active' : ''}
-                    onClick={() => {
-                      setTickerFilter(ticker)
-                      setVisiblePage(0)
-                    }}
-                  >
-                    {ticker === 'ALL' ? 'All' : `$${ticker}`}
-                  </button>
-                ))}
+              <div className="news-filter-selects">
+                <label>
+                  <span>Holding</span>
+                  <select value={tickerFilter} onChange={(event) => { setTickerFilter(event.target.value); setVisiblePage(0) }}>
+                    {tickers.map((ticker) => <option key={ticker} value={ticker}>{ticker === 'ALL' ? 'All holdings' : `$${ticker}`}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Analysis</span>
+                  <select value={impactFilter} onChange={(event) => { setImpactFilter(event.target.value as typeof impactFilter); setVisiblePage(0) }}>
+                    <option value="ALL">All news</option>
+                    <option value="ANALYZED">Analyzed</option>
+                    <option value="PENDING">Pending</option>
+                  </select>
+                </label>
               </div>
-              <div className="impact-filter">
-                {(['ALL', 'ANALYZED', 'PENDING'] as const).map((mode) => (
-                  <button
-                    type="button"
-                    key={mode}
-                    className={impactFilter === mode ? 'active' : ''}
-                    onClick={() => { setImpactFilter(mode); setVisiblePage(0) }}
-                  >
-                    {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
-                  </button>
-                ))}
+              <div className="news-actions">
+                <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
+                <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
               </div>
-              <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
-              <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
             </div>
             <div className="news-impact-list page-turn" key={visiblePage}>
               {visibleEvents.map((event) => (

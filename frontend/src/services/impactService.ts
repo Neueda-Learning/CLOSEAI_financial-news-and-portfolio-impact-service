@@ -109,6 +109,29 @@ export const impactService = {
 
     return null
   },
+  async getPreviousNews(id: number): Promise<NewsNavigationItem | null> {
+    let page = 1
+    let totalPages = 1
+
+    while (page <= totalPages) {
+      const result = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page}&size=20`)
+      totalPages = result.totalPages
+      const index = result.content.findIndex((article) => article.id === id)
+      if (index >= 0) {
+        const previous = result.content[index - 1]
+        if (previous) return { id: previous.id, headline: previous.headline, source: previous.source }
+        if (page > 1) {
+          const previousPage = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page - 1}&size=20`)
+          const last = previousPage.content.at(-1)
+          return last ? { id: last.id, headline: last.headline, source: last.source } : null
+        }
+        return null
+      }
+      page += 1
+    }
+
+    return null
+  },
   async getImpactSummary(portfolioId: number) {
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
   },

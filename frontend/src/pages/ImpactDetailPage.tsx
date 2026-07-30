@@ -13,9 +13,11 @@ export function ImpactDetailPage() {
   const navigate = useNavigate()
   const [event, setEvent] = useState<ImpactEvent | undefined>(undefined)
   const [nextArticle, setNextArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
+  const [previousArticle, setPreviousArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isCommitting, setIsCommitting] = useState(false)
+  const [commitDirection, setCommitDirection] = useState<'next' | 'previous'>('next')
   const { activePortfolioId } = usePortfolio()
   const gesture = useRef<{ pointerId: number; startX: number; lastX: number; lastTime: number; velocity: number } | null>(null)
   const commitTimer = useRef<number | null>(null)
@@ -26,10 +28,11 @@ export function ImpactDetailPage() {
     let cancelled = false
     setDragX(0)
     setIsCommitting(false)
-    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId), impactService.getNextNews(eventId)]).then(([nextEvent, nextNews]) => {
+    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId), impactService.getNextNews(eventId), impactService.getPreviousNews(eventId)]).then(([nextEvent, nextNews, previousNews]) => {
       if (!cancelled) {
         setEvent(nextEvent)
         setNextArticle(nextNews)
+        setPreviousArticle(previousNews)
       }
     })
     return () => { cancelled = true }
@@ -68,29 +71,47 @@ export function ImpactDetailPage() {
     setIsDragging(false)
     const releasedX = Math.max(0, pointer.clientX - currentGesture.startX)
     const shouldAdvance = Boolean(nextArticle) && (releasedX > 92 || currentGesture.velocity > 0.6)
-    if (!shouldAdvance || !nextArticle) {
+    if (!shouldAdvance) {
       setDragX(0)
       return
     }
+    advanceToNext(releasedX)
+  }
+
+  function advanceToNext(releasedX = 0) {
+    if (!nextArticle || isCommitting) return
+    setCommitDirection('next')
     setIsCommitting(true)
     setDragX(Math.max(window.innerWidth, releasedX + 220))
     commitTimer.current = window.setTimeout(() => navigate(`/impact/${nextArticle.id}`), 280)
+  }
+
+  function advanceToPrevious() {
+    if (!previousArticle || isCommitting) return
+    setCommitDirection('previous')
+    setIsCommitting(true)
+    setDragX(-window.innerWidth)
+    commitTimer.current = window.setTimeout(() => navigate(`/impact/${previousArticle.id}`), 280)
   }
 
   if (!event) {
     return <p>Loading...</p>
   }
 
+  const swipeProgress = Math.min(Math.abs(dragX) / Math.max(1, window.innerWidth * 0.72), 1)
+  const nextCardTransform = `translate3d(${(-42 + swipeProgress * 42).toFixed(1)}px, 0, 0) scale(${(0.94 + swipeProgress * 0.06).toFixed(3)})`
+  const detailTransform = `translate3d(${dragX}px, 0, 0) scale(${(1 - swipeProgress * 0.035).toFixed(3)})`
+
   return (
     <main
-      className={isDragging ? 'news-detail-swipe-shell is-dragging' : isCommitting ? 'news-detail-swipe-shell is-committing' : 'news-detail-swipe-shell'}
+      className={isDragging ? 'news-detail-swipe-shell is-dragging' : isCommitting ? `news-detail-swipe-shell is-committing is-going-${commitDirection}` : 'news-detail-swipe-shell'}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishGesture}
       onPointerCancel={finishGesture}
     >
-      {nextArticle && <aside className="news-swipe-next-card" aria-hidden="true"><small>Next news</small><strong>{nextArticle.headline}</strong><span>{nextArticle.source} · Swipe right to open</span></aside>}
-      <div className="news-detail-swipe-content" style={{ transform: `translate3d(${dragX}px, 0, 0)` }}>
+      {nextArticle && <aside className="news-swipe-next-card" aria-hidden="true" style={{ transform: nextCardTransform }}><small>Up next</small><strong>{nextArticle.headline}</strong><span>{nextArticle.source} · Swipe right to open</span></aside>}
+      <div className="news-detail-swipe-content" style={{ transform: detailTransform }}>
       <div className="page-stack">
       <p className="eyebrow">Impact detail</p>
       <NewsInfoCard event={event} />
@@ -120,7 +141,7 @@ export function ImpactDetailPage() {
       <ImpactSummaryCard event={event} />
       </div>
       </div>
-      {nextArticle && <p className="news-swipe-hint">Swipe right for the next news item</p>}
+      {(previousArticle || nextArticle) && <div className="news-swipe-controls" aria-label="News navigation">{previousArticle && <button type="button" className="news-swipe-next-button" onClick={advanceToPrevious}><span aria-hidden="true">←</span> Previous</button>}{nextArticle && <button type="button" className="news-swipe-next-button" onClick={() => advanceToNext()}><span aria-hidden="true">→</span> Next</button>}</div>}
     </main>
   )
 }
