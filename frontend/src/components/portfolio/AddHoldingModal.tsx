@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
+import { apiFetch } from '../../services/apiClient'
 
 type HoldingFormInput = {
   ticker: string
   shares: number
   averageCost: number
 }
+
+type SecurityOption = { symbol: string; companyName: string }
 
 export function AddHoldingModal({
   onClose,
@@ -24,6 +27,26 @@ export function AddHoldingModal({
   const [ticker, setTicker] = useState(initialValue?.ticker ?? '')
   const [shares, setShares] = useState(initialValue?.shares !== undefined ? String(initialValue.shares) : '')
   const [averageCost, setAverageCost] = useState(initialValue?.averageCost !== undefined ? String(initialValue.averageCost) : '')
+  const [results, setResults] = useState<SecurityOption[]>([])
+  const [open, setOpen] = useState(false)
+  const pickerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function dismiss(e: MouseEvent) { if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', dismiss)
+    return () => document.removeEventListener('mousedown', dismiss)
+  }, [])
+
+  useEffect(() => {
+    if (mode === 'edit' || ticker.length < 1) { setResults([]); setOpen(false); return }
+    const timer = setTimeout(async () => {
+      try {
+        const r = await apiFetch<SecurityOption[]>(`/securities?q=${encodeURIComponent(ticker)}`)
+        setResults(r); setOpen(r.length > 0)
+      } catch { setResults([]); setOpen(false) }
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [ticker, mode])
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -35,7 +58,19 @@ export function AddHoldingModal({
     <form className="form-grid" onSubmit={submit}>
         <label>
           Ticker
-          <input value={ticker} onChange={(event) => setTicker(event.target.value)} placeholder="AAPL" required disabled={mode === 'edit'} />
+          <div className="ticker-search" ref={pickerRef}>
+            <input value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())} onFocus={() => { if (results.length > 0) setOpen(true) }} placeholder="Search symbol…" required disabled={mode === 'edit'} autoComplete="off" />
+            {open && (
+              <div className="ticker-search-dropdown">
+                {results.map((r) => (
+                  <button type="button" key={r.symbol} onClick={() => { setTicker(r.symbol); setOpen(false) }}>
+                    <strong>{r.symbol}</strong>
+                    <span>{r.companyName}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </label>
         <label>
           Shares

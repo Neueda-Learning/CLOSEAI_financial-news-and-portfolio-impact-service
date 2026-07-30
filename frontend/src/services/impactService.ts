@@ -88,4 +88,5 @@ export const impactService = {
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
   },
   async refreshNews() { return apiFetch('/news/refresh', { method: 'POST' }) },
+  async refreshSentiment() { return apiFetch('/sentiment/refresh', { method: 'POST' }) },
 }
