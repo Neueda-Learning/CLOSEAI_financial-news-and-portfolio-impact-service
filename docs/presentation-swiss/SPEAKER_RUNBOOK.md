@@ -181,8 +181,6 @@ Nothing else.”
 First: what does the news say? Positive, negative, or neutral.
 Second: did the price agree? That is where confirmed, divergent, and inconclusive come from.”
 
-“Divergent is not a bug. Bad news comes out and the stock goes up anyway — that is the interesting case, and if we averaged the two into one number we would lose it.”
-
 “Both of these just describe what happened. Neither one says buy or sell. And a system that can say ‘we don't know’ is not giving advice.”
 
 ### Slide 11 — How It Fails
