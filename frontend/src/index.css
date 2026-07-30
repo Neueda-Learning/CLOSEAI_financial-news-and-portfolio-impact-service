@@ -60,7 +60,23 @@ th, td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--li
 th { color: var(--muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; background: var(--surface-strong); color: var(--text); }
 input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid rgba(31, 78, 121, 0.28); outline-offset: 3px; }
-
+.ticker-search { position: relative; }
+.ticker-search input { text-transform: uppercase; }
+.ticker-search-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30;
+  max-height: 220px; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); box-shadow: 0 8px 24px rgba(17, 24, 39, .10);
+  display: grid; gap: 1px;
+}
+.ticker-search-dropdown button {
+  all: unset; display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 12px; cursor: pointer; border-radius: 4px;
+  transition: background-color 120ms var(--spring);
+}
+.ticker-search-dropdown button:hover { background: var(--accent-soft); }
+.ticker-search-dropdown strong { font-size: .88rem; font-weight: 650; color: var(--accent); }
+.ticker-search-dropdown span { font-size: .76rem; color: var(--muted); }
 .shell { display: grid; grid-template-columns: 198px minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns 220ms var(--spring); }
 .shell.shell-collapsed { grid-template-columns: 66px minmax(0, 1fr); }
 .sidebar {
@@ -159,6 +175,29 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   color: var(--heading);
   text-shadow: 0 1px 18px rgba(139, 188, 255, .12);
 }
+.portfolio-picker { position: relative; display: inline-block; }
+.portfolio-picker-trigger { all: unset; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.portfolio-picker-trigger h1 { margin: 4px 0 8px; font-size: clamp(1.8rem, 2.3vw, 2.9rem); line-height: 1.06; font-weight: 720; color: var(--heading); }
+.portfolio-picker-trigger:hover .picker-chevron { color: var(--accent); }
+.picker-chevron { font-size: 1rem; color: var(--muted); transition: transform 180ms var(--spring), color 180ms var(--spring); }
+.picker-chevron.open { transform: rotate(180deg); color: var(--accent); }
+.portfolio-picker-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 30;
+  min-width: 240px; padding: 6px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); box-shadow: 0 8px 24px rgba(17, 24, 39, .10);
+  display: grid; gap: 2px;
+}
+.portfolio-picker-dropdown button {
+  all: unset; display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-radius: 6px; cursor: pointer;
+  transition: background-color 120ms var(--spring);
+}
+.portfolio-picker-dropdown button:hover, .portfolio-picker-dropdown button.active { background: var(--accent-soft); }
+.portfolio-picker-dropdown button.active strong { color: var(--accent); }
+.portfolio-picker-dropdown strong { font-size: .92rem; font-weight: 650; }
+.portfolio-picker-dropdown span { font-size: .82rem; color: var(--muted); }
+.picker-empty { padding: 10px 12px; color: var(--muted); font-size: .82rem; }
 .lede { max-width: 60ch; margin: 0; font-size: 1rem; }
 .card, .modal {
   background: var(--surface);
@@ -849,12 +888,12 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   justify-content: space-between;
   margin-bottom: 12px;
 }
-.ticker-filter {
+.ticker-filter, .impact-filter {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
-.ticker-filter button,
+.ticker-filter button, .impact-filter button,
 .pagination-row button,
 .market-actions button {
   border: 1px solid var(--line);
@@ -865,7 +904,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   font-size: .78rem;
   font-weight: 650;
 }
-.ticker-filter button.active {
+.ticker-filter button.active, .impact-filter button.active {
   color: var(--accent);
   background: var(--accent-soft);
   border-color: rgba(39, 80, 111, .16);

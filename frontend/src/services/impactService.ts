@@ -62,6 +62,21 @@ export const impactService = {
     const requested = new Set(tickers.map((ticker) => ticker.toUpperCase()))
     return { ...result, content: result.content.filter((event) => event.affectedTickers.some((ticker) => requested.has(ticker))) }
   },
+  async getAllImpactEvents(portfolioId: number, symbol?: string): Promise<ImpactEvent[]> {
+    const firstQuery = new URLSearchParams({ page: '1', size: '100' })
+    if (symbol) firstQuery.set('symbol', symbol)
+    const first = await apiFetch<PagedResponse<NewsRow>>(`/news?${firstQuery}`)
+    const allRows = [...first.content]
+    for (let p = 2; p <= first.totalPages; p++) {
+      const q = new URLSearchParams({ page: String(p), size: '100' })
+      if (symbol) q.set('symbol', symbol)
+      try { const page = await apiFetch<PagedResponse<NewsRow>>(`/news?${q}`); allRows.push(...page.content) } catch { break }
+    }
+    const results = await Promise.all(allRows.map(async (row) => {
+      try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
+    }))
+    return results
+  },
   async getImpactEvent(id: number, portfolioId: number) {
     const [view, detail] = await Promise.all([
       apiFetch<ImpactView>(`/news/${id}/impact-view?portfolioId=${portfolioId}`),
@@ -73,4 +88,5 @@ export const impactService = {
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
   },
   async refreshNews() { return apiFetch('/news/refresh', { method: 'POST' }) },
+  async refreshSentiment() { return apiFetch('/sentiment/refresh', { method: 'POST' }) },
 }
