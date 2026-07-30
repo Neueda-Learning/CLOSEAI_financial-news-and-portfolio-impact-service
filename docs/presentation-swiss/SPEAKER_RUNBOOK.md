@@ -19,10 +19,10 @@
 |---|---|---|
 | 1–3 | Venessa Feng | Open the product, introduce the team, make the problem feel real |
 | 4–5 | David Hu | Explain the product loop and breaking-news example |
-| 6 | Timothy Xue | Run the live demo walkthrough |
-| 7–8 | Evan Li | Explain architecture and data reliability |
-| 9–11 | Ethan Sun | Explain sentiment, impact states, and failure design |
-| 12–13 | Timothy Xue | Close with build plan and takeaways |
+| 6–7 | Timothy Xue | Run the live demo walkthrough |
+| 8–9 | Evan Li | Explain architecture and data reliability |
+| 10–12 | Ethan Sun | Explain sentiment, impact states, and failure design |
+| 13–14 | Timothy Xue | Close with build plan and takeaways |
 
 ---
 
@@ -32,12 +32,12 @@
 |---|---:|---|
 | Venessa Feng | 0:00–3:00 | 1–3 |
 | David Hu | 3:00–5:30 | 4–5 |
-| Timothy Xue | 5:30–7:30 | 6 |
-| Evan Li | 7:30–10:15 | 7–8 |
-| Ethan Sun | 10:15–13:00 | 9–11 |
-| Timothy Xue | 13:00–15:00 | 12–13 |
+| Timothy Xue | 5:30–7:30 | 6–7 |
+| Evan Li | 7:30–10:15 | 8–9 |
+| Ethan Sun | 10:15–13:00 | 10–12 |
+| Timothy Xue | 13:00–15:00 | 13–14 |
 
-Tip: the deck has 13 slides, but it still fills 15 minutes because the demo slide gets more time.
+Tip: the deck has 14 slides, but it still fills 15 minutes because the demo transition gets more time.
 
 ---
 
@@ -57,10 +57,11 @@ Each person will cover the part of the story closest to their work, so the prese
 
 ### Slide 3 — The Problem
 
-“The problem is that headlines move faster than people can connect them to their own holdings.
-An investor might see a story about Apple, Tesla, Microsoft, or Nvidia, but they still have to manually ask: do I own this company, is the news positive or negative, did the price actually react, and how much does that matter to my position?”
+“Start with the news: imagine reading that Apple cuts its iPhone production forecast.
+The story is important, but the investor still needs the answer that matters: do I own this company, is the news positive or negative, did the price actually react, and how much does that matter to my position?”
 
-“That gap is why this website exists. We are not replacing investment judgment; we are making the first connection faster and clearer.”
+“That is the gap: a headline can move a holding before a person has time to connect the dots.
+We are not replacing investment judgment; we are making the first connection faster and clearer.”
 
 Transition:
 
@@ -114,7 +115,7 @@ Transition:
 
 ---
 
-## Timothy Xue script · Slide 6
+## Timothy Xue script · Slides 6–7
 
 ### Slide 6 — Additional Features
 
@@ -144,25 +145,38 @@ agreement, market confirmation, portfolio sentiment, and coverage.”
 
 Transition:
 
+“Now let’s leave the slide and walk through the frontend.”
+
+---
+
+### Slide 7 — Walk Through The Frontend
+
+“This is where we switch from explaining the feature to using it.
+I will start from the news feed, connect the headline to the portfolio impact, and then show the agreement signals.”
+
+“The goal is simple: the audience should see the same path a user would take in the frontend.”
+
+Transition:
+
 “Evan will now explain the architecture that makes that demo path stable.”
 
 ---
 
-## Evan Li script · Slides 7–8
+## Evan Li script · Slides 8–9
 
-### Slide 7 — Architecture
+### Slide 8 — Three Layers System Architecture
 
-“The architecture is cache-first.
-The UI reads from the database. Scheduled jobs fetch external data and land it before the frontend asks for it.”
+“This diagram shows the system layers from left to right.
+News and price data come in from providers, the backend normalizes and stores them, and the frontend reads the prepared result instead of calling providers directly.”
 
-“That gives us two benefits: reads stay fast, and the system can show stale/asOf labels when upstream data is limited instead of simply failing.”
+“The important point is that the user sees one clean portfolio-impact view, but underneath it we separate ingestion, sentiment analysis, impact calculation, storage, and presentation.”
 
-### Slide 8 — External Data & Fallback
+### Slide 9 — Land It Fast, Read It Fast
 
-“We deliberately split external data responsibilities.
-Finnhub company-news uses one key, Finnhub quotes and candles use another key, and sentiment uses the LLM API.”
+“This is the data flow behind the demo.
+External providers land news, quotes, and sentiment into the database first.”
 
-“That separation matters because news polling should not starve quote refresh. If a provider is unavailable, cached data plus stale/asOf keeps the page honest, and Mock providers keep the rehearsal path stable.”
+“Then the API reads prepared rows quickly, and the impact engine combines news plus price from the database before serving the portfolio impact endpoint.”
 
 Transition:
 
@@ -170,9 +184,9 @@ Transition:
 
 ---
 
-## Ethan Sun script · Slides 9–11
+## Ethan Sun script · Slides 10–12
 
-### Slide 9 — Sentiment & Impact Engine
+### Slide 10 — Sentiment & Impact Engine
 
 > Four reveals on the right. Say the line, then click.
 
@@ -190,7 +204,7 @@ The headline is untrusted third-party text, so we fence it as data.”
 
 “Stored once, one verdict per article, so the answer cannot drift between refreshes.”
 
-### Slide 10 — Honest Output
+### Slide 11 — Honest Output
 
 “Direction and alignment are separate, and we never merge them.
 Direction comes from sentiment: positive, negative, or neutral.
@@ -200,7 +214,7 @@ Alignment comes from the price: confirmed, divergent, or inconclusive.”
 
 “Both describe what happened. Neither says buy or sell. A system allowed to answer ‘cannot tell’ is not giving advice.”
 
-### Slide 11 — How It Fails
+### Slide 12 — How It Fails
 
 > Six cards. Do not read all six — land 01, then pick two, then close on 06.
 
@@ -223,28 +237,24 @@ Timothy will close us out with the build plan and the final takeaway.”
 
 ---
 
-## Timothy Xue script · Slides 12–13
+## Timothy Xue script · Slides 13–14
 
-### Slide 12 — 5-Day Build Plan
+### Slide 13 — 5-Day Sprint
 
-“As we close, this slide shows how we turn the idea into a working demo in five days.
-We are not trying to build everything at once. We are building in the order that unblocks the team.”
+“As we close, this slide shows the five-day sprint.
+Each day left us with a working slice, not a pile of unfinished pieces.”
 
-“On day one, we set up the workflow as well as the foundation code.
-That means Jira management for tracking tasks, CI integration so every push is checked, and the database schema, entities, and portfolio CRUD that unblock the rest of the team.”
+“Day one was the foundation: Flyway migrations, JPA entities, portfolio CRUD, CI foundation, and Docker Compose.”
 
-“On days two and three, we focus on getting provider data into the system.
-That means news polling, quote refresh, daily price bars, and the stale/asOf freshness state, so the frontend can read reliable cached data instead of calling APIs directly.”
+“Day two was provider pipelines: news fetch and dedup, a 3-provider quote chain, daily close snapshots, and stale/asOf.”
 
-“On day four, we connect the LLM sentiment agent to the impact recompute flow.
-This is where the product becomes more than a dashboard: the system can say what the news implies, what the price actually did, and whether those two things agree.”
+“Day three connected the LLM sentiment engine, impact mapping and verification, and the React dashboard.”
 
-“On day five, we lock the demo.
-We run CI, prepare the Mock fallback, rehearse the timing, and make sure the presentation still works even if a live provider is slow.”
+“Day four was polish and release: Mock fallback, batch optimization, 258 commits, 46 PRs, and rehearsal.”
 
-“So the principle is simple: each day should leave us with a working slice, not a pile of unfinished pieces.”
+“Day five is today: the presentation, the live demo, the story walkthrough, and Q&A.”
 
-### Slide 13 — Closing
+### Slide 14 — Closing
 
 “The final takeaway is simple: read the news, see the impact.
 The product connects one headline, one holding, one market move, and one honest state.”

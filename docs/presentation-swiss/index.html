@@ -1197,8 +1197,8 @@
 
   .time-grid{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:1.2vw;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:.9vw;
     flex:1;
     align-items:stretch;
     margin-top:3vh;
@@ -1208,7 +1208,7 @@
   .time-card{
     background:#f5f5f4;
     border-top:2px solid var(--border-subtle);
-    padding:2.4vh 1.5vw;
+    padding:2.4vh 1.1vw;
     display:flex;
     flex-direction:column;
     gap:1.4vh;
@@ -1401,6 +1401,91 @@
   .stack-block .layer-desc{font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.05vw);line-height:1.55;opacity:.88;margin-top:1.4vh}
   .stack-block .lucide{width:2.6vw;height:2.6vw;stroke-width:1.4;margin-bottom:1.6vh;flex-shrink:0}
   .stack-block .layer-tag{font-family:var(--mono);font-size:max(15px,.85vw);letter-spacing:.16em;text-transform:uppercase;opacity:.7;margin-top:1.6vh;border-top:1px solid currentColor;padding-top:1vh}
+
+  .system-layer-stage{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1.8vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .35);
+    min-height:0;
+    overflow:hidden
+  }
+  .system-layer-figure{
+    width:min(60vw,760px);
+    height:min(62vh,520px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    background:transparent;
+    border:0;
+    box-shadow:none
+  }
+  .system-layer-figure img{
+    display:block;
+    width:auto;
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain
+  }
+  .data-flow-figure{
+    width:min(78vw,1040px);
+    height:min(64vh,560px)
+  }
+  .frontend-demo-bridge{
+    flex:1;
+    display:grid;
+    grid-template-columns:1.15fr 1fr;
+    gap:3vw;
+    align-items:end;
+    margin-top:4vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .45);
+    min-height:0
+  }
+  .frontend-demo-word{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:min(15vw,24vh);
+    line-height:.84;
+    letter-spacing:0;
+    font-weight:200;
+    color:var(--accent)
+  }
+  .frontend-demo-steps{
+    display:flex;
+    flex-direction:column;
+    border-top:2px solid var(--accent)
+  }
+  .frontend-demo-step{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:1.4vw;
+    align-items:start;
+    padding:2.4vh 0;
+    border-bottom:1px solid var(--border-subtle)
+  }
+  .frontend-demo-step .nb{
+    font-family:var(--mono);
+    font-size:max(15px,.95vw);
+    letter-spacing:.16em;
+    color:var(--text-helper)
+  }
+  .frontend-demo-step .ttl{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(24px,2.2vw);
+    line-height:1.05;
+    font-weight:400;
+    color:var(--text-primary)
+  }
+  .frontend-demo-step .desc{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(16px,1.05vw);
+    line-height:1.5;
+    color:var(--text-secondary);
+    margin-top:.9vh
+  }
 
   /* 不等高柱状 KPI 塔 (参考图 6) */
   .bar-towers{
@@ -1797,7 +1882,18 @@
 <section class="slide" data-animate="statement" data-layout="S03">
   <div class="canvas-card">
     <div class="problem-stage">
-      <div class="problem-panel active" data-problem-step="intro">
+      <div class="problem-panel active" data-problem-step="news">
+        <div class="breaking-news-panel">
+          <div class="breaking-label">Breaking News</div>
+          <div class="breaking-copy">Imagine reading: <strong>"Apple cuts iPhone production forecast."</strong></div>
+          <ul class="breaking-points">
+            <li>The story is important, but the investor still needs the answer that matters.</li>
+            <li>Which holding is affected, and how much does that position matter?</li>
+            <li>Did the market agree with the headline, or did price action tell a different story?</li>
+          </ul>
+        </div>
+      </div>
+      <div class="problem-panel" data-problem-step="intro">
         <div class="problem-intro-card">
           <div class="problem-intro-top">
             <div class="problem-signal-tag">Live signal</div>
@@ -1818,17 +1914,6 @@
               <div class="val">Without that link, the investor is still guessing</div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="problem-panel" data-problem-step="news">
-        <div class="breaking-news-panel">
-          <div class="breaking-label">Breaking News</div>
-          <div class="breaking-copy">Imagine reading: <strong>"Apple cuts iPhone production forecast."</strong></div>
-          <ul class="breaking-points">
-            <li>The story is important, but the investor still needs the answer that matters.</li>
-            <li>Which holding is affected, and how much does that position matter?</li>
-            <li>Did the market agree with the headline, or did price action tell a different story?</li>
-          </ul>
         </div>
       </div>
     </div>
@@ -1871,7 +1956,6 @@
     <div class="feature-map-stage">
       <figure class="feature-map-shot">
         <img src="./assets/demo/direction-agreement-53.png" alt="Portfolio impact summary card showing 53 percent direction agreement, confirmed, divergent, inconclusive, weighted sentiment, news coverage, and data freshness">
-        <figcaption class="feature-map-caption">Dashboard card to explain during the walkthrough</figcaption>
       </figure>
       <svg class="feature-arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <defs><marker id="feature-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path></marker></defs>
@@ -1892,25 +1976,38 @@
   </div>
 </section>
 
-<section class="slide" data-animate="stack-build" data-layout="S05">
+<section class="slide" data-animate="grid-reveal" data-layout="S03">
   <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">CACHE-FIRST ARCHITECTURE</div><h2 class="h-xl" style="margin-top:1.4vh">Read fast, stay honest, recover gracefully</h2></div>
-    <div class="stack-row">
-      <div class="stack-block b-ink" data-pause=""><span class="layer-nb">LAYER 01</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="monitor" aria-hidden="true" class="lucide lucide-monitor"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></div><h3 class="layer-ttl">Frontend</h3><p class="layer-desc">Swiss-style SPA with editable text, step-by-step reveal, and a download button for the edited copy.</p><span class="layer-tag">EXPERIENCE</span></div>
-      <div class="stack-block b-grey" data-pause=""><span class="layer-nb">LAYER 02</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="git-merge" aria-hidden="true" class="lucide lucide-git-merge"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M6 21V9a9 9 0 0 0 9 9"></path></svg></div><h3 class="layer-ttl">Service</h3><p class="layer-desc">Spring Boot validates sentiment, stores impact, and exposes a read-only API for the presentation.</p><span class="layer-tag">API + LOGIC</span></div>
-      <div class="stack-block b-accent" data-pause=""><span class="layer-nb">LAYER 03</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="database" aria-hidden="true" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></div><h3 class="layer-ttl">Data</h3><p class="layer-desc">MySQL keeps prices, news, sentiment, and impact rows cached so the UI can read from one place.</p><span class="layer-tag">CACHE + FRESHNESS</span></div>
+    <div data-anim="line"><div class="t-cat">LIVE DEMO</div><h2 class="h-xl" style="margin-top:1.4vh">Walk through the frontend</h2></div>
+    <div class="frontend-demo-bridge">
+      <div class="frontend-demo-word" data-pause="">Demo</div>
+      <div class="frontend-demo-steps">
+        <div class="frontend-demo-step" data-pause=""><div class="nb">01</div><div><div class="ttl">News feed</div><div class="desc">Start from a headline the user can recognize.</div></div></div>
+        <div class="frontend-demo-step" data-pause=""><div class="nb">02</div><div><div class="ttl">Portfolio impact</div><div class="desc">Connect the news to the holding and dollar impact.</div></div></div>
+        <div class="frontend-demo-step" data-pause=""><div class="nb">03</div><div><div class="ttl">Agreement signals</div><div class="desc">Show confirmed, divergent, coverage, and weighted sentiment.</div></div></div>
+      </div>
     </div>
-    <div class="t-meta" style="margin-top:2.4vh">Scheduled ingestion · database-first reads · stale/asOf visible · Mock Provider fallback</div>
   </div>
 </section>
 
 <section class="slide" data-animate="stack-build" data-layout="S05">
   <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">EXTERNAL DATA &amp; FALLBACK</div><h2 class="h-xl" style="margin-top:1.4vh">The demo should not depend on one lucky API call</h2></div>
-    <div class="stack-row">
-      <div class="stack-block b-accent" data-pause=""><span class="layer-nb">NEWS</span><h3 class="layer-ttl">Finnhub company-news</h3><p class="layer-desc">Fetched per ticker every 15 minutes, deduped by external article id, then stored before the UI reads it.</p><span class="layer-tag">FINNHUB_KEY_NEWS</span></div>
-      <div class="stack-block b-grey" data-pause=""><span class="layer-nb">PRICE</span><h3 class="layer-ttl">Quote + daily bars</h3><p class="layer-desc">A separate price key protects quote refresh from news-poll quota pressure; Twelve Data can stand in for quotes.</p><span class="layer-tag">FINNHUB_KEY_PRICE</span></div>
-      <div class="stack-block b-ink" data-pause=""><span class="layer-nb">FALLBACK</span><h3 class="layer-ttl">Mock + stale/asOf</h3><p class="layer-desc">If providers fail, reads still return cached rows with freshness labels instead of an empty demo screen.</p><span class="layer-tag">HONEST DEGRADATION</span></div>
+    <div data-anim="line"><div class="t-cat">SYSTEM DESIGN</div><h2 class="h-xl" style="margin-top:1.4vh">Three layers system architecture</h2></div>
+    <div class="system-layer-stage">
+      <figure class="system-layer-figure">
+        <img src="./assets/demo/fnpis-system-layers-page7.png" alt="System layers diagram for the Financial News and Portfolio Impact Service">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-animate="stack-build" data-layout="S05">
+  <div class="canvas-card">
+    <div data-anim="line"><div class="t-cat">EXTERNAL DATA &amp; FALLBACK</div><h2 class="h-xl" style="margin-top:1.4vh">Land it fast, read it fast.</h2></div>
+    <div class="system-layer-stage">
+      <figure class="system-layer-figure data-flow-figure">
+        <img src="./assets/demo/data-flow-page8.png" alt="Data flow diagram showing providers, database tables, API endpoints, and the impact engine">
+      </figure>
     </div>
   </div>
 </section>
@@ -1966,12 +2063,13 @@
 
 <section class="slide" data-animate="progression" data-layout="S02">
   <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">5-DAY BUILD PLAN</div><h2 class="h-xl" style="margin-top:1.4vh">A working slice every day</h2></div>
+    <div data-anim="line"><div class="t-cat">5-DAY SPRINT</div><h2 class="h-xl" style="margin-top:1.4vh">A working slice every day</h2></div>
     <div class="time-grid">
-      <div class="time-card" data-pause=""><div class="time-code">Day 1</div><div class="time-line">Schema owner unblocks all</div><div class="time-note">Flyway scripts, entities, portfolio + holdings CRUD.</div></div>
-      <div class="time-card" data-pause=""><div class="time-code">Days 2-3</div><div class="time-line">Providers land cached data</div><div class="time-note">News poll, quote refresh, daily bars, stale/asOf.</div></div>
-      <div class="time-card" data-pause=""><div class="time-code">Day 4</div><div class="time-line">Agent + impact recompute</div><div class="time-note">Validated sentiment and persisted assessments.</div></div>
-      <div class="time-card accent" data-pause=""><div class="time-code">Day 5</div><div class="time-line">CI, Mock path, rehearsal</div><div class="time-note">Docker, tests, demo data, timing, and fallback drill.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 1 · Jul 27</div><div class="time-line">Schema + CRUD + CI</div><div class="time-note">Flyway V1–V9, JPA entities, portfolio CRUD, CI foundation, Docker Compose.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 2 · Jul 28</div><div class="time-line">Provider pipelines</div><div class="time-note">News fetch + dedup, 3-provider quote chain, daily close snapshot, stale/asOf.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 3 · Jul 29</div><div class="time-line">Agent + impact + frontend</div><div class="time-note">LLM sentiment engine, impact mapping + verification, React dashboard.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 4 · Jul 30</div><div class="time-line">Polish + v0.1.1 release</div><div class="time-note">Mock fallback, batch optimization, 258 commits, 46 PRs, rehearsal.</div></div>
+      <div class="time-card accent" data-pause=""><div class="time-code">Day 5 · Today</div><div class="time-line">Today presentation</div><div class="time-note">Live demo, story walkthrough, final Q&amp;A, and delivery.</div></div>
     </div>
   </div>
 </section>
@@ -1979,7 +2077,7 @@
 <section class="slide split" data-animate="split-statement" data-layout="S10">
   <div class="canvas-card"><div class="split-half">
     <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden"><canvas class="ascii-bg" aria-hidden="true"></canvas><div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1"><div class="l"></div><div class="r">CLOSING</div></div><div data-anim="manifesto" style="display: flex; flex-direction: column; gap: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div><h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2><div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">The product promise is simple: one headline, one holding, one market move, one honest state.</div></div><div data-anim="signature" style="display: flex; justify-content: space-between; align-items: end; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI</div><div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div></div></div>
-    <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between"><div class="chrome-min"><div class="l">TAKEAWAYS</div><div class="r">03 RULES</div></div><div data-anim="rules" style="display: flex; flex-direction: column; gap: 0px"><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One linked view</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The user sees the headline and the holding in the same breath.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One resilient path</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider fallback and stale/asOf keep the demo alive and honest.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">One 15-minute story</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The pace is fixed: team, problem, news, demo, engine, roadmap, close.</p></div></div></div><div data-anim="foot" class="t-meta" style="color: var(--text-helper); text-align: right">→ 完 · END OF FIELD NOTE</div></div>
+    <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between"><div class="chrome-min"><div class="l">TAKEAWAYS</div><div class="r">03 RULES</div></div><div data-anim="rules" style="display: flex; flex-direction: column; gap: 0px"><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One linked view</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The user sees the headline and the holding in the same breath.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One resilient path</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider fallback and stale/asOf keep the demo alive and honest.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">One 15-minute story</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The pace is fixed: team, problem, news, demo, engine, roadmap, close.</p></div></div></div></div>
   </div></div>
 </section>
 
@@ -1994,7 +2092,7 @@
   <button id="download-toggle" class="control-action" type="button" title="Download edited copy">⇩</button>
 </div>
 <div id="deck-status" aria-live="polite">
-  <span id="slide-counter" class="slide-count">01 / 13</span>
+  <span id="slide-counter" class="slide-count">01 / 14</span>
 </div>
 
 <script>
