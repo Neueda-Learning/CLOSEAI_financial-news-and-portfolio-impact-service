@@ -155,8 +155,10 @@ export function PortfolioImpactPage() {
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
   const [newsPage, setNewsPage] = useState(1)
   const [refreshing, setRefreshing] = useState(false)
+  const [refreshElapsed, setRefreshElapsed] = useState(0)
   const [toast, setToast] = useState('')
   const [lastRefresh, setLastRefresh] = useState('—')
+  const refreshTimer = useRef<ReturnType<typeof setInterval>>(null)
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
   const [newsTotalElements, setNewsTotalElements] = useState(0)
@@ -207,35 +209,35 @@ export function PortfolioImpactPage() {
     setTimeout(() => setToast(''), 4000)
   }
 
-  async function refreshNewsNow() {
+  function startRefresh() {
     setRefreshing(true)
+    setRefreshElapsed(0)
+    refreshTimer.current = setInterval(() => setRefreshElapsed((n) => n + 1), 1000)
+  }
+  function stopRefresh() {
+    setRefreshing(false)
+    if (refreshTimer.current) { clearInterval(refreshTimer.current); refreshTimer.current = null }
+  }
+
+  async function getNews() {
+    startRefresh()
     try {
-      const result = await impactService.refreshNews()
-      const r = result as { fetched?: number; inserted?: number; skippedDuplicates?: number }
+      const news = await impactService.refreshNews()
+      const nr = news as { fetched?: number; inserted?: number; skippedDuplicates?: number }
+      showToast(`Fetching news complete · ${nr.inserted ?? 0} new articles`)
+      const sent = await impactService.refreshSentiment()
+      const sr = sent as { analysed?: number; stored?: number }
+      if ((sr.analysed ?? 0) > 0) showToast(`Analysed ${sr.stored ?? sr.analysed ?? 0} articles`)
       setNewsPage(1)
       setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
       const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
       setEvents(nextPage.content)
       setNewsTotalPages(nextPage.totalPages)
       setNewsTotalElements(nextPage.totalElements)
-      showToast(`Fetched ${r.fetched ?? '?'} symbols · ${r.inserted ?? 0} new · ${r.skippedDuplicates ?? 0} skipped`)
     } catch {
-      showToast('Refresh unavailable — a fetch is already running')
+      showToast('A fetch is already running — try again in a moment')
     } finally {
-      setRefreshing(false)
-    }
-  }
-
-  async function runSentiment() {
-    setRefreshing(true)
-    try {
-      const result = await impactService.refreshSentiment()
-      const r = result as { analysed?: number; stored?: number }
-      showToast(`Sentiment: ${r.stored ?? r.analysed ?? 0} articles analysed`)
-      await refreshNewsNow()
-    } catch {
-      showToast('Sentiment is already running — try again in a moment')
-      setRefreshing(false)
+      stopRefresh()
     }
   }
 
@@ -408,8 +410,7 @@ export function PortfolioImpactPage() {
                 </label>
               </div>
               <div className="news-actions">
-                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
-                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={getNews}>{refreshing ? `Running… ${refreshElapsed}s` : 'Get News'}</Button>
               </div>
             </div>
             {toast && <div className="toast">{toast}</div>}
