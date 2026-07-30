@@ -86,7 +86,7 @@ public class ImpactViewService {
      * @throws ApiException 404 when the article or the portfolio does not exist
      */
     @Transactional(readOnly = true)
-    public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol) {
+    public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol, boolean weekly) {
         NewsArticle article = articles.findById(articleId)
                 .orElseThrow(() -> new ApiException(
                         ErrorCode.ARTICLE_NOT_FOUND, "No article with id " + articleId));
@@ -121,7 +121,7 @@ public class ImpactViewService {
                 impactedSymbols,
                 selected,
                 rows.stream().map(row -> ImpactRowMapper.toRow(row, names)).toList(),
-                selected == null ? null : priceSeries(selected, session, article.getPublishedAt()),
+                selected == null ? null : priceSeries(selected, session, article.getPublishedAt(), weekly),
                 freshness.asOf(),
                 freshness.stale());
     }
@@ -169,8 +169,8 @@ public class ImpactViewService {
      * days of points into one line, and the marker would land ambiguously.
      */
     private ImpactViewResponse.PriceSeries priceSeries(
-            String symbol, LocalDate session, Instant publishedAt) {
-        Instant from = session.minusDays(5).atStartOfDay(ZoneOffset.UTC).toInstant();
+            String symbol, LocalDate session, Instant publishedAt, boolean weekly) {
+        Instant from = (weekly ? session.minusDays(5) : session).atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant to = session.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
         List<ImpactViewResponse.PriceSeries.Point> curve = points

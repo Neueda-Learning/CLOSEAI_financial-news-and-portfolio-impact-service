@@ -20,6 +20,7 @@ export function ImpactDetailPage() {
   const [isCommitting, setIsCommitting] = useState(false)
   const [commitDirection, setCommitDirection] = useState<'next' | 'previous'>('next')
   const { activePortfolioId } = usePortfolio()
+  const [chartRange, setChartRange] = useState<'intraday' | 'weekly'>('intraday')
   const gesture = useRef<{ pointerId: number; startX: number; lastX: number; lastTime: number; velocity: number } | null>(null)
   const commitTimer = useRef<number | null>(null)
 
@@ -29,14 +30,14 @@ export function ImpactDetailPage() {
     let cancelled = false
     setDragX(0)
     setIsCommitting(false)
-    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId), impactService.getNextNews(eventId), impactService.getPreviousNews(eventId)]).then(([nextEvent, nextNews, previousNews]) => {
+    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId, chartRange), impactService.getNextNews(eventId), impactService.getPreviousNews(eventId)]).then(([nextEvent, nextNews, previousNews]) => {
       if (!cancelled) {
         setEvent(nextEvent)
         setNextArticle(nextNews)
         setPreviousArticle(previousNews)
         setPrefetchedNextEvent(null)
         if (nextNews) {
-          void impactService.getImpactEvent(nextNews.id, activePortfolioId).then((prefetchedEvent) => {
+          void impactService.getImpactEvent(nextNews.id, activePortfolioId, chartRange).then((prefetchedEvent) => {
             if (!cancelled) setPrefetchedNextEvent(prefetchedEvent)
           }).catch(() => {
             if (!cancelled) setPrefetchedNextEvent(null)
@@ -45,7 +46,7 @@ export function ImpactDetailPage() {
       }
     })
     return () => { cancelled = true }
-  }, [id, activePortfolioId])
+  }, [id, activePortfolioId, chartRange])
 
   useEffect(() => () => {
     if (commitTimer.current !== null) window.clearTimeout(commitTimer.current)
@@ -131,7 +132,13 @@ export function ImpactDetailPage() {
           <p className="body-copy">{event.content}</p>
         </Card>
         <Card>
-          <h2>Stock Price Chart</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Stock Price Chart</h2>
+            <div className="chart-range-toggle">
+              <button type="button" className={chartRange === 'intraday' ? 'active' : ''} onClick={() => setChartRange('intraday')}>Intraday</button>
+              <button type="button" className={chartRange === 'weekly' ? 'active' : ''} onClick={() => setChartRange('weekly')}>Weekly</button>
+            </div>
+          </div>
           <div className="chart-box">
             <LineChart
               labels={event.priceSeries.map((point) => point.time)}
