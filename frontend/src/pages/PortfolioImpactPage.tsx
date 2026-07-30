@@ -169,7 +169,7 @@ export function PortfolioImpactPage() {
         setNewsTotalElements(nextPage.totalElements)
         setNewsTotalPages(nextPage.totalPages)
       })
-  }, [activePortfolioId, newsPage, impactFilter, tickerFilter])
+  }, [activePortfolioId, newsPage, analyzedParam, symbolParam])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
