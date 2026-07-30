@@ -139,6 +139,7 @@ export function PortfolioImpactPage() {
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
   const [newsPage, setNewsPage] = useState(1)
+  const [refreshing, setRefreshing] = useState(false)
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
@@ -182,13 +183,18 @@ export function PortfolioImpactPage() {
   }
 
   async function refreshNewsNow() {
-    await impactService.refreshNews()
-    setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setNewsPage(1)
-    const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
-    setEvents(nextPage.content)
-    setNewsTotalPages(nextPage.totalPages)
-    setNewsTotalElements(nextPage.totalElements)
+    setRefreshing(true)
+    try {
+      await impactService.refreshNews()
+      setNewsPage(1)
+      setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
+      setEvents(nextPage.content)
+      setNewsTotalPages(nextPage.totalPages)
+      setNewsTotalElements(nextPage.totalElements)
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   function cycleViewMode() {
@@ -359,8 +365,8 @@ export function PortfolioImpactPage() {
                   </button>
                 ))}
               </div>
-              <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
-              <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
+              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
+              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
             </div>
             <div className="news-impact-list page-turn" key={newsPage}>
               {events.map((event) => (
