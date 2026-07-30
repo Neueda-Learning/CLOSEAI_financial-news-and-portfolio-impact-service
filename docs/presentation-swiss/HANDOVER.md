@@ -92,9 +92,9 @@ To publish on GitHub Pages:
 | 6 | Complete Demo Flow | S06/Grid | Timothy owns the live demo run |
 | 7 | Architecture | S05 Three Layers | Evan owns the system story |
 | 8 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
-| 9 | Sentiment & Impact Engine | S08/Duo | Validated LLM Agent + stored results |
-| 10 | Honest Output | S06/KPI Tower | Direction vs alignment states |
-| 11 | Failure Design | S04/Grid | Fail-fast config, fallback paths, edge cases, Testcontainers |
+| 9 | Sentiment & Impact Engine | S08/Duo | Model identity + three constraint layers, revealed one at a time |
+| 10 | Honest Output | S06/KPI Tower | Direction vs alignment states, plus the no-advice boundary |
+| 11 | How It Fails | S04/Grid | Six failure decisions: fail-fast boot, provider fallback, write-once verdict, edge cases, refresh lock, Testcontainers |
 | 12 | 5-Day Build Plan | S02/Timing | Working slice every day |
 | 13 | Closing | S10 Split Closing | 3 takeaways + thank you |
 
