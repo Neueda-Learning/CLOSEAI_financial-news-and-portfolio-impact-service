@@ -46,15 +46,15 @@ public class NewsReadService {
     }
 
     /**
-     * Paginated news list with optional symbol, sentiment, and date-range filters (C3, C4).
+     * Paginated news list with optional symbol, sentiment, analyzed, and date-range filters (C3, C4).
      */
     public PagedResponse<NewsListRow> list(String symbol, String sentimentLabel,
-            Instant from, Instant to, int page, int size) {
+            Boolean analyzed, Instant from, Instant to, int page, int size) {
         int p = Math.max(page, 1) - 1; // 0-based for Spring Data
         int s = Math.min(size, 100);
         SentimentLabel sl = parseLabel(sentimentLabel);
 
-        Page<NewsArticle> result = articleRepo.findFiltered(symbol, sl, from, to,
+        Page<NewsArticle> result = articleRepo.findFiltered(symbol, sl, analyzed, from, to,
                 PageRequest.of(p, s));
 
         List<NewsListRow> content = result.getContent().stream()

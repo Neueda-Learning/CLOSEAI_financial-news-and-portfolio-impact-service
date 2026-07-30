@@ -3,6 +3,7 @@ package com.fnpis.integration.finnhub;
 import com.fnpis.integration.DailyBar;
 import com.fnpis.integration.PriceProvider;
 import com.fnpis.integration.QuoteSnapshot;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import java.math.BigDecimal;
@@ -33,6 +34,7 @@ public class FinnhubPriceProvider implements PriceProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "finnhub")
     @RateLimiter(name = "finnhubPrice")
     @Retry(name = "externalApi")
     public Optional<QuoteSnapshot> fetchQuote(String symbol) {
