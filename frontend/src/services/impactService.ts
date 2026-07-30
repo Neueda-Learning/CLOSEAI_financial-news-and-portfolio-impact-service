@@ -43,11 +43,14 @@ function mapNewsRow(row: NewsRow): ImpactEvent {
 }
 
 export const impactService = {
-  async getImpactEvents(portfolioId: number, page = 1, symbol?: string): Promise<ImpactEventPage> {
+  /** Paginated news stream with optional filters — server-side filtering, no full-table scan. */
+  async getImpactEvents(portfolioId: number, page = 1, opts?: { symbol?: string; analyzed?: boolean }): Promise<ImpactEventPage> {
     const query = new URLSearchParams({ page: String(page), size: '20' })
-    if (symbol) query.set('symbol', symbol)
+    if (opts?.symbol) query.set('symbol', opts.symbol)
+    if (opts?.analyzed !== undefined) query.set('analyzed', String(opts.analyzed))
     const news = await apiFetch<PagedResponse<NewsRow>>(`/news?${query}`)
     const results = await Promise.all(news.content.map(async (row) => {
+      if (!row.hasImpact) return mapNewsRow(row)
       try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
     }))
     return {
@@ -61,27 +64,6 @@ export const impactService = {
     const result = await this.getImpactEvents(portfolioId, page)
     const requested = new Set(tickers.map((ticker) => ticker.toUpperCase()))
     return { ...result, content: result.content.filter((event) => event.affectedTickers.some((ticker) => requested.has(ticker))) }
-  },
-  async getAllImpactEvents(portfolioId: number, symbol?: string): Promise<ImpactEvent[]> {
-    const firstQuery = new URLSearchParams({ page: '1', size: '100' })
-    if (symbol) firstQuery.set('symbol', symbol)
-    const first = await apiFetch<PagedResponse<NewsRow>>(`/news?${firstQuery}`)
-    const allRows = [...first.content]
-    for (let p = 2; p <= first.totalPages; p++) {
-      const q = new URLSearchParams({ page: String(p), size: '100' })
-      if (symbol) q.set('symbol', symbol)
-      try { const page = await apiFetch<PagedResponse<NewsRow>>(`/news?${q}`); allRows.push(...page.content) } catch { break }
-    }
-    const results: ImpactEvent[] = []
-    const batchSize = 20
-    for (let i = 0; i < allRows.length; i += batchSize) {
-      const batch = allRows.slice(i, i + batchSize)
-      const batchResults = await Promise.all(batch.map(async (row) => {
-        try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
-      }))
-      results.push(...batchResults)
-    }
-    return results
   },
   async getImpactEvent(id: number, portfolioId: number) {
     const [view, detail] = await Promise.all([

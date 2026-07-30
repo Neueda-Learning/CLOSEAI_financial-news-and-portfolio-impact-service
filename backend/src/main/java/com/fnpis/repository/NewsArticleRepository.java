@@ -20,11 +20,10 @@ public interface NewsArticleRepository extends JpaRepository<NewsArticle, Long> 
     List<NewsArticle> findByPublishedAtBetween(Instant start, Instant end);
 
     /**
-     * Filtered news list with optional symbol, sentiment, and date range (C3, C4).
+     * Filtered news list with optional symbol, sentiment, analyzed status, and date range (C3, C4).
      *
-     * <p>The symbol filter joins through {@code article_security_link};
-     * the sentiment filter joins through {@code sentiment_score}.
-     * Both are optional — a null parameter disables that filter.
+     * <p>All parameters are optional — a null disables that filter.
+     * {@code analyzed=true} returns only articles with sentiment; {@code false} returns only those without.
      */
     @Query("""
             SELECT DISTINCT a FROM NewsArticle a
@@ -34,11 +33,15 @@ public interface NewsArticleRepository extends JpaRepository<NewsArticle, Long> 
               AND (:sentiment IS NULL
                    OR EXISTS (SELECT 1 FROM SentimentScore s
                               WHERE s.articleId = a.id AND s.label = :sentiment))
+              AND (:analyzed IS NULL
+                   OR (:analyzed = true AND EXISTS (SELECT 1 FROM SentimentScore s WHERE s.articleId = a.id))
+                   OR (:analyzed = false AND NOT EXISTS (SELECT 1 FROM SentimentScore s WHERE s.articleId = a.id)))
               AND a.publishedAt BETWEEN :from AND :to
             ORDER BY a.publishedAt DESC""")
     Page<NewsArticle> findFiltered(
             @Param("symbol") String symbol,
             @Param("sentiment") SentimentLabel sentiment,
+            @Param("analyzed") Boolean analyzed,
             @Param("from") Instant from,
             @Param("to") Instant to,
             Pageable pageable);

@@ -138,34 +138,32 @@ export function PortfolioImpactPage() {
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
+  const [newsPage, setNewsPage] = useState(1)
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
+  const [newsTotalElements, setNewsTotalElements] = useState(0)
+  const [newsTotalPages, setNewsTotalPages] = useState(1)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
-  const filteredEvents = useMemo(
-    () => events.filter((event) => {
-      if (tickerFilter !== 'ALL' && !event.affectedTickers.includes(tickerFilter)) return false
-      if (impactFilter === 'ANALYZED') return event.hasImpact || event.analysisStatus === null
-      if (impactFilter === 'PENDING') return !event.hasImpact && event.analysisStatus !== null
-      return true
-    }),
-    [events, tickerFilter, impactFilter],
-  )
   const largestImpact = useMemo(
-    () => Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))),
-    [filteredEvents],
+    () => Math.max(0, ...events.map((event) => Math.abs(event.portfolioImpact))),
+    [events],
   )
-  const [visiblePage, setVisiblePage] = useState(0)
-  const pageSize = 20
-  const filteredPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
-  const visibleEvents = filteredEvents.slice(visiblePage * pageSize, (visiblePage + 1) * pageSize)
+
+  const analyzedParam = impactFilter === 'ANALYZED' ? true : impactFilter === 'PENDING' ? false : undefined
+  const symbolParam = tickerFilter === 'ALL' ? undefined : tickerFilter
 
   useEffect(() => {
     if (!activePortfolioId) return
-    impactService.getAllImpactEvents(activePortfolioId).then((all) => setEvents(all))
-  }, [activePortfolioId])
+    impactService.getImpactEvents(activePortfolioId, newsPage, { symbol: symbolParam, analyzed: analyzedParam })
+      .then((nextPage) => {
+        setEvents(nextPage.content)
+        setNewsTotalElements(nextPage.totalElements)
+        setNewsTotalPages(nextPage.totalPages)
+      })
+  }, [activePortfolioId, newsPage, impactFilter, tickerFilter])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
@@ -185,10 +183,12 @@ export function PortfolioImpactPage() {
 
   async function refreshNewsNow() {
     await impactService.refreshNews()
-    const all = await impactService.getAllImpactEvents(activePortfolioId)
-    setEvents(all)
     setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setVisiblePage(0)
+    setNewsPage(1)
+    const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
+    setEvents(nextPage.content)
+    setNewsTotalPages(nextPage.totalPages)
+    setNewsTotalElements(nextPage.totalElements)
   }
 
   function cycleViewMode() {
@@ -320,7 +320,7 @@ export function PortfolioImpactPage() {
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
-                <strong>{filteredEvents.length}</strong>
+                <strong>{newsTotalElements}</strong>
               </div>
               <div>
                 <small>Largest impact</small>
@@ -340,7 +340,7 @@ export function PortfolioImpactPage() {
                     className={tickerFilter === ticker ? 'active' : ''}
                     onClick={() => {
                       setTickerFilter(ticker)
-                      setVisiblePage(0)
+                      setNewsPage(1)
                     }}
                   >
                     {ticker === 'ALL' ? 'All' : `$${ticker}`}
@@ -353,7 +353,7 @@ export function PortfolioImpactPage() {
                     type="button"
                     key={mode}
                     className={impactFilter === mode ? 'active' : ''}
-                    onClick={() => { setImpactFilter(mode); setVisiblePage(0) }}
+                    onClick={() => { setImpactFilter(mode); setNewsPage(1) }}
                   >
                     {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
                   </button>
@@ -362,11 +362,11 @@ export function PortfolioImpactPage() {
               <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
               <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
             </div>
-            <div className="news-impact-list page-turn" key={visiblePage}>
-              {visibleEvents.map((event) => (
+            <div className="news-impact-list page-turn" key={newsPage}>
+              {events.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
               ))}
-              {visibleEvents.length === 0 && (
+              {events.length === 0 && (
                 <article className="empty-state">
                   <strong>No matched news</strong>
                   <span>Add holdings with supported tickers to populate the impact stream.</span>
@@ -374,11 +374,11 @@ export function PortfolioImpactPage() {
               )}
             </div>
             <div className="pagination-row">
-              <button type="button" disabled={visiblePage === 0} onClick={() => setVisiblePage((p) => Math.max(0, p - 1))}>
+              <button type="button" disabled={newsPage === 1} onClick={() => setNewsPage((p) => Math.max(1, p - 1))}>
                 Previous
               </button>
-              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={filteredPages} value={visiblePage + 1} onChange={(e) => { const n = Number(e.target.value); if (n >= 1 && n <= filteredPages) setVisiblePage(n - 1) }} /> of {filteredPages} <span>- 20 per page</span></label>
-              <button type="button" disabled={visiblePage >= filteredPages - 1} onClick={() => setVisiblePage((p) => p + 1)}>
+              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={newsTotalPages} value={newsPage} onChange={(e) => { const n = Number(e.target.value); if (n >= 1 && n <= newsTotalPages) setNewsPage(n) }} /> of {newsTotalPages} <span>- 20 per page</span></label>
+              <button type="button" disabled={newsPage >= newsTotalPages} onClick={() => setNewsPage((p) => p + 1)}>
                 Next
               </button>
             </div>
