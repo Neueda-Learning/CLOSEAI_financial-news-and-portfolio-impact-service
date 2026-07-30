@@ -199,6 +199,10 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .theme-toggle { margin-top: 16px; background: var(--surface-strong); border-color: var(--line); text-align: left; }
 .main { padding: 24px; }
 .page-stack { display: grid; gap: 18px; animation: page-materialize 360ms var(--ease-out-expo) both; }
+.news-detail-swipe-content .page-stack { gap: 14px; }
+.news-detail-swipe-content .body-copy { font-size: 1.05rem; line-height: 1.65; }
+.news-detail-swipe-content .news-info-card h2 { font-size: 1.6rem; }
+.news-detail-swipe-content .impact-summary-section .impact-metrics strong { font-size: 1.4rem; }
 .hero { position: sticky; top: 0; z-index: 20; padding-top: 4px; background: var(--bg); }
 .hero, .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .hero h1, .section-header h1, .module-topbar h1 {
