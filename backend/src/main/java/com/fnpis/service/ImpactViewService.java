@@ -184,6 +184,18 @@ public class ImpactViewService {
                         p.getCapturedAt(), p.getPrice()))
                 .toList();
 
+        // Fallback to daily bars when intraday price_points are sparse or absent
+        // (EC-18: no price data for the session, e.g. today before market close).
+        if (curve.isEmpty()) {
+            curve = bars.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(symbol,
+                            from.atZone(ZoneOffset.UTC).toLocalDate(),
+                            to.atZone(ZoneOffset.UTC).toLocalDate())
+                    .stream()
+                    .map(b -> new ImpactViewResponse.PriceSeries.Point(
+                            b.getTradeDate().atStartOfDay(ZoneOffset.UTC).toInstant(), b.getClosePrice()))
+                    .toList();
+        }
+
         return new ImpactViewResponse.PriceSeries(
                 symbol,
                 previousCloseOf(symbol, session),
