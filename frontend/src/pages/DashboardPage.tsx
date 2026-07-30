@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
 import { PieChart } from '../components/charts/PieChart'
@@ -10,9 +10,11 @@ import { currency, dateTime, percent } from '../utils/formatters'
 type ImpactSummary = Awaited<ReturnType<typeof impactService.getImpactSummary>>
 
 export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}) {
-  const { activePortfolio, activePortfolioId, holdings, summary } = usePortfolio()
+  const { activePortfolio, activePortfolioId, holdings, summary, portfolios, setActivePortfolio } = usePortfolio()
   const [history, setHistory] = useState<Array<{ date: string; totalValue: number }>>([])
   const [impactSummary, setImpactSummary] = useState<ImpactSummary | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const pickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!activePortfolioId) return
@@ -20,6 +22,12 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
       .then(([nextHistory, nextImpact]) => { setHistory(nextHistory); setImpactSummary(nextImpact) })
       .catch(() => { setHistory([]); setImpactSummary(null) })
   }, [activePortfolioId])
+
+  useEffect(() => {
+    function dismiss(e: MouseEvent) { if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setPickerOpen(false) }
+    document.addEventListener('mousedown', dismiss)
+    return () => document.removeEventListener('mousedown', dismiss)
+  }, [])
 
   const stockAllocation = summary.allocation
   const weightTotal = stockAllocation.reduce((sum, item) => sum + item.weight, 0)
@@ -35,7 +43,34 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
 
   return (
     <div className="page-stack">
-      <header className="hero"><div><p className="eyebrow">{isForestTheme ? 'Forest palette preview' : 'Dashboard'}</p><h1>{activePortfolio?.name ?? 'Portfolio health'}</h1></div><Card className="hero-metric"><small>Total value</small><strong>{currency(summary.totalValue)}</strong><span className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{percent(summary.todayChangePct)} today</span></Card></header>
+      <header className="hero">
+        <div>
+          <p className="eyebrow">{isForestTheme ? 'Forest palette preview' : 'Dashboard'}</p>
+          <div className="portfolio-picker" ref={pickerRef}>
+            <button type="button" className="portfolio-picker-trigger" onClick={() => setPickerOpen((p) => !p)}>
+              <h1>{activePortfolio?.name ?? 'Portfolio health'}</h1>
+              <span className={`picker-chevron ${pickerOpen ? 'open' : ''}`} aria-hidden="true">▾</span>
+            </button>
+            {pickerOpen && (
+              <div className="portfolio-picker-dropdown">
+                {portfolios.map((p) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    className={p.id === activePortfolioId ? 'active' : ''}
+                    onClick={() => { void setActivePortfolio(p.id); setPickerOpen(false) }}
+                  >
+                    <strong>{p.name}</strong>
+                    <span>{currency(p.totalMarketValue ?? 0)}</span>
+                  </button>
+                ))}
+                {portfolios.length === 0 && <span className="picker-empty">No portfolios yet — create one below</span>}
+              </div>
+            )}
+          </div>
+        </div>
+        <Card className="hero-metric"><small>Total value</small><strong>{currency(summary.totalValue)}</strong><span className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{percent(summary.todayChangePct)} today</span></Card>
+      </header>
       <section className="signal-row" aria-label="Portfolio summary">
         <Card className="signal-card interactive-signal-card"><small>Today's Change</small><strong className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{currency(summary.todayChange)}</strong><span>{percent(summary.todayChangePct)}</span></Card>
         <Card className="signal-card interactive-signal-card"><small>Total P/L</small><strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)}</strong><span>{percent(summary.totalPnLPct)}</span></Card>

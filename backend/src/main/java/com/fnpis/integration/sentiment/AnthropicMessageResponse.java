@@ -24,14 +24,23 @@ public record AnthropicMessageResponse(List<ContentBlock> content) {
     }
 
     /**
-     * The text of the first block, or null when the reply carried no content -
-     * which {@link AgentSentimentEngine} treats as "cannot tell" and degrades to
-     * NEUTRAL rather than throwing.
+     * The text of the first {@code type=text} block, or null when the reply
+     * carried no text content — which {@link AgentSentimentEngine} treats as
+     * "cannot tell" and degrades to NEUTRAL rather than throwing.
+     *
+     * <p>Skips blocks whose {@code text} field is null, which happens when the
+     * model provider (DeepSeek) returns a leading {@code thinking} block whose
+     * payload is in a {@code thinking} field rather than {@code text}.
      */
     public String firstText() {
         if (content == null || content.isEmpty()) {
             return null;
         }
-        return content.get(0).text();
+        for (ContentBlock block : content) {
+            if (block.text() != null) {
+                return block.text();
+            }
+        }
+        return null;
     }
 }
