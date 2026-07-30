@@ -160,8 +160,8 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .theme-toggle { margin-top: 16px; background: var(--surface-strong); border-color: var(--line); text-align: left; }
 .main { padding: 24px; }
 .page-stack { display: grid; gap: 18px; animation: page-materialize 360ms var(--ease-out-expo) both; }
-.hero, .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .hero-sticky { position: sticky; top: 0; z-index: 20; padding-top: 4px; background: var(--bg); }
+.hero, .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .hero h1, .section-header h1, .module-topbar h1 {
   margin: 4px 0 8px;
   font-size: clamp(1.8rem, 2.3vw, 2.9rem);
@@ -210,8 +210,15 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 :root[data-theme='dark'] .card, :root[data-theme='dark'] .modal { background: linear-gradient(180deg, rgba(17, 29, 49, .92), var(--surface)); }
 .card { padding: 18px; transition: box-shadow 180ms var(--ease-out-expo), border-color 180ms var(--ease-out-expo); }
 .card:hover { border-color: #c7d5e5; box-shadow: 0 2px 4px rgba(17, 24, 39, 0.06), 0 10px 24px rgba(17, 24, 39, 0.06); }
-.hero-metric { min-width: 260px; display: grid; gap: 8px; }
-.hero-metric strong { font-size: 2.4rem; }
+.hero-metric { position: relative; isolation: isolate; min-width: 308px; display: grid; gap: 8px; padding: 22px 24px; overflow: hidden; color: #f7fbff; border-color: rgba(148, 204, 236, .48); background: linear-gradient(135deg, #102b45 0%, #24688a 58%, #3d91a8 100%); box-shadow: 0 18px 34px rgba(18, 62, 91, .28), inset 0 1px 0 rgba(255,255,255,.22); }
+.hero-metric::before, .hero-metric::after { content: ''; position: absolute; z-index: -1; border-radius: 999px; pointer-events: none; }
+.hero-metric::before { width: 190px; height: 190px; top: -110px; right: -42px; background: rgba(203, 239, 250, .27); }
+.hero-metric::after { width: 144px; height: 144px; bottom: -100px; left: 28%; background: rgba(109, 205, 177, .25); filter: blur(10px); }
+.hero-metric small { color: rgba(235, 248, 255, .76); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.hero-metric strong { color: #fff; font-size: clamp(2.7rem, 3.7vw, 3.55rem); line-height: .98; letter-spacing: -.055em; }
+.hero-metric span { width: fit-content; padding: 4px 9px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(6, 30, 48, .18); font-size: .78rem; font-weight: 760; }
+.hero-metric .positive { color: #c8f8db; }
+.hero-metric .negative { color: #ffe0dc; }
 .signal-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .signal-card { display: grid; gap: 4px; }
 .signal-card strong { font-size: 1.8rem; letter-spacing: -0.03em; }
@@ -1070,6 +1077,13 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 }
 .ticker-link { all: unset; cursor: pointer; color: var(--accent); font-weight: 650; transition: color 120ms var(--spring); }
 .ticker-link:hover { color: var(--text); text-decoration: underline; }
+.ticker-link { all: unset; cursor: pointer; color: var(--accent); font-weight: 650; transition: color 120ms var(--spring); }
+.ticker-link:hover { color: var(--text); text-decoration: underline; }
+.ticker-filter, .impact-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.ticker-filter button, .impact-filter button { border: 1px solid var(--line); background: var(--surface-strong); color: var(--muted); border-radius: 8px; padding: 7px 10px; font-size: .78rem; font-weight: 650; }
+.ticker-filter button.active, .impact-filter button.active { color: var(--accent); background: var(--accent-soft); border-color: rgba(39, 80, 111, .16); }
+.toast { margin-top: 8px; padding: 8px 14px; border-radius: 6px; border: 1px solid rgba(148, 98, 0, .28); background: rgba(255, 243, 205, .94); color: #946200; font-size: .82rem; font-weight: 650; animation: toast-in 260ms var(--spring); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-6px) } to { opacity: 1; transform: translateY(0) } }
 .compact-button { padding: 9px 12px; }
 .pagination-row {
   justify-content: center;
