@@ -88,8 +88,8 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
             )}
           </div>
         </div>
-        <Card className="hero-metric"><small>Portfolio total value</small><strong>{currency(summary.totalValue)}</strong><span className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{percent(summary.todayChangePct)} today</span><i aria-hidden="true" /></Card>
       </header>
+      <Card className="hero-metric"><small>Portfolio total value</small><strong>{currency(summary.totalValue)}</strong><span className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{percent(summary.todayChangePct)} today</span><i aria-hidden="true" /></Card>
       <section className="signal-row" aria-label="Portfolio summary">
         <Card className="signal-card interactive-signal-card"><small>Today's Change</small><strong className={summary.todayChange >= 0 ? 'positive' : 'negative'}>{currency(summary.todayChange)}</strong><span>{percent(summary.todayChangePct)}</span></Card>
         <Card className="signal-card interactive-signal-card"><small>Total P/L</small><strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)}</strong><span>{percent(summary.totalPnLPct)}</span></Card>
