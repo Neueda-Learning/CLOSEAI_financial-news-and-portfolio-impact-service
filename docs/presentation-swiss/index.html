@@ -1733,7 +1733,7 @@
     <div class="demo-step-grid">
       <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Portfolio first</div><div class="step-note">The user starts from holdings they actually own, not a generic market feed.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Ticker-linked news</div><div class="step-note">Company news is fetched per symbol so the article-to-holding link is explicit.</div></div>
-      <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">AI sentiment</div><div class="step-note">The LLM classifies direction with confidence and a compact rationale.</div></div>
+      <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">AI sentiment</div><div class="step-note">The LLM classifies direction with a confidence score, validated against a fixed schema.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">04</div><div class="step-title">Price reaction</div><div class="step-note">Daily bars decide impact; intraday quotes help the demo view feel live.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">05</div><div class="step-title">Holding impact</div><div class="step-note">The system weights movement by position size, so the answer is portfolio-specific.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">06</div><div class="step-title">Honest verdict</div><div class="step-note">Confirmed, divergent, or inconclusive appears as a state, not a hidden score.</div></div>
@@ -1815,18 +1815,18 @@
     <div data-anim="line"><div class="t-cat">SENTIMENT &amp; IMPACT ENGINE</div><h2 class="h-xl" style="margin-top:1.4vh">The agent is powerful only when boxed in</h2></div>
     <div class="news-board">
       <div class="headline-panel" data-pause="">
-        <div><div class="news-tag">VALIDATION FIRST</div><div class="news-title" style="font-size:min(3.6vw,6.8vh)">One LLM Agent, one JSON shape, one stored result</div><div class="news-meta">We reject malformed output, guard against prompt injection in headlines, and keep the model version visible so the result is reproducible.</div></div>
+        <div><div class="news-tag">VALIDATION FIRST</div><div class="news-title" style="font-size:min(3.6vw,6.8vh)">One LLM Agent, one JSON shape, one stored result</div><div class="news-meta">Three fields, nothing else. The headline is untrusted third-party text, so it is fenced as data — and nothing reaches the database without matching this shape.</div></div>
         <pre style="margin:0;padding:1.6vh 0 0;font-family:var(--mono);font-size:max(14px,1vw);line-height:1.55;white-space:pre-wrap;color:rgba(255,255,255,.82)">{
   "label": "NEGATIVE",
   "score": -0.82,
   "confidence": 0.97
 }</pre>
       </div>
-      <div class="signal-stack" data-pause="">
-        <div><span>CONFIRMED</span><strong>sentiment and price agree</strong></div>
-        <div><span>DIVERGENT</span><strong>market moved the other way</strong></div>
-        <div><span>INCONCLUSIVE</span><strong>not enough data to force a verdict</strong></div>
-        <div><span>Why it matters</span><strong>Divergence is a product signal, not an error</strong></div>
+      <div class="signal-stack">
+        <div data-pause=""><span>Model · claude-opus-4-8</span><strong>Temperature 0, and the model plus prompt version is stored on every row</strong></div>
+        <div data-pause=""><span>Constraint 01 · Prompt</span><strong>One headline in, one JSON object out, capped at 256 tokens — no room to wander</strong></div>
+        <div data-pause=""><span>Constraint 02 · Self-check</span><strong>The score's sign must match the label; we trust the number and rewrite the word</strong></div>
+        <div data-pause=""><span>Constraint 03 · Gate</span><strong>Nothing is stored unless code says it fits the schema — no matter how the model was talked around</strong></div>
       </div>
     </div>
   </div>
@@ -1841,6 +1841,7 @@
       <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-2"><span class="lbl">DIVERGENT</span><span class="nb">Signal</span><span class="sub">The market moved the other way; that is worth surfacing</span></div></div>
       <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-1"><span class="lbl">INCONCLUSIVE</span><span class="nb">Wait</span><span class="sub">Noise-level movement or missing previous close</span></div></div>
     </div>
+    <div class="t-meta" style="margin-top:2.4vh">Both are descriptions of what happened · we never merge them into buy or sell · a system allowed to answer "cannot tell" is not giving advice</div>
   </div>
 </section>
 
