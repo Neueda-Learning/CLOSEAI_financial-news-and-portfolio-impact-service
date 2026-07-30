@@ -2,6 +2,7 @@ package com.fnpis.integration.finnhub;
 
 import com.fnpis.integration.NewsItem;
 import com.fnpis.integration.NewsProvider;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import java.time.Instant;
@@ -38,6 +39,7 @@ class FinnhubNewsProvider implements NewsProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "finnhub")
     @RateLimiter(name = "finnhubNews")
     @Retry(name = "externalApi")
     public List<NewsItem> fetchCompanyNews(String symbol, LocalDate from, LocalDate to) {

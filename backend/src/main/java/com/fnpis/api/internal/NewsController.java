@@ -48,6 +48,7 @@ public class NewsController {
     public PagedResponse<NewsListRow> list(
             @RequestParam(required = false) String symbol,
             @RequestParam(required = false) String sentiment,
+            @RequestParam(required = false) Boolean analyzed,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
             @RequestParam(required = false, defaultValue = "1") int page,
@@ -56,7 +57,7 @@ public class NewsController {
                 : Instant.now().minus(java.time.Duration.ofDays(7));
         Instant toTime = to != null ? LocalDate.parse(to).plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
                 : Instant.now().plus(java.time.Duration.ofDays(1));
-        return service.list(symbol, sentiment, fromTime, toTime, page, size);
+        return service.list(symbol, sentiment, analyzed, fromTime, toTime, page, size);
     }
 
     @GetMapping("/news/{id}")
