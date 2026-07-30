@@ -37,4 +37,8 @@ public interface PriceBarRepository extends JpaRepository<PriceBar, PriceBar.Key
      */
     List<PriceBar> findTop2BySymbolAndTradeDateLessThanEqualOrderByTradeDateDesc(
             String symbol, LocalDate asOf);
+
+    /** Single-stock daily close history for charting (B2, F5). */
+    List<PriceBar> findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(
+            String symbol, LocalDate from, LocalDate to);
 }

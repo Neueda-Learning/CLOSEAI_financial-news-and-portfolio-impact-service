@@ -252,6 +252,51 @@ export function PortfolioImpactPage() {
     void setActivePortfolio(id)
   }
 
+  function PortfolioPanel() {
+    return (
+      <>
+        <div className="pane-summary">
+          <div>
+            <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
+            <strong>{currency(summary.totalValue)}</strong>
+          </div>
+          <div>
+            <small>Total Cost</small>
+            <strong>{currency(summary.totalCost)}</strong>
+          </div>
+          <div>
+            <small>Total P/L</small>
+            <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
+          </div>
+          <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
+        </div>
+        <div className="portfolio-service-strip">
+          <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
+          <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached fallback active' : 'Live quote feed active'}</span>
+          <span>{holdings.length} holdings — weights total {weightTotal.toFixed(1)}%</span>
+        </div>
+        <div className="market-stack">
+          {holdings.map((holding) => (
+            <PortfolioMarketCard
+              key={holding.id}
+              holding={holding}
+              isSelected={tickerFilter === holding.ticker}
+              onEdit={setEditingHolding}
+              onDelete={deleteHolding}
+              onSelect={(ticker) => { setTickerFilter(ticker); setNewsPage(1) }}
+            />
+          ))}
+          {holdings.length === 0 && (
+            <article className="empty-state">
+              <strong>No holdings in this portfolio</strong>
+              <span>Add a ticker, quantity, and cost basis to start valuation.</span>
+            </article>
+          )}
+        </div>
+      </>
+    )
+  }
+
   return (
     <div className={`split-module split-${viewMode}`}>
       <header className="module-topbar">
@@ -309,51 +354,12 @@ export function PortfolioImpactPage() {
                         onSubmit={submitHolding}
                       />
                     )}
+                    {isActive && portfolioDetailsExpanded && <PortfolioPanel />}
                     </div>
                   )
                 })}
               </div>
             </div>
-            {portfolioDetailsExpanded && <>
-            <div className="pane-summary">
-              <div>
-                <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
-                <strong>{currency(summary.totalValue)}</strong>
-              </div>
-              <div>
-                <small>Total Cost</small>
-                <strong>{currency(summary.totalCost)}</strong>
-              </div>
-              <div>
-                <small>Total P/L</small>
-                <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
-              </div>
-              <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
-            </div>
-            <div className="portfolio-service-strip">
-              <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
-              <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached fallback active' : 'Live quote feed active'}</span>
-              <span>{holdings.length} holdings - weights total {weightTotal.toFixed(1)}%</span>
-            </div>
-            <div className="market-stack">
-              {holdings.map((holding) => (
-                <PortfolioMarketCard
-                  key={holding.id}
-                  holding={holding}
-                  isSelected={tickerFilter === holding.ticker}
-                  onEdit={setEditingHolding}
-                  onDelete={deleteHolding}
-                  onSelect={(ticker) => { setTickerFilter(ticker); setNewsPage(1) }}
-                />
-              ))}
-              {holdings.length === 0 && (
-                <article className="empty-state">
-                  <strong>No holdings in this portfolio</strong>
-                  <span>Add a ticker, quantity, and cost basis to start valuation.</span>
-                </article>
-              )}
-            </div>
-            </>}
           </div>
         </section>
 

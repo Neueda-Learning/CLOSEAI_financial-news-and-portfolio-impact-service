@@ -59,8 +59,9 @@ export const portfolioService = {
     await apiFetch(`/holdings/${id}`, { method: 'PATCH', body: JSON.stringify({ quantity: holding.shares, costBasis: holding.averageCost }) })
   },
   async deleteHolding(id: number) { await apiFetch<void>(`/holdings/${id}`, { method: 'DELETE' }) },
-  async getValuationHistory(id: number) {
-    const result = await apiFetch<{ points: Array<{ date: string; totalValue: string }> }>(`/portfolios/${id}/valuation-history`)
+  async getValuationHistory(id: number, symbol?: string) {
+    const url = `/portfolios/${id}/valuation-history` + (symbol ? `?symbol=${encodeURIComponent(symbol)}` : '')
+    const result = await apiFetch<{ points: Array<{ date: string; totalValue: string }> }>(url)
     return result.points.map((point) => ({ date: point.date, totalValue: asNumber(point.totalValue) }))
   },
 }
