@@ -251,12 +251,18 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 :root[data-theme='dark'] .card, :root[data-theme='dark'] .modal { background: linear-gradient(180deg, rgba(17, 29, 49, .92), var(--surface)); }
 .card { padding: 18px; transition: box-shadow 180ms var(--ease-out-expo), border-color 180ms var(--ease-out-expo); }
 .card:hover { border-color: #c7d5e5; box-shadow: 0 2px 4px rgba(17, 24, 39, 0.06), 0 10px 24px rgba(17, 24, 39, 0.06); }
-.hero-metric { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text); border-color: var(--line); background: var(--surface); }
+.hero-metric { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text); border: 1px solid var(--line); background: linear-gradient(135deg, #e8f0fe 0%, #d4e4fc 100%); }
 .hero-metric small { color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .hero-metric strong { font-size: clamp(2rem, 2.5vw, 2.5rem); line-height: 1; letter-spacing: -.03em; }
 .hero-metric span { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: .78rem; font-weight: 650; }
 .hero-metric .positive { color: var(--positive); }
 .hero-metric .negative { color: var(--negative); }
+:root[data-theme='dark'] .hero-metric { color: #f7fbff; border-color: rgba(148, 204, 236, .48); background: linear-gradient(135deg, #102b45 0%, #24688a 58%, #3d91a8 100%); box-shadow: 0 18px 34px rgba(18, 62, 91, .28), inset 0 1px 0 rgba(255,255,255,.22); }
+:root[data-theme='dark'] .hero-metric small { color: rgba(235, 248, 255, .76); }
+:root[data-theme='dark'] .hero-metric strong { color: #fff; }
+:root[data-theme='dark'] .hero-metric span { border-color: rgba(255,255,255,.2); background: rgba(6, 30, 48, .18); }
+:root[data-theme='dark'] .hero-metric .positive { color: #c8f8db; }
+:root[data-theme='dark'] .hero-metric .negative { color: #ffe0dc; }
 .signal-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .signal-card { display: grid; gap: 4px; }
 .signal-card strong { font-size: 1.8rem; letter-spacing: -0.03em; }
