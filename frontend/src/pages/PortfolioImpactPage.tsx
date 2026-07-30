@@ -140,6 +140,7 @@ export function PortfolioImpactPage() {
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
   const [newsPage, setNewsPage] = useState(1)
   const [refreshing, setRefreshing] = useState(false)
+  const [toast, setToast] = useState('')
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
@@ -182,6 +183,11 @@ export function PortfolioImpactPage() {
     setPortfolioName('')
   }
 
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 4000)
+  }
+
   async function refreshNewsNow() {
     setRefreshing(true)
     try {
@@ -192,7 +198,20 @@ export function PortfolioImpactPage() {
       setEvents(nextPage.content)
       setNewsTotalPages(nextPage.totalPages)
       setNewsTotalElements(nextPage.totalElements)
+    } catch {
+      showToast('Refresh unavailable — a fetch is already running')
     } finally {
+      setRefreshing(false)
+    }
+  }
+
+  async function runSentiment() {
+    setRefreshing(true)
+    try {
+      await impactService.refreshSentiment()
+      await refreshNewsNow()
+    } catch {
+      showToast('Sentiment is already analysing — try again in a moment')
       setRefreshing(false)
     }
   }
@@ -366,8 +385,9 @@ export function PortfolioImpactPage() {
                 ))}
               </div>
               <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
-              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
+              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
             </div>
+            {toast && <div className="toast">{toast}</div>}
             <div className="news-impact-list page-turn" key={newsPage}>
               {events.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
