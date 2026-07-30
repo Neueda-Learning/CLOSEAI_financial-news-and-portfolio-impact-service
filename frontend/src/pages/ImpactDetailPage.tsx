@@ -13,6 +13,7 @@ export function ImpactDetailPage() {
   const navigate = useNavigate()
   const [event, setEvent] = useState<ImpactEvent | undefined>(undefined)
   const [nextArticle, setNextArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
+  const [prefetchedNextEvent, setPrefetchedNextEvent] = useState<ImpactEvent | null>(null)
   const [previousArticle, setPreviousArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -33,6 +34,14 @@ export function ImpactDetailPage() {
         setEvent(nextEvent)
         setNextArticle(nextNews)
         setPreviousArticle(previousNews)
+        setPrefetchedNextEvent(null)
+        if (nextNews) {
+          void impactService.getImpactEvent(nextNews.id, activePortfolioId).then((prefetchedEvent) => {
+            if (!cancelled) setPrefetchedNextEvent(prefetchedEvent)
+          }).catch(() => {
+            if (!cancelled) setPrefetchedNextEvent(null)
+          })
+        }
       }
     })
     return () => { cancelled = true }
@@ -83,7 +92,10 @@ export function ImpactDetailPage() {
     setCommitDirection('next')
     setIsCommitting(true)
     setDragX(Math.max(window.innerWidth, releasedX + 220))
-    commitTimer.current = window.setTimeout(() => navigate(`/impact/${nextArticle.id}`), 280)
+    commitTimer.current = window.setTimeout(() => {
+      if (prefetchedNextEvent) setEvent(prefetchedNextEvent)
+      navigate(`/impact/${nextArticle.id}`)
+    }, 280)
   }
 
   function advanceToPrevious() {
@@ -99,7 +111,6 @@ export function ImpactDetailPage() {
   }
 
   const swipeProgress = Math.min(Math.abs(dragX) / Math.max(1, window.innerWidth * 0.72), 1)
-  const nextCardTransform = `translate3d(${(-42 + swipeProgress * 42).toFixed(1)}px, 0, 0) scale(${(0.94 + swipeProgress * 0.06).toFixed(3)})`
   const detailTransform = `translate3d(${dragX}px, 0, 0) scale(${(1 - swipeProgress * 0.035).toFixed(3)})`
 
   return (
@@ -110,7 +121,6 @@ export function ImpactDetailPage() {
       onPointerUp={finishGesture}
       onPointerCancel={finishGesture}
     >
-      {nextArticle && <aside className="news-swipe-next-card" aria-hidden="true" style={{ transform: nextCardTransform }}><small>Up next</small><strong>{nextArticle.headline}</strong><span>{nextArticle.source} · Swipe right to open</span></aside>}
       <div className="news-detail-swipe-content" style={{ transform: detailTransform }}>
       <div className="page-stack">
       <p className="eyebrow">Impact detail</p>

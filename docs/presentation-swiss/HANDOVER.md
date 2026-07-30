@@ -89,7 +89,7 @@ To publish on GitHub Pages:
 | 3 | The Problem | S03 Split | Story-driven reason for the website |
 | 4 | What The Website Does | S11 Timeline | Plain-language product loop |
 | 5 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
-| 6 | Complete Demo Flow | S06/Grid | Timothy owns the live demo run |
+| 6 | Additional Features | S06/Center screenshot + callouts | Timothy uses arrows to explain 53% agreement, confirmed/divergent/inconclusive, sentiment, and coverage |
 | 7 | Architecture | S05 Three Layers | Evan owns the system story |
 | 8 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
 | 9 | Sentiment & Impact Engine | S08/Duo | Model identity + three constraint layers, revealed one at a time |

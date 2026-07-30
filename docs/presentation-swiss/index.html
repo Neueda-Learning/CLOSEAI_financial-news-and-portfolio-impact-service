@@ -1099,6 +1099,102 @@
   }
   .demo-step.accent .step-note{color:rgba(255,255,255,.82)}
 
+  .feature-map-stage{
+    position:relative;
+    flex:1;
+    margin-top:2.4vh;
+    margin-bottom:calc(var(--nav-safe-bottom) * .55);
+    min-height:0
+  }
+  .feature-map-shot{
+    position:absolute;
+    left:50%;
+    top:51%;
+    transform:translate(-50%,-50%);
+    width:min(48vw,730px);
+    background:#f5f5f4;
+    border-top:2px solid var(--accent);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:1.5vh 1.2vw;
+    box-shadow:0 14px 32px rgba(10,10,10,.08);
+    z-index:2
+  }
+  .feature-arrows{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:3;
+    pointer-events:none;
+    overflow:visible
+  }
+  .feature-arrows path{
+    fill:none;
+    stroke:var(--accent);
+    stroke-width:.72;
+    vector-effect:non-scaling-stroke
+  }
+  .feature-map-shot img{
+    width:100%;
+    height:auto;
+    display:block;
+    border:1px solid var(--border-subtle);
+    background:#fff
+  }
+  .feature-map-caption{
+    font-family:var(--mono);
+    font-size:max(12px,.78vw);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-helper);
+    margin-top:1.2vh
+  }
+  .feature-callout{
+    position:absolute;
+    width:min(20vw,265px);
+    background:#f5f5f4;
+    padding:1.35vh 1.1vw 1.25vh;
+    border-top:2px solid var(--border-subtle);
+    z-index:3
+  }
+  .feature-callout.accent{
+    background:var(--accent);
+    color:var(--accent-on);
+    border-top-color:var(--accent)
+  }
+  .feature-kicker{
+    font-family:var(--mono);
+    font-size:max(11px,.72vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--text-helper)
+  }
+  .feature-callout.accent .feature-kicker{color:rgba(255,255,255,.72)}
+  .feature-title{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(20px,1.35vw);
+    line-height:1.18;
+    letter-spacing:-.015em;
+    font-weight:550;
+    margin-top:.4vh
+  }
+  .feature-proof{
+    font-family:var(--sans),var(--sans-zh);
+    font-size:max(14px,.86vw);
+    line-height:1.32;
+    color:var(--text-secondary);
+    margin-top:.45vh
+  }
+  .feature-callout.accent .feature-proof{color:rgba(255,255,255,.82)}
+  .callout-agreement{left:0;top:0}
+  .callout-confirmed{left:0;top:34%}
+  .callout-sentiment{left:0;bottom:0}
+  .callout-inconclusive{right:0;top:0}
+  .callout-divergent{right:0;top:34%}
+  .callout-coverage{right:0;bottom:0}
+
   .time-grid{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -1745,9 +1841,9 @@
     <div class="timeline-h" style="margin-top:2vh"><div class="tl-row" style="grid-template-columns:repeat(5,1fr)">
       <div class="th-node up" data-pause=""><span class="label"><span class="yr">01</span><span class="name">Start with portfolio</span><span class="desc">The stocks the user actually owns</span></span><span class="dot"></span></div>
       <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">02</span><span class="name">Find related news</span><span class="desc">Only stories tied to those tickers</span></span></div>
-      <div class="th-node up" data-pause=""><span class="label"><span class="yr">03</span><span class="name">Read the signal</span><span class="desc">Positive, negative, or neutral</span></span><span class="dot"></span></div>
+      <div class="th-node up" data-pause=""><span class="label"><span class="yr">03</span><span class="name">Analyse through LLM</span><span class="desc">Positive, negative, or neutral</span></span><span class="dot"></span></div>
       <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">04</span><span class="name">Check the market</span><span class="desc">Did the price move the same way?</span></span></div>
-      <div class="th-node up accent" data-pause=""><span class="label"><span class="yr">05</span><span class="name">Show the impact</span><span class="desc">A clear answer for this portfolio</span></span><span class="dot"></span></div>
+      <div class="th-node up accent" data-pause=""><span class="label"><span class="yr">05</span><span class="name">Show portfolio metrics</span><span class="desc">Sentiment, confidence, impact, alignment</span></span><span class="dot"></span></div>
     </div></div>
   </div>
 </section>
@@ -1769,16 +1865,29 @@
   </div>
 </section>
 
-<section class="slide" data-animate="measure-up" data-layout="S06">
+<section class="slide" data-animate="grid-reveal" data-layout="S06">
   <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">COMPLETE DEMO FLOW</div><h2 class="h-xl" style="margin-top:1.4vh">The 6 clicks we show live</h2></div>
-    <div class="demo-step-grid">
-      <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Open the portfolio</div><div class="step-note">Start from the normal holdings dashboard so the audience sees a calm baseline.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Trigger breaking news</div><div class="step-note">Load the Apple/AAPL example and show the headline inside the portfolio context.</div></div>
-      <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">Reveal sentiment</div><div class="step-note">The LLM Agent gives a validated label, not a vague paragraph.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">04</div><div class="step-title">Show the chart marker</div><div class="step-note">The price line and news marker make the timing obvious.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">05</div><div class="step-title">Read impact</div><div class="step-note">Direction, alignment, and dollar impact are separated on purpose.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">06</div><div class="step-title">Flip to Mock</div><div class="step-note">Show that the page still works when upstream data is stale or unavailable.</div></div>
+    <div data-anim="line"><div class="t-cat">LIVE DEMO STORY</div><h2 class="h-xl" style="margin-top:1.4vh">Additional features</h2></div>
+    <div class="feature-map-stage">
+      <figure class="feature-map-shot">
+        <img src="./assets/demo/direction-agreement-53.png" alt="Portfolio impact summary card showing 53 percent direction agreement, confirmed, divergent, inconclusive, weighted sentiment, news coverage, and data freshness">
+        <figcaption class="feature-map-caption">Dashboard card to explain during the walkthrough</figcaption>
+      </figure>
+      <svg class="feature-arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs><marker id="feature-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path></marker></defs>
+        <path d="M 22 14 L 31 40" marker-end="url(#feature-arrowhead)"></path>
+        <path d="M 22 45 L 34 52" marker-end="url(#feature-arrowhead)"></path>
+        <path d="M 22 86 L 34 61" marker-end="url(#feature-arrowhead)"></path>
+        <path d="M 78 14 L 65 52" marker-end="url(#feature-arrowhead)"></path>
+        <path d="M 78 45 L 59 52" marker-end="url(#feature-arrowhead)"></path>
+        <path d="M 78 86 L 50 61" marker-end="url(#feature-arrowhead)"></path>
+      </svg>
+      <div class="feature-callout accent callout-agreement"><div class="feature-kicker">01 · Agreement</div><div class="feature-title">53% direction agreement</div><div class="feature-proof">Checks whether news direction matches price direction.</div></div>
+      <div class="feature-callout callout-confirmed"><div class="feature-kicker">02 · Confirmed</div><div class="feature-title">Confirmed</div><div class="feature-proof">News and market price move in the same direction.</div></div>
+      <div class="feature-callout callout-divergent"><div class="feature-kicker">03 · Divergent</div><div class="feature-title">Divergent</div><div class="feature-proof">News says one thing; price action says the opposite.</div></div>
+      <div class="feature-callout callout-inconclusive"><div class="feature-kicker">04 · Inconclusive</div><div class="feature-title">Inconclusive</div><div class="feature-proof">Move is too small, neutral, or unclear to judge.</div></div>
+      <div class="feature-callout callout-sentiment"><div class="feature-kicker">05 · Sentiment</div><div class="feature-title">Weighted sentiment</div><div class="feature-proof">Portfolio mood, weighted by holding size.</div></div>
+      <div class="feature-callout callout-coverage"><div class="feature-kicker">06 · Coverage</div><div class="feature-title">News coverage</div><div class="feature-proof">Share of portfolio symbols with analysed news.</div></div>
     </div>
   </div>
 </section>
