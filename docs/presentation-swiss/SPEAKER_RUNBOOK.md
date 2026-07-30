@@ -159,32 +159,47 @@ Transition:
 
 ### Slide 9 — Sentiment & Impact Engine
 
-“The LLM agent is useful only because we constrain it.
-It must return a validated JSON shape: label, score, and confidence.
-Malformed output gets rejected, and the model version is stored so old results are traceable.”
+> Four reveals on the right. Say the line, then click.
 
-“Impact is then stored as data, not recomputed casually on every page read.”
+“The agent is powerful only because it is boxed in.
+Three fields, nothing else: label, score, confidence.
+The headline is untrusted third-party text, so we fence it as data.”
+
+*(click)* “Claude Opus at temperature zero, and we store the model and prompt version on every row — so any verdict traces back to what produced it.”
+
+*(click)* “One headline in, one JSON object out, capped at 256 tokens. A small task is hard to get wrong.”
+
+*(click)* “Then a self-check: the sign of the score must match the label. If they disagree, we trust the number and rewrite the word.”
+
+*(click)* “And a gate — code decides what gets stored, not the model. However the model is talked around, nothing lands unless it fits the schema.”
+
+“Stored once, one verdict per article, so the answer cannot drift between refreshes.”
 
 ### Slide 10 — Honest Output
 
-“This is one of the strongest ideas in the project: direction and alignment are separate.
-Direction comes from sentiment: positive, negative, or neutral. Alignment comes from the price move: confirmed, divergent, or inconclusive.”
+“Direction and alignment are separate, and we never merge them.
+Direction comes from sentiment: positive, negative, or neutral.
+Alignment comes from the price: confirmed, divergent, or inconclusive.”
 
-“Divergent is not a bug. If bad news appears but the stock rises, that disagreement is exactly the interesting signal the product should surface.”
+“Divergent is not a bug. Bad news, stock rises — that disagreement is the interesting part, and averaging it into one score would destroy it.”
 
-### Slide 11 — Failure Design
+“Both describe what happened. Neither says buy or sell. A system allowed to answer ‘cannot tell’ is not giving advice.”
 
-“This slide is about how the system fails safely.
-The point is not that nothing can go wrong.
-The point is that failure is designed instead of discovered during the demo.”
+### Slide 11 — How It Fails
 
-“If a required key is missing, the app should fail at boot instead of halfway through a presentation.
-If a quote provider is down, the provider interface gives us a controlled fallback path.
-If the same article is processed twice, the verdict should stay stable instead of being rewritten casually.”
+> Six cards. Do not read all six — land 01, then pick two, then close on 06.
 
-“The edge cases and Testcontainers point to the same idea:
-we test the risky parts in conditions that look like production.
-That is what makes the demo credible.”
+“Everything on this slide is a decision we made about failing, taken before the demo instead of during it.”
+
+“If a key is missing, or the schema drifted from the entities, the app refuses to start — so it fails here, not on slide seven.”
+
+“A dead quote source falls through to a backup, and the service layer never sees a vendor type — which is what makes swapping a provider cheap.”
+
+“A verdict is written once. So a network failure fails loudly rather than storing a fabricated NEUTRAL that would mislabel the story permanently.”
+
+“Twenty-four edge cases are listed, seventeen have a test, and three of those are divide-by-zero traps — zero cost basis, missing previous close, zero portfolio value.”
+
+“And the tests run against real MySQL, not H2, because DECIMAL precision and index limits only behave like production on the real thing.”
 
 Transition:
 
