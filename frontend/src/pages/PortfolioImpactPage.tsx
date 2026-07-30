@@ -36,10 +36,14 @@ function PortfolioMarketCard({
   holding,
   onEdit,
   onDelete,
+  onSelect,
+  isSelected,
 }: {
   holding: Holding
   onEdit: (holding: Holding) => void
   onDelete: (id: number) => void
+  onSelect: (ticker: string) => void
+  isSelected: boolean
 }) {
   const marketValue = holding.marketValue
   const totalCost = holding.totalCost
@@ -48,7 +52,18 @@ function PortfolioMarketCard({
   const weight = holding.weight
 
   return (
-    <article className="market-card">
+    <article
+      className={isSelected ? 'market-card holding-filter-trigger is-selected' : 'market-card holding-filter-trigger'}
+      tabIndex={0}
+      aria-label={`Filter news by ${holding.ticker}`}
+      onClick={() => onSelect(holding.ticker)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(holding.ticker)
+        }
+      }}
+    >
       <div className="market-card-top">
         <div>
           <div className="stock-symbol">${holding.ticker}</div>
@@ -56,8 +71,8 @@ function PortfolioMarketCard({
         </div>
         <div className="market-actions">
           <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
-          <button type="button" onClick={() => onEdit(holding)}>Edit</button>
-          <button type="button" className="danger-text" onClick={() => onDelete(holding.id)}>Delete</button>
+          <button type="button" onClick={(event) => { event.stopPropagation(); onEdit(holding) }}>Edit</button>
+          <Button type="button" variant="danger" className="compact-button" onClick={(event) => { event.stopPropagation(); onDelete(holding.id) }}>Delete</Button>
         </div>
       </div>
       <div className="stock-price-row">
@@ -242,7 +257,7 @@ export function PortfolioImpactPage() {
       <header className="module-topbar">
         <div>
           <p className="eyebrow">Portfolio Impact</p>
-          <h1>Holdings and news impact, side by side</h1>
+          <h1>News Impact</h1>
         </div>
         <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
           <span className={`view-cycle-glyph mode-${viewMode}`} aria-hidden="true">
@@ -285,9 +300,7 @@ export function PortfolioImpactPage() {
                         <strong>{portfolio.name}</strong>
                         <span>{currency(portfolioValue)} total value</span>
                       </button>
-                      <button type="button" className="danger-text" onClick={() => deletePortfolio(portfolio.id)}>
-                        Delete
-                      </button>
+                      <Button type="button" variant="danger" className="compact-button" onClick={() => deletePortfolio(portfolio.id)}>Delete</Button>
                     </article>
                     {isActive && open && portfolioDetailsExpanded && (
                       <AddHoldingModal
@@ -324,7 +337,14 @@ export function PortfolioImpactPage() {
             </div>
             <div className="market-stack">
               {holdings.map((holding) => (
-                <PortfolioMarketCard key={holding.id} holding={holding} onEdit={setEditingHolding} onDelete={deleteHolding} />
+                <PortfolioMarketCard
+                  key={holding.id}
+                  holding={holding}
+                  isSelected={tickerFilter === holding.ticker}
+                  onEdit={setEditingHolding}
+                  onDelete={deleteHolding}
+                  onSelect={(ticker) => { setTickerFilter(ticker); setNewsPage(1) }}
+                />
               ))}
               {holdings.length === 0 && (
                 <article className="empty-state">
@@ -361,35 +381,26 @@ export function PortfolioImpactPage() {
               </div>
             </div>
             <div className="news-controls" aria-label="News filters and refresh controls">
-              <div className="ticker-filter">
-                {tickers.map((ticker) => (
-                  <button
-                    type="button"
-                    key={ticker}
-                    className={tickerFilter === ticker ? 'active' : ''}
-                    onClick={() => {
-                      setTickerFilter(ticker)
-                      setNewsPage(1)
-                    }}
-                  >
-                    {ticker === 'ALL' ? 'All' : `$${ticker}`}
-                  </button>
-                ))}
+              <div className="news-filter-selects">
+                <label>
+                  <span>Holding</span>
+                  <select value={tickerFilter} onChange={(event) => { setTickerFilter(event.target.value); setNewsPage(1) }}>
+                    {tickers.map((ticker) => <option key={ticker} value={ticker}>{ticker === 'ALL' ? 'All holdings' : ticker === 'OTHER' ? 'Other stocks' : `$${ticker}`}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Analysis</span>
+                  <select value={impactFilter} onChange={(event) => { setImpactFilter(event.target.value as typeof impactFilter); setNewsPage(1) }}>
+                    <option value="ALL">All news</option>
+                    <option value="ANALYZED">Analyzed</option>
+                    <option value="PENDING">Pending</option>
+                  </select>
+                </label>
               </div>
-              <div className="impact-filter">
-                {(['ALL', 'ANALYZED', 'PENDING'] as const).map((mode) => (
-                  <button
-                    type="button"
-                    key={mode}
-                    className={impactFilter === mode ? 'active' : ''}
-                    onClick={() => { setImpactFilter(mode); setNewsPage(1) }}
-                  >
-                    {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
-                  </button>
-                ))}
+              <div className="news-actions">
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
               </div>
-              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
-              <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
             </div>
             {toast && <div className="toast">{toast}</div>}
             <div className="news-impact-list page-turn" key={newsPage}>
