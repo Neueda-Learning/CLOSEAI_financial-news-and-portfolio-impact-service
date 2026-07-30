@@ -5,7 +5,9 @@ import com.fnpis.api.internal.dto.ValuationHistoryResponse;
 import com.fnpis.common.Freshness;
 import com.fnpis.domain.PortfolioValuationSnapshot;
 import com.fnpis.domain.PriceQuote;
+import com.fnpis.domain.Holding;
 import com.fnpis.domain.PriceBar;
+import com.fnpis.repository.HoldingRepository;
 import com.fnpis.repository.PortfolioRepository;
 import com.fnpis.repository.PortfolioValuationSnapshotRepository;
 import com.fnpis.repository.PriceBarRepository;
@@ -39,6 +41,7 @@ public class PriceReadService {
     private final PortfolioRepository portfolioRepo;
     private final SecurityRepository securityRepo;
     private final PriceBarRepository barRepo;
+    private final HoldingRepository holdingRepo;
     private final Duration freshnessBudget;
     private static final int PCT_SCALE = 2;
 
@@ -48,12 +51,14 @@ public class PriceReadService {
             PortfolioRepository portfolioRepo,
             SecurityRepository securityRepo,
             PriceBarRepository barRepo,
+            HoldingRepository holdingRepo,
             @Value("${app.valuation.quote-freshness-budget-seconds}") int freshnessSeconds) {
         this.quoteRepo = quoteRepo;
         this.snapshotRepo = snapshotRepo;
         this.portfolioRepo = portfolioRepo;
         this.securityRepo = securityRepo;
         this.barRepo = barRepo;
+        this.holdingRepo = holdingRepo;
         this.freshnessBudget = Duration.ofSeconds(freshnessSeconds);
     }
 
@@ -89,7 +94,11 @@ public class PriceReadService {
                 snapshotRepo.findByPortfolioIdAndSnapshotDateBetweenOrderBySnapshotDateAsc(
                         portfolioId, from, to);
         if (snapshots.isEmpty()) {
-            return new ValuationHistoryResponse(portfolioId, Collections.emptyList(), null, true);
+            // Auto-compute from current holdings × historical prices when no
+            // snapshot exists yet — e.g. a newly created portfolio before the
+            // closing job has run. Not identical to a real snapshot (holdings
+            // may have changed), but good enough for an immediate chart.
+            return computeFromHoldings(portfolioId, from, to);
         }
         var points = snapshots.stream()
                 .map(s -> new ValuationHistoryResponse.ValuationPoint(
@@ -97,6 +106,37 @@ public class PriceReadService {
                 .toList();
         Instant latest = snapshots.get(snapshots.size() - 1).getCreatedAt();
         return new ValuationHistoryResponse(portfolioId, points, latest, false);
+    }
+
+    /** Fallback: sum current holdings × daily close for each trading date. */
+    private ValuationHistoryResponse computeFromHoldings(Long portfolioId, LocalDate from, LocalDate to) {
+        List<Holding> holdings = holdingRepo.findByPortfolioIdOrderBySymbol(portfolioId);
+        if (holdings.isEmpty()) {
+            return new ValuationHistoryResponse(portfolioId, Collections.emptyList(), null, true);
+        }
+        List<PriceBar> firstSymbolBars = barRepo.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(
+                holdings.get(0).getSymbol(), from, to);
+        if (firstSymbolBars.isEmpty()) {
+            return new ValuationHistoryResponse(portfolioId, Collections.emptyList(), null, true);
+        }
+        var pointMap = new java.util.LinkedHashMap<LocalDate, BigDecimal>();
+        for (PriceBar bar : firstSymbolBars) {
+            pointMap.put(bar.getTradeDate(), BigDecimal.ZERO);
+        }
+        for (Holding h : holdings) {
+            List<PriceBar> bars = barRepo.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(
+                    h.getSymbol(), from, to);
+            for (PriceBar bar : bars) {
+                BigDecimal existing = pointMap.getOrDefault(bar.getTradeDate(), BigDecimal.ZERO);
+                pointMap.put(bar.getTradeDate(), existing.add(
+                        h.getQuantity().multiply(bar.getClosePrice())));
+            }
+        }
+        var points = pointMap.entrySet().stream()
+                .map(e -> new ValuationHistoryResponse.ValuationPoint(
+                        e.getKey().toString(), e.getValue()))
+                .toList();
+        return new ValuationHistoryResponse(portfolioId, points, null, points.isEmpty());
     }
 
     /**
