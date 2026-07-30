@@ -63,8 +63,20 @@ junit.xml
 # === Docker ===
 docker-compose.override.yml
 
+# === Out-of-Band Constraints ===
+team-constraints.md
+
 # === Misc ===
 .DS_Store
 *.tsbuildinfo
 .next/
 .cache/
+
+# === Local Codex / design-tool artifacts ===
+.github/hooks/
+.github/skills/
+docs/ReadMe.zh-CN (1).md
+frontend/.agents/
+frontend/CODEX_HANDOFF.md
+frontend/design-system/
+frontend/skills-lock.json

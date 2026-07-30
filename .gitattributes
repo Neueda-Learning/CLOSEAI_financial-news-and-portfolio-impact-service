@@ -22,6 +22,11 @@
 # Shell scripts must be LF (won't run on Linux otherwise)
 *.sh       text eol=lf
 
+# Maven wrapper has no extension, so spell it out. CI runs ./mvnw on Linux;
+# CRLF here breaks the shebang. The exec bit is tracked in the index -
+# check with: git ls-files --stage backend/mvnw  (expect 100755)
+mvnw       text eol=lf
+
 # Windows-specific — keep CRLF
 *.bat      text eol=crlf
 *.cmd      text eol=crlf

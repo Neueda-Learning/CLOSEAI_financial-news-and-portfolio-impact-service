@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNPIS - Financial News & Portfolio Impact Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .presentation {
+            width: 100%;
+            max-width: 1024px;
+            aspect-ratio: 16 / 9;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            flex: 1;
+            padding: 60px;
+            background: white;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Slide Styles */
+        .slide h1 {
+            font-size: 3.5rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide h2 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .slide h3 {
+            font-size: 1.8rem;
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .slide ul {
+            margin-left: 30px;
+        }
+
+        .slide li {
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .highlight {
+            background: #ffd700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .grid-item {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .grid-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .comparison-table td:first-child {
+            font-weight: bold;
+            background: #f0f0f0;
+            width: 35%;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 60px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .slide-counter {
+            font-weight: bold;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            text-align: center;
+            justify-content: center;
+        }
+
+        .title-slide h1 {
+            font-size: 4rem;
+        }
+
+        .title-slide .subtitle {
+            margin: 20px 0 40px 0;
+            font-size: 1.8rem;
+        }
+
+        .team-info {
+            margin-top: 40px;
+            font-size: 1rem;
+            color: #888;
+        }
+
+        /* Section Slides */
+        .section-header {
+            color: #667eea;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .tech-item {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .tech-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .priority-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .priority-box strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide">
+            <h1>FNPIS</h1>
+            <p class="subtitle">Financial News & Portfolio Impact Service</p>
+            <p style="font-size: 1.3rem; color: #666; margin-top: 30px;">
+                Connecting financial news to portfolio impact in real time
+            </p>
+            <div class="team-info">
+                <p><strong>Project #15 · Group 7</strong></p>
+                <p>CLOSEAI Team · 5-Day Sprint</p>
+                <p style="margin-top: 20px; color: #667eea;">Press → to begin</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Problem -->
+        <div class="slide">
+            <h2>The Problem</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 30px;">
+                Investors struggle to connect breaking news with portfolio impact
+            </p>
+            <ul>
+                <li>📰 Breaking news about Apple → How much does it affect my position?</li>
+                <li>💰 Did the price move match what the news predicted?</li>
+                <li>⏰ Most investors discover the connection too late</li>
+                <li>🔗 No system connects sentiment, price action, and position size</li>
+            </ul>
+            <div style="margin-top: 40px; background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <strong>Traditional approach:</strong> Read news → Manually check price → Calculate impact (Hours too late)
+            </div>
+        </div>
+
+        <!-- Slide 3: The Solution -->
+        <div class="slide">
+            <h2>Our Solution: FNPIS</h2>
+            <div class="grid-2">
+                <div class="grid-item">
+                    <h4>📰 Aggregate News</h4>
+                    <p>Automatically pull financial news for every stock in your portfolio via Finnhub API</p>
+                </div>
+                <div class="grid-item">
+                    <h4>🤖 Sentiment Analysis</h4>
+                    <p>Use LLM Agent to classify each headline: Positive / Negative / Neutral</p>
+                </div>
+                <div class="grid-item">
+                    <h4>📊 Correlate with Price</h4>
+                    <p>Compare news sentiment with day's actual price movement</p>
+                </div>
+                <div class="grid-item">
+                    <h4>💹 Calculate Impact</h4>
+                    <p>Show exactly which holdings are affected and by how much</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Demo Scenario -->
+        <div class="slide">
+            <h2>Demo Walkthrough</h2>
+            <div class="priority-box">
+                <strong>Scenario: User holds AAPL, NVDA, TSLA</strong>
+                <p>July 28, 2026 morning</p>
+            </div>
+            <ul style="margin-top: 30px;">
+                <li><strong>Step 1:</strong> System polls Finnhub → Fetches latest news for AAPL, NVDA, TSLA</li>
+                <li><strong>Step 2:</strong> LLM analyzes: "Nvidia beats Q2 estimates" → POSITIVE sentiment</li>
+                <li><strong>Step 3:</strong> Day closes → NVDA closes +3.2% → CONFIRMED (sentiment matched price)</li>
+                <li><strong>Step 4:</strong> User sees: "News gained you $1,600 on your NVDA position"</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: Core Concepts -->
+        <div class="slide">
+            <h2>Key Terms</h2>
+            <table class="comparison-table">
+                <tr>
+                    <td>Portfolio</td>
+                    <td>Your investment account (e.g., "My US Stock Account")</td>
+                </tr>
+                <tr>
+                    <td>Holding</td>
+                    <td>One stock position (e.g., 10 shares of AAPL @ $180)</td>
+                </tr>
+                <tr>
+                    <td>Security</td>
+                    <td>The stock itself (e.g., AAPL = Apple Inc.)</td>
+                </tr>
+                <tr>
+                    <td>Sentiment</td>
+                    <td>News classification: POSITIVE / NEGATIVE / NEUTRAL</td>
+                </tr>
+                <tr>
+                    <td>Alignment</td>
+                    <td>Did price agree with sentiment? CONFIRMED / DIVERGENT / INCONCLUSIVE</td>
+                </tr>
+                <tr>
+                    <td>Impact</td>
+                    <td>Dollar impact on your position (what you gained/lost)</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Slide 6: System Architecture -->
+        <div class="slide">
+            <h2>System Architecture</h2>
+            <div style="margin-top: 30px;">
+                <h3>Three Data Flows</h3>
+                <ul>
+                    <li><strong>Portfolio & Holdings:</strong> Stored in database, user-controlled</li>
+                    <li><strong>Financial News:</strong> From Finnhub, polled every 15 minutes</li>
+                    <li><strong>Stock Prices:</strong> From Finnhub, fetched every 1 minute (market hours)</li>
+                </ul>
+                <h3 style="margin-top: 30px;">Scheduled Jobs (Dependency Order)</h3>
+                <ol style="margin-top: 15px;">
+                    <li>News poll (15 min) → Sentiment analysis → Quote refresh (1 min)</li>
+                    <li>Daily closing snapshot (after market close) → Impact recompute</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Slide 7: Tech Stack -->
+        <div class="slide">
+            <h2>Technology Stack</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <strong>Backend</strong>
+                    <p>Java 17 + Spring Boot 3<br/>Resilience4j (Retry, Circuit Breaker)<br/>Caffeine Cache</p>
+                </div>
+                <div class="tech-item">
+                    <strong>Database</strong>
+                    <p>MySQL 8 + Flyway<br/>DECIMAL for money (not double)<br/>Testcontainers for tests</p>
+                </div>
+                <div class="tech-item">
+                    <strong>Frontend</strong>
+                    <p>SPA Framework (TBD)<br/>Chart.js 4 + Annotations<br/>News/price chart overlay</p>
+                </div>
+                <div class="tech-item">
+                    <strong>External APIs</strong>
+                    <p>Finnhub (news + quotes)<br/>LLM API (sentiment)<br/>RestClient (Spring 6.1+)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: What Makes It Honest -->
+        <div class="slide">
+            <h2>Two Questions, Never Blended</h2>
+            <table class="comparison-table">
+                <tr>
+                    <td><strong>Direction</strong></td>
+                    <td>What <em>should</em> this news have done?</td>
+                    <td style="background: #e3f2fd; width: 25%;"><strong>From Sentiment</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Alignment</strong></td>
+                    <td>Did the price <em>actually</em> agree?</td>
+                    <td style="background: #f3e5f5;"><strong>From Price Action</strong></td>
+                </tr>
+            </table>
+            <div style="margin-top: 30px; background: #fff3cd; padding: 20px; border-radius: 8px;">
+                <strong>Why this matters:</strong><br/>
+                <em>DIVERGENT</em> news (negative headline the market shrugged off) is the most valuable insight — 
+                a system that hides it is just confirming what investors already assumed.
+            </div>
+        </div>
+
+        <!-- Slide 9: Demo Features (P0-P3) -->
+        <div class="slide">
+            <h2>Features by Priority</h2>
+            <div style="margin-top: 30px;">
+                <div class="priority-box">
+                    <strong>P0 (Must Have)</strong> Browse portfolio holdings, news feed, impact assessments
+                </div>
+                <div class="priority-box">
+                    <strong>P1 (Must Have)</strong> Charts: portfolio value history, per-holding valuation, news/price correlation
+                </div>
+                <div class="priority-box">
+                    <strong>P2 (Should Have)</strong> Add holdings, trigger news refresh manually
+                </div>
+                <div class="priority-box">
+                    <strong>P3 (Nice to Have)</strong> Remove holdings, manage portfolio
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Success Criteria -->
+        <div class="slide">
+            <h2>How We Measure Success</h2>
+            <ul style="margin-top: 30px;">
+                <li><strong>Demo Correctness (SC-001):</strong> System must correctly classify sentiment and compute impact for 3+ worked examples</li>
+                <li><strong>Arithmetic Accuracy (SC-002):</strong> Instructors manually verify portfolio value matches impact assessments</li>
+                <li><strong>Data Freshness (SC-003):</strong> Quote updates within 1 min of market quote; news within 15 min</li>
+                <li><strong>Edge Case Handling:</strong> All 24 edge cases (EC-01 to EC-24) covered by tests, no silent failures</li>
+                <li><strong>Resilience:</strong> When Finnhub is down, read endpoints still work with stale data + <code>stale: true</code> flag</li>
+            </ul>
+        </div>
+
+        <!-- Slide 11: Team & Next Steps -->
+        <div class="slide">
+            <h2>Team & 5-Day Roadmap</h2>
+            <h3>Day 1: Foundations</h3>
+            <ul>
+                <li>Assign roles: Backend Lead, Frontend Lead, Database/Ops Lead</li>
+                <li>Schema ownership: One person owns Flyway + entities (blocking)</li>
+                <li>Verify Finnhub API constraints (historical bars, rate limits)</li>
+            </ul>
+            <h3 style="margin-top: 25px;">Days 2-4: Core Dev (Parallel)</h3>
+            <ul>
+                <li>Backend: Service layer, impact engine (core business logic)</li>
+                <li>Frontend: News/price chart, holdings view</li>
+                <li>Integration tests with real MySQL (Testcontainers)</li>
+            </ul>
+            <h3 style="margin-top: 25px;">Day 5: Demo Prep & Final Testing</h3>
+            <ul>
+                <li>Watchlist finalized (10-20 large caps with heavy news flow)</li>
+                <li>Mock providers configured as fallback</li>
+                <li>End-to-end testing and demo walkthrough</li>
+            </ul>
+        </div>
+
+        <!-- Slide 12: Questions -->
+        <div class="slide" style="justify-content: center; text-align: center;">
+            <h2 style="font-size: 3rem; border: none; margin-bottom: 40px;">Questions?</h2>
+            <p style="font-size: 1.5rem; color: #667eea; margin-bottom: 40px;">
+                Let's build something great together 🚀
+            </p>
+            <div style="background: #f5f5f5; padding: 30px; border-radius: 8px; text-align: left; display: inline-block;">
+                <p><strong>Repo:</strong> <code>CLOSEAI_financial-news-and-portfolio-impact-service</code></p>
+                <p><strong>Docs:</strong> <code>docs/项目15-①需求文档.md</code></p>
+                <p><strong>PM:</strong> <a href="https://therain2026.atlassian.net/jira/software/projects/FNPIS/boards/3" style="color: #667eea;">Jira Board</a></p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span class="slide-counter"><span id="current">1</span> / <span id="total">12</span></span>
+            <div class="nav-buttons">
+                <button id="prevBtn" onclick="changeSlide(-1)">← Prev</button>
+                <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current').textContent = currentSlide + 1;
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ on:
 
 jobs:
   # ------------------------------------------------------------------
-  # Commitlint — always runs, checks ALL commits in the PR/push
+  # Commitlint — always runs
   # ------------------------------------------------------------------
   commitlint:
     runs-on: ubuntu-latest
@@ -18,18 +18,45 @@ jobs:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v6
         with:
-          configFile: commitlint.config.js
+          configFile: commitlint.config.mjs
+
+  # ------------------------------------------------------------------
+  # Path gate — checks which optional modules exist so downstream jobs
+  # can skip themselves. hashFiles is valid at step-level if but NOT
+  # at job-level if, so we emit outputs instead.
+  # ------------------------------------------------------------------
+  check-paths:
+    needs: commitlint
+    runs-on: ubuntu-latest
+    outputs:
+      has_frontend: ${{ steps.set-flags.outputs.has_frontend }}
+      has_nlp: ${{ steps.set-flags.outputs.has_nlp }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-flags
+        run: |
+          if [ "$(ls -A frontend 2>/dev/null)" ]; then
+            echo "has_frontend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_frontend=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$(ls -A nlp-service 2>/dev/null)" ]; then
+            echo "has_nlp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_nlp=false" >> "$GITHUB_OUTPUT"
+          fi
 
   # ------------------------------------------------------------------
   # Backend — Java 17 + Spring Boot 3
-  # Activates when backend/ directory has code
   # ------------------------------------------------------------------
   backend-lint:
-    needs: commitlint
+    needs: check-paths
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -40,11 +67,13 @@ jobs:
         run: ./mvnw checkstyle:check
 
   backend-type-check:
-    needs: commitlint
+    needs: check-paths
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -57,9 +86,11 @@ jobs:
   backend-test:
     needs: [backend-lint, backend-type-check]
     runs-on: ubuntu-latest
-    if: hashFiles('backend/**') != ''
     steps:
       - uses: actions/checkout@v4
+      - name: Skip — no backend code yet
+        if: hashFiles('backend/**') == ''
+        run: exit 0
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -70,29 +101,23 @@ jobs:
         run: ./mvnw test
 
   # ------------------------------------------------------------------
-  # Frontend — React
-  # Activates when frontend/ directory has code
+  # Frontend — activates automatically when frontend/ exists
   # ------------------------------------------------------------------
   frontend-lint:
-    needs: commitlint
+    needs: check-paths
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/**') != ''
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oxc-project/oxlint-action@v2.0.1
         with:
-          node-version: '18'
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-      - name: Run ESLint
-        working-directory: frontend
-        run: npm run lint
+          working-directory: frontend
+          all-files: true
 
   frontend-type-check:
-    needs: commitlint
+    needs: check-paths
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/tsconfig.json') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -107,8 +132,8 @@ jobs:
 
   frontend-test:
     needs: [frontend-lint, frontend-type-check]
+    if: needs.check-paths.outputs.has_frontend == 'true'
     runs-on: ubuntu-latest
-    if: hashFiles('frontend/**') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -122,13 +147,12 @@ jobs:
         run: npm test
 
   # ------------------------------------------------------------------
-  # NLP Service — Python (finBERT)
-  # Activates when nlp-service/ directory has code
+  # NLP Service — activates automatically when nlp-service/ exists
   # ------------------------------------------------------------------
   nlp-test:
-    needs: commitlint
+    needs: check-paths
+    if: needs.check-paths.outputs.has_nlp == 'true'
     runs-on: ubuntu-latest
-    if: hashFiles('nlp-service/**') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -142,17 +166,26 @@ jobs:
         run: pytest
 
   # ------------------------------------------------------------------
-  # Build — verifies everything compiles together
+  # Build — docker compose + backend jar
   # ------------------------------------------------------------------
   build:
-    needs: [backend-test, frontend-test, nlp-test]
+    needs: [backend-test]
     runs-on: ubuntu-latest
     if: always() && !cancelled()
+    env:
+      # Use deterministic placeholders — compose config validation and jar
+      # packaging don't need real API keys. Real keys are wired via .env at
+      # runtime. Using placeholders here keeps forks portable.
+      FINNHUB_KEY_NEWS: ci-placeholder
+      FINNHUB_KEY_PRICE: ci-placeholder
+      TWELVEDATA_API_KEY: ci-placeholder
+      LLM_API_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
+      - name: Seed placeholder env
+        run: cp .env.example .env
       - name: Verify Docker Compose config
         run: docker compose config --quiet
-      - name: Build backend jar (if present)
-        if: hashFiles('backend/pom.xml') != ''
+      - name: Build backend jar
         working-directory: backend
         run: ./mvnw package -DskipTests

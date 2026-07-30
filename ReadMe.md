@@ -1,6 +1,6 @@
 # Financial News & Portfolio Impact Service (FNPIS)
 
-> **Project #15** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating with both a financial news API and a stock price API. Uses NLP sentiment analysis to correlate news with intraday price movements (5-min polling).
+> **Project #15 · Group 7** — Aggregates financial news for companies in a portfolio and estimates which holdings are affected by integrating a financial news API and a stock price API. Scores each headline for sentiment with an LLM agent, then reports whether the price actually moved the way the news implied.
 
 [中文版 (Chinese)](./ReadMe.zh-CN.md)
 
@@ -9,21 +9,23 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Team](#team)
-3. [Tech Stack](#tech-stack)
-4. [Project Structure](#project-structure)
-5. [Getting Started](#getting-started)
-6. [REST API Documentation](#rest-api-documentation)
-7. [Database Schema](#database-schema)
-8. [External API Integration](#external-api-integration)
-9. [NLP Sentiment Analysis](#nlp-sentiment-analysis)
-10. [Frontend Pages](#frontend-pages)
-11. [Scheduled Jobs](#scheduled-jobs)
-12. [Testing](#testing)
-13. [CI/CD & Docker](#cicd--docker)
-14. [Git Workflow](#git-workflow)
-15. [Project Management](#project-management)
-16. [Presentation Plan](#presentation-plan)
+2. [Design Documents](#design-documents)
+3. [Team](#team)
+4. [Tech Stack](#tech-stack)
+5. [Architecture](#architecture)
+6. [Project Structure](#project-structure)
+7. [Getting Started](#getting-started)
+8. [REST API Documentation](#rest-api-documentation)
+9. [Database Schema](#database-schema)
+10. [External API Integration](#external-api-integration)
+11. [Sentiment Analysis](#sentiment-analysis)
+12. [Frontend Pages](#frontend-pages)
+13. [Scheduled Jobs](#scheduled-jobs)
+14. [Testing](#testing)
+15. [CI/CD & Docker](#cicd--docker)
+16. [Git Workflow](#git-workflow)
+17. [Project Management](#project-management)
+18. [Presentation Plan](#presentation-plan)
 
 ---
 
@@ -38,27 +40,66 @@ Investors hold portfolios of stocks but struggle to connect the dots between bre
 FNPIS is a full-stack web application that:
 
 1. **Aggregates** financial news for every company in a user's portfolio via the Finnhub API
-2. **Analyzes** each news article's sentiment (Positive / Negative / Neutral) using NLP
-3. **Correlates** news sentiment with intraday stock price movements (5-min polling)
+2. **Analyzes** each headline's sentiment (Positive / Negative / Neutral) with an LLM agent
+3. **Correlates** news sentiment with the day's price move, weighted by position size
 4. **Visualizes** the impact side-by-side — news on the left, price chart on the right
+
+### What Makes the Output Honest
+
+The system answers two questions separately and never blends them into one score:
+
+| Question | Answer | Derived from |
+|----------|--------|--------------|
+| What *should* this news have done to the position? | `Direction` — POSITIVE / NEGATIVE / NEUTRAL | Sentiment |
+| Did the price *actually* agree? | `Alignment` — CONFIRMED / DIVERGENT / INCONCLUSIVE | Daily return vs. sentiment |
+
+`DIVERGENT` is not a bug. Negative news that the market shrugged off is the interesting
+case, and a system that hides it is just telling you what you already assumed.
+`INCONCLUSIVE` covers two situations that must not be dressed up as verdicts: the move
+was smaller than epsilon and is therefore noise, or the previous close was unavailable
+and no return could be computed at all.
 
 ### Core Features (Priority Order)
 
 | Priority | Feature | Description | Acceptance Criteria |
 |----------|---------|-------------|---------------------|
-| P0 | Browse Records | View portfolio holdings, news feed, and impact events | User sees a list of all holdings with ticker, shares, and current price; news feed loads ≤3 seconds |
-| P1 | View Metrics | Graphical dashboard: sentiment trends, price-impact correlations, allocation charts | Dashboard renders ≥2 chart types with data from the last 30 days |
-| P2 | Add Items | Add holdings to portfolio, trigger news fetch | User enters ticker + shares → holding appears in portfolio → news fetched within 15 minutes |
-| P3 | Remove Items | Remove holdings, dismiss impact events, clear historical data | Removed holding disappears from dashboard; associated impact events are soft-deleted |
+| P0 | Browse Records | View portfolio holdings, news feed, and impact assessments | User sees all holdings with ticker, shares, and current price; news feed paginates |
+| P1 | View Metrics | Charts: portfolio value history, per-holding valuation, the news/price impact view | Impact view renders the price series with the news marker; value history handles the empty case |
+| P2 | Add Items | Add holdings, trigger a news refresh | User enters ticker + shares → holding appears → news arrives within one poll cycle |
+| P3 | Remove Items | Remove holdings | Removed holding disappears from the portfolio and its valuation |
 
 ### Integration Requirement
 
-FNPIS integrates with **two** external APIs (exceeding the minimum of one):
+FNPIS integrates two distinct external data interfaces plus an LLM API:
 
 | API | Purpose | Auth |
 |-----|---------|------|
-| [Finnhub](https://finnhub.io/) | Financial news (1 year history) + Stock prices (intraday & historical) | Free API key |
-| [Alpha Vantage](https://www.alphavantage.co/) | Supplementary stock prices (fallback) | Free API key |
+| [Finnhub](https://finnhub.io/) company-news | Financial news per ticker (1 year history) | Free API key — dedicated account |
+| [Finnhub](https://finnhub.io/) quote + candles | Current quote and historical daily bars | Free API key — **separate** account |
+| LLM API | Headline sentiment classification | API key |
+
+News and prices deliberately use different keys so one chain exhausting its quota cannot
+starve the other. Rate limiters are configured per key, never shared — otherwise the
+15-minute news poll saturates the limiter and quote refresh gets rejected alongside it,
+which defeats the whole point of two accounts.
+
+Single-vendor dependency is addressed by the `PriceProvider` interface: Twelve Data
+is a ready second implementation for quotes. When Finnhub goes down, the price chain
+cuts over to Twelve Data (configuration change, not a code change); news degrades to
+the `news_article` cache.
+
+---
+
+## Design Documents
+
+**The architecture document is authoritative for technical decisions.** This ReadMe is an
+orientation for humans; where the two disagree, the architecture document wins.
+
+| Document | Covers |
+|----------|--------|
+| [`docs/项目15-①需求文档.md`](docs/项目15-①需求文档.md) | Requirements A–G, sentiment rules, impact formulas with worked examples, edge cases EC-01–EC-24 |
+| [`docs/项目15-②架构设计.md`](docs/项目15-②架构设计.md) | Layering, key decisions, data model, project structure |
+| [`docs/项目15-③API契约.md`](docs/项目15-③API契约.md) | Endpoints, pagination, error format. Superseded by Swagger once the backend is implemented |
 
 ---
 
@@ -74,7 +115,19 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 | Ethan SUN | TBD | TBD |
 | Timothy Xue | TBD | TBD |
 
-> Role assignments (Backend Lead / NLP Lead / Frontend Lead / additional roles) to be decided by the team in Week 1.
+> Role assignments (Backend Lead / Frontend Lead / additional roles) to be decided by the team in Week 1.
+
+Backend work is split three ways, and the split determines what unblocks what:
+
+| Scope | Owner | Notes |
+|-------|-------|-------|
+| Portfolio + holdings CRUD | one developer | **Also owns the Flyway scripts and every `@Entity`.** Nobody else touches the schema |
+| News aggregation + market data | one developer | — |
+| Sentiment + impact assessment | one developer | Blocked until the entities exist |
+
+Everyone writes their own `repository/` interfaces against the shared entities. Single
+schema ownership is deliberate: concurrent migration edits are the fastest way to make
+everyone's checkout fail to start.
 
 **Instructors (GitHub Viewers):** `helppo2`, `tuistmessiah`
 
@@ -92,80 +145,176 @@ FNPIS integrates with **two** external APIs (exceeding the minimum of one):
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
 | **Backend** | Java 17 + Spring Boot 3 | Training stack |
-| **Frontend** | React + Chart.js / D3.js | SPA with rich interactive charts |
-| **Database** | MySQL 8 | Persistent storage for holdings, news, prices, impact events |
-| **NLP** | finBERT (ProsusAI) via Python microservice, or LLM API | Financial-domain sentiment analysis; local-first for reliability |
-| **External APIs** | Finnhub (primary), Alpha Vantage (fallback) | News + stock prices |
-| **Scheduling** | Spring `@Scheduled` | Periodic news fetch, price polling, impact correlation |
-| **API Docs** | Swagger / OpenAPI 3.0 | Auto-generated from annotations |
-| **CI/CD** | GitHub Actions | Build → Test → Lint on every PR |
+| **Frontend** | SPA — framework is the frontend dev's choice | Does not affect the backend, data model, or API contract |
+| **Charts** | Chart.js 4 + annotation plugin | The annotation plugin draws the news marker line on the price chart; this is the one frontend constraint |
+| **Database** | MySQL 8 + Flyway | Versioned SQL migrations; utf8mb4 throughout |
+| **Sentiment** | LLM agent, single engine | See [Sentiment Analysis](#sentiment-analysis) |
+| **External APIs** | Finnhub (primary) + Twelve Data (backup quotes) + yfinance (offline prep) | Finnhub for news and quotes on separate keys; Twelve Data for quote fallback (800/day); yfinance for seeding historical data |
+| **HTTP client** | RestClient (Spring 6.1+) | — |
+| **Resilience** | Resilience4j | Rate limiting, retry, circuit breaking |
+| **Local cache** | Caffeine + Spring Cache | Wraps outbound provider calls |
+| **Scheduling** | Spring `@Scheduled` | News poll, quote refresh, closing snapshot, impact recompute |
+| **API Docs** | springdoc-openapi | Generated from annotations, never hand-written YAML |
+| **CI/CD** | GitHub Actions | Lint → type-check → test → build on every PR |
 | **Container** | Docker + Docker Compose | One-command local setup; portable deployment |
 | **Version Control** | Git + GitHub | Feature branches, PR reviews |
-| **Project Mgmt** | Jira | Task tracking, sprint planning |
+| **Project Mgmt** | [Jira](https://therain2026.atlassian.net/jira/software/projects/FNPIS/boards/3) | Task tracking, Kanban board |
+
+**No performance SLO.** End-to-end latency is dominated by the Finnhub poll interval, so
+publishing a response-time target would be self-deception. The real quality bar is the
+success criteria in the requirements document.
+
+### Implementation Conventions
+
+Three conventions that cause problems if any one person ignores them:
+
+**Money and share counts are `BigDecimal`, never `double` or `float`.** Floating-point
+arithmetic gives `0.1 + 0.2 = 0.30000000000000004`, and an instructor checking the demo
+by hand will find the discrepancy. MySQL side is `DECIMAL`. Checkstyle fails the build on
+a `double` named like a monetary value.
+
+**Monetary JSON fields are serialized as strings.** JavaScript's `Number` is a double, so
+large values lose precision in transit. The frontend displays them and does no arithmetic.
+
+**Timestamps are UTC `Instant`, converted at the display layer.** Finnhub returns Unix
+timestamps, US markets trade in US Eastern, and users read the page in another timezone
+again — three timezones in play means an unconverted value silently lands on the wrong
+attribution date. The JDBC URL sets `connectionTimeZone=UTC` explicitly.
+
+**Enums are stored as strings** via `@Enumerated(EnumType.STRING)`. Storing ordinals means
+inserting a value into the middle of an enum silently corrupts every historical row.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│  Frontend SPA                                    │
+│   Portfolio / Holdings / News feed / Impact view │
+└──────────────────┬──────────────────────────────┘
+                   │ REST + JSON
+┌──────────────────▼──────────────────────────────┐
+│  API layer                                       │
+│   /api/v1/**     internal (frontend)             │
+│   /public/v1/**  external read-only (API key)    │
+│   /swagger-ui    documentation                   │
+└──────────────────┬──────────────────────────────┘
+┌──────────────────▼──────────────────────────────┐
+│  Service layer — all business logic lives here   │
+│   PortfolioService   holdings CRUD, valuation    │
+│   NewsService        aggregate, dedupe, link     │
+│   SentimentService   LLM agent                   │
+│   ImpactService      impact assessment ★ core    │
+│   MarketDataService  quotes and history          │
+└────────┬──────────────────────────┬──────────────┘
+         │                          │
+┌────────▼───────────────┐  ┌───────▼─────────────┐
+│  Integration layer     │  │  Scheduler layer    │
+│   NewsProvider         │  │   News poll         │
+│   PriceProvider        │  │   Quote refresh     │
+│   SentimentEngine      │  │   Closing snapshot  │
+│                        │  │   Impact recompute  │
+│  Impls: Finnhub, Mock  │  └───────┬─────────────┘
+│  Caffeine cache        │          │
+│  Resilience4j          │          │
+└────────┬───────────────┘          │
+┌────────▼──────────────────────────▼─────────────┐
+│  Persistence — MySQL + versioned migrations      │
+└─────────────────────────────────────────────────┘
+```
+
+The system has **two entry points: HTTP and the clock.** That is why there are five
+layers rather than the three of a plain CRUD app.
+
+| Layer | May do | Must never do |
+|-------|--------|---------------|
+| API | Validation, DTO conversion, auth | Business logic |
+| Service | All business rules, transactions | Call third-party HTTP directly |
+| Integration | Call third parties, cache, retry, map formats | Business rules |
+| Scheduler | Trigger tasks | Implement logic — delegate to services |
+| Persistence | Read and write | Compute |
+
+> The rule most likely to get broken is **"services must not call third parties
+> directly."** One HTTP call inlined into a service to save time forfeits both the
+> swappable-provider and the graceful-degradation properties at once. Review watches for it.
+
+### Key Decisions
+
+**Three Provider interfaces.** `NewsProvider`, `PriceProvider`, and `SentimentEngine`.
+Services depend on the interface only. Finnhub DTOs must not appear in any `service/`
+method signature — once a vendor's field names leak into business code, changing vendor
+means changing business logic. Review checks the import direction of `integration/finnhub/`.
+
+**Reads never call a provider inline.** Every external fetch is landed by a scheduled job
+first; read endpoints query the database. Responses carry `asOf` (when the data was
+captured) and `stale` (upstream currently unavailable or rate limited), so a dead upstream
+degrades to older data instead of an error page. Both fields must be displayed.
+
+**Impact results are persisted, not computed per request.** The read path serves rows.
+
+**News is fetched per ticker, not from a global feed.** The company-news endpoint makes
+the article-to-symbol association exact by construction, so no text matching is needed.
+
+**Daily bars are the only price source for impact.** Comparing today's close against the
+previous close keeps the calculation reproducible; intraday quotes are for display.
 
 ---
 
 ## Project Structure
 
+Packages are organised by layer, matching the architecture document.
+
 ```
 FNPIS/
 ├── backend/
-│   ├── src/
-│   │   ├── main/java/com/fnpis/
-│   │   │   ├── controller/          # REST API endpoints
-│   │   │   │   ├── PortfolioController.java
-│   │   │   │   ├── HoldingController.java
-│   │   │   │   ├── NewsController.java
-│   │   │   │   ├── ImpactController.java
-│   │   │   │   └── DashboardController.java
-│   │   │   ├── service/             # Business logic
-│   │   │   │   ├── PortfolioService.java
-│   │   │   │   ├── NewsFetchService.java
-│   │   │   │   ├── SentimentService.java
-│   │   │   │   ├── PriceService.java
-│   │   │   │   └── ImpactCorrelatorService.java
-│   │   │   ├── model/               # JPA entities / ORM models
-│   │   │   │   ├── User.java
-│   │   │   │   ├── Portfolio.java
-│   │   │   │   ├── Holding.java
-│   │   │   │   ├── NewsArticle.java
-│   │   │   │   ├── SentimentScore.java
-│   │   │   │   ├── StockPrice.java
-│   │   │   │   └── ImpactEvent.java
-│   │   │   ├── repository/          # Data access layer
-│   │   │   ├── config/              # App config, API keys, Swagger
-│   │   │   └── scheduler/           # Cron job definitions
-│   │   └── resources/
-│   │       └── application.yml      # DB config, API keys (env vars)
+│   ├── src/main/java/com/fnpis/
+│   │   ├── api/                  # @RestController + DTO
+│   │   │   ├── internal/         #   /api/v1/**
+│   │   │   └── pub/              #   /public/v1/**  (external read-only)
+│   │   ├── service/              # Business logic (@Service)
+│   │   ├── integration/          # Anti-corruption layer
+│   │   │   ├── NewsProvider.java, PriceProvider.java, SentimentEngine.java
+│   │   │   ├── finnhub/          #   Finnhub impls, DTOs, mapping
+│   │   │   ├── mock/             #   Offline impls for tests and demo fallback
+│   │   │   └── sentiment/        #   Agent + Stub engines, output validation
+│   │   ├── scheduler/            # @Scheduled tasks
+│   │   ├── domain/               # @Entity + enums
+│   │   ├── repository/           # Spring Data JPA interfaces
+│   │   ├── common/               # Paging envelope, Freshness, RFC 7807 error types
+│   │   └── config/               # Cache, Jackson, OpenAPI, Resilience4j
+│   ├── src/main/resources/
+│   │   ├── application.yml
+│   │   ├── db/migration/         # Flyway scripts
+│   │   └── prompts/              # sentiment-prompt.txt (versioned)
+│   ├── src/test/java/...
+│   ├── checkstyle.xml
 │   ├── Dockerfile
 │   └── pom.xml
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── PortfolioDashboard/
-│   │   │   ├── NewsFeed/
-│   │   │   ├── ImpactViewer/        # Side-by-side news + price chart
-│   │   │   ├── HoldingManager/
-│   │   │   └── common/              # Charts, cards, nav
-│   │   ├── pages/
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── NewsImpactPage.jsx
-│   │   │   └── PortfolioPage.jsx
-│   │   ├── services/                # API client calls
-│   │   └── App.jsx
-│   ├── Dockerfile
-│   └── package.json
-├── nlp-service/                     # Python microservice (if using finBERT)
-│   ├── app.py                       # Flask/FastAPI sentiment endpoint
-│   ├── model.py                     # finBERT model loader + inference
-│   ├── requirements.txt
-│   └── Dockerfile
-├── docker-compose.yml               # Orchestrates backend + frontend + DB + nlp
+├── docs/                            # Requirements, architecture, API contract
+├── docker-compose.yml               # mysql + backend (+ frontend once it exists)
+├── .env.example                     # committed
+├── .env                             # gitignored
 ├── .github/
-│   └── workflows/
-│       └── ci.yml                   # Build, lint, test pipeline
-└── ReadMe.md
+│   ├── workflows/ci.yml
+│   └── pull_request_template.md
+├── ReadMe.md
+└── ReadMe.zh-CN.md
 ```
+
+### Current Status
+
+The backend skeleton is in place: build, config, shared response types, domain enums,
+Docker, and CI. `api/`, `service/`, `integration/`, `scheduler/`, and `repository/` are
+**not yet created** — every one references `@Entity` types in its method signatures, and
+the entities are owned by one person who is writing them alongside the Flyway scripts.
+Creating those packages before the entities exist would leave the repo non-compiling for
+the whole team.
+
+`common/` is an addition rather than part of the original layout: the paging envelope,
+freshness type, and error types are imported by every developer, so putting them under
+`api/` would make one person's package own types everyone depends on.
 
 ---
 
@@ -173,75 +322,78 @@ FNPIS/
 
 ### Prerequisites
 
-- **Java 17+** + Maven
-- **Python 3.10+** (for NLP microservice)
+- **Java 17+** (the Maven wrapper handles Maven itself)
 - **Docker & Docker Compose**
-- **MySQL 8+** (or use Dockerized DB)
-- **Finnhub API Key** — [Get free key](https://finnhub.io/register)
+- **Two Finnhub API keys** — [register](https://finnhub.io/register); one account for news, one for prices
+- **An LLM API key** for sentiment
 
 ### Environment Variables
 
-Create a `.env` file in the project root (never commit this file):
+Copy the template and fill it in. `.env` is gitignored and must stay that way.
 
-```env
-# Database
-DB_HOST=localhost
-DB_PORT=3306
-MYSQL_DATABASE=fnpis
-MYSQL_USER=fnpis_user
-MYSQL_PASSWORD=your_db_password
-MYSQL_ROOT_PASSWORD=your_root_password
-
-# External APIs
-FINNHUB_API_KEY=your_finnhub_key
-ALPHA_VANTAGE_API_KEY=your_alphavantage_key
-
-# NLP Service
-NLP_SERVICE_URL=http://localhost:5001
-
-# App
-SERVER_PORT=8080
+```bash
+cp .env.example .env
 ```
+
+`.env.example` is the authoritative list of variables; it is kept in sync by CI. The
+shape:
+
+| Variable | Notes |
+|----------|-------|
+| `DB_HOST`, `DB_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD` | Database |
+| `FINNHUB_KEY_NEWS` | News polling only |
+| `FINNHUB_KEY_PRICE` | Quotes and daily bars only |
+| `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Sentiment engine |
+| `SERVER_PORT` | App |
+| `PROVIDER_NEWS`, `PROVIDER_PRICE`, `PROVIDER_SENTIMENT` | `finnhub`/`mock`, `finnhub`/`mock`, `agent`/`stub` |
+
+**No secret has a default value anywhere.** A default in `application.yml` carries the
+same exposure as committing the key, so the app fails fast at startup naming the missing
+variable instead of collecting 401s minutes later. Keys are redacted from logs.
+
+> The LLM key deserves the most care: a leaked Finnhub key costs you a quota, a leaked
+> LLM key bills real money.
+
+Setting all three `PROVIDER_*` switches to the offline implementation runs the whole
+system with no external calls. This is what E2E tests use and the demo-day fallback.
 
 ### Quick Start (Docker)
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/Neueda-Learning/CLOSEAI_financial-news-and-portfolio-impact-service.git
-cd FNPIS
+cd CLOSEAI_financial-news-and-portfolio-impact-service
 
-# 2. Set up environment
 cp .env.example .env
 # Edit .env with your API keys
 
-# 3. Start everything
-docker-compose up -d
+docker compose up -d
 
-# 4. Verify
 # Backend API docs:  http://localhost:8080/swagger-ui.html
-# Frontend:         http://localhost:3000
-# NLP Service:      http://localhost:5001/health
+# Health:            http://localhost:8080/actuator/health
 ```
 
 ### Manual Start (Development)
 
 ```bash
-# Terminal 1 — Database
-docker-compose up -d db
+# Terminal 1 — database only
+docker compose up -d mysql
 
-# Terminal 2 — NLP Service
-cd nlp-service
-pip install -r requirements.txt
-python app.py                        # Runs on :5001
-
-# Terminal 3 — Backend
+# Terminal 2 — backend
 cd backend
-./mvnw spring-boot:run               # Runs on :8080
+./mvnw spring-boot:run               # :8080
 
-# Terminal 4 — Frontend
+# Terminal 3 — frontend (once it exists)
 cd frontend
 npm install
-npm run dev                          # Runs on :3000
+npm run dev
+```
+
+### Before You Push
+
+```bash
+cd backend
+./mvnw checkstyle:check              # style gate
+./mvnw clean verify                  # compile + tests
 ```
 
 ---
@@ -252,323 +404,200 @@ Full interactive docs available at `http://localhost:8080/swagger-ui.html` after
 
 > **Bonus Objective:** Expose the API so instructors can query system information during the final presentation (e.g. `GET /api/portfolios` to verify holdings, `GET /api/impact?portfolioId=1` to inspect impact events). Swagger UI serves as both documentation and a live inspection tool for this purpose.
 
-### Base URL
+The full endpoint list, request/response shapes, and error catalogue live in
+[`docs/项目15-③API契约.md`](docs/项目15-③API契约.md). They are not duplicated here —
+a second copy is a copy that goes stale.
+
+### Base URLs
 
 ```
-http://localhost:8080/api
+/api/v1/**        internal, used by the frontend
+/public/v1/**     external read-only, API key required
 ```
 
-### Endpoints
+### Conventions
 
-#### Portfolio
+**Pagination** is 1-based for clients. `size` defaults to 20 and is capped at 100;
+anything larger is clamped rather than rejected.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/portfolios` | List user's portfolios |
-| `POST` | `/portfolios` | Create a portfolio |
-| `GET` | `/portfolios/{id}` | Get portfolio with holdings, total value |
-| `PUT` | `/portfolios/{id}` | Update portfolio name |
-| `DELETE` | `/portfolios/{id}` | Delete a portfolio |
+**Freshness.** Most responses carry `asOf` (when the underlying data was captured) and
+`stale` (upstream currently unavailable or rate limited). The frontend must display both.
 
-#### Holdings
+**Monetary values are JSON strings**, not numbers.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/portfolios/{id}/holdings` | List holdings in a portfolio |
-| `POST` | `/portfolios/{id}/holdings` | Add a holding `{ticker, shares, avgCost}` |
-| `PUT` | `/holdings/{id}` | Update holding (shares/cost) |
-| `DELETE` | `/holdings/{id}` | Remove a holding |
-
-#### News
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/news?ticker=AAPL&days=7` | News for a ticker (date range) |
-| `GET` | `/news/portfolio/{portfolioId}` | All news for a portfolio's holdings |
-| `GET` | `/news/{id}/sentiment` | Sentiment analysis result for one article |
-
-#### Stock Prices
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/prices?tickers=AAPL,TSLA` | Current prices (batch) |
-| `GET` | `/prices/{ticker}/history?range=1m` | Historical prices for charts |
-
-#### Impact Analysis (Core)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/impact?portfolioId=1&days=30` | All impact events for a portfolio |
-| `GET` | `/impact/{id}` | Single impact event detail (news + chart data) |
-| `GET` | `/impact/{id}/comparison` | Side-by-side: news text vs price chart data |
-| `POST` | `/impact/calculate?portfolioId=1` | Manually trigger impact correlation |
-
-#### Dashboard
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/dashboard/summary?portfolioId=1` | Portfolio summary + today's sentiment |
-| `GET` | `/dashboard/sentiment-trend?portfolioId=1&days=30` | 30-day sentiment trend data |
-| `GET` | `/dashboard/top-impact?portfolioId=1&limit=5` | Top 5 news-impact events |
-
-### Example Response: Impact Event
+**Errors** follow RFC 7807 (`application/problem+json`). Clients branch on the stable
+`code` field, never on the human-readable `detail`:
 
 ```json
 {
-  "id": 142,
-  "newsArticle": {
-    "id": 891,
-    "headline": "Apple cuts iPhone production forecast by 10M units",
-    "summary": "Citing supply chain constraints, Apple Inc. has reduced...",
-    "source": "Reuters",
-    "publishedAt": "2026-07-27T09:30:00Z",
-    "url": "https://www.reuters.com/..."
-  },
-  "sentiment": {
-    "label": "NEGATIVE",
-    "confidence": 0.97,
-    "score": -2
-  },
-  "holding": {
-    "ticker": "AAPL",
-    "shares": 200,
-    "avgCost": 175.50
-  },
-  "priceImpact": {
-    "priceBeforeNews": 195.30,
-    "priceAfterNews": 188.70,
-    "priceChangePct": -3.38,
-    "timeWindow": "T -> T+2h"
-  },
-  "correlation": {
-    "strength": "STRONG",
-    "direction": "ALIGNED",
-    "summary": "Strong negative correlation: Negative news aligned with -3.38% price drop"
-  }
+  "type": "https://fnpis.local/errors/security-not-found",
+  "title": "Security not found",
+  "status": 404,
+  "detail": "No security with symbol 'XYZQ'",
+  "code": "SECURITY_NOT_FOUND",
+  "instance": "/api/v1/securities/XYZQ"
 }
 ```
+
+Validation failures append an `errors` array; the rest of the skeleton stays constant.
+
+### The Endpoint That Matters
+
+`GET /api/v1/news/{id}/impact-view?portfolioId=1` returns everything the side-by-side
+demo view needs in one request: the article with its sentiment, the per-symbol impact
+rows (weight, price change, expected vs. observed, value impact, direction, alignment),
+and the price series with the news timestamp marked. The frontend stitches nothing
+together.
+
+`GET /api/v1/portfolios/{id}/valuation-history` will legitimately return an empty
+`points` array on a fresh install — snapshots accumulate one per trading day. The
+frontend must render "collecting data" rather than an empty chart or an error.
+
+`POST /api/v1/news/refresh` is the demo's manual trigger. Calling it while a refresh is
+already running returns **409**, not silence — during a live demo, silence is worse than
+an error. Click it twice and the second call should report `inserted: 0`, which is the
+dedupe acceptance check.
 
 ---
 
 ## Database Schema
 
-```sql
--- Users (simplified — single user initially per PDF note)
-CREATE TABLE users (
-    id          SERIAL PRIMARY KEY,
-    username    VARCHAR(50)  NOT NULL UNIQUE,
-    email       VARCHAR(100) NOT NULL UNIQUE,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Portfolios
-CREATE TABLE portfolios (
-    id          SERIAL PRIMARY KEY,
-    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name        VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Holdings (positions in a portfolio)
-CREATE TABLE holdings (
-    id              SERIAL PRIMARY KEY,
-    portfolio_id    INTEGER NOT NULL REFERENCES portfolios(id) ON DELETE CASCADE,
-    ticker          VARCHAR(10)   NOT NULL,
-    company_name    VARCHAR(200),
-    shares          DECIMAL(15,6) NOT NULL CHECK (shares > 0),
-    avg_cost        DECIMAL(15,4) NOT NULL CHECK (avg_cost > 0),
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (portfolio_id, ticker)
-);
-
--- News articles fetched from Finnhub
-CREATE TABLE news_articles (
-    id            SERIAL PRIMARY KEY,
-    ticker        VARCHAR(10)  NOT NULL,
-    headline      TEXT         NOT NULL,
-    summary       TEXT,
-    source        VARCHAR(100),
-    url           TEXT,
-    published_at  TIMESTAMP    NOT NULL,
-    fetched_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_news_ticker ON news_articles(ticker);
-CREATE INDEX idx_news_published ON news_articles(published_at);
-
--- Sentiment analysis results (one per article)
-CREATE TABLE sentiment_scores (
-    id            SERIAL PRIMARY KEY,
-    news_id       INTEGER NOT NULL UNIQUE REFERENCES news_articles(id) ON DELETE CASCADE,
-    sentiment     VARCHAR(10)  NOT NULL CHECK (sentiment IN ('POSITIVE', 'NEGATIVE', 'NEUTRAL')),
-    confidence    DECIMAL(5,4) NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
-    score         INTEGER NOT NULL CHECK (score BETWEEN -2 AND 2),
-    analyzed_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_sentiment_label ON sentiment_scores(sentiment);
-
--- Stock prices (cached from external API, prevents rate-limiting)
-CREATE TABLE stock_prices (
-    id        SERIAL PRIMARY KEY,
-    ticker    VARCHAR(10)    NOT NULL,
-    open      DECIMAL(15,4),
-    high      DECIMAL(15,4),
-    low       DECIMAL(15,4),
-    close     DECIMAL(15,4)  NOT NULL,
-    volume    BIGINT,
-    timestamp TIMESTAMP      NOT NULL,
-    UNIQUE (ticker, timestamp)
-);
-
-CREATE INDEX idx_price_ticker_time ON stock_prices(ticker, timestamp);
-
--- Impact events (core: links news sentiment to price movement)
-CREATE TABLE impact_events (
-    id                  SERIAL PRIMARY KEY,
-    news_id             INTEGER NOT NULL REFERENCES news_articles(id) ON DELETE CASCADE,
-    holding_id          INTEGER NOT NULL REFERENCES holdings(id) ON DELETE CASCADE,
-    ticker              VARCHAR(10)  NOT NULL,
-    sentiment           VARCHAR(10)  NOT NULL,
-    price_before_news   DECIMAL(15,4),
-    price_after_news    DECIMAL(15,4),
-    price_change_pct    DECIMAL(8,4),
-    time_window         VARCHAR(20) DEFAULT 'T+2h',
-    correlation_strength VARCHAR(10) CHECK (correlation_strength IN ('STRONG', 'MEDIUM', 'WEAK', 'NONE')),
-    correlation_direction VARCHAR(10) CHECK (correlation_direction IN ('ALIGNED', 'DIVERGENT', 'NEUTRAL')),
-    summary             TEXT,
-    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_impact_ticker ON impact_events(ticker);
-CREATE INDEX idx_impact_created ON impact_events(created_at);
-```
-
-### Entity Relationship Diagram
+Schema is owned by **one person** and defined by versioned Flyway scripts in
+`backend/src/main/resources/db/migration/`. Column-level detail lives in the
+architecture document; this is the map.
 
 ```
-users 1--* portfolios 1--* holdings
-                                  |
-news_articles 1--1 sentiment_scores
-       |                        |
-       +-------- impact_events -+
-                      |
-              stock_prices (referenced by ticker + timestamp)
+portfolio 1──n holding n──1 security
+                                │
+news_article n──n article_security_link
+     │
+     └─1─1 sentiment_score
+
+security 1──n price_quote    (latest quote, one row per symbol)
+security 1──n price_bar      (historical daily bars)
+security 1──n price_point    (intraday points, the linked view's curve)
+
+portfolio 1──n portfolio_valuation_snapshot   (daily close total value)
+
+impact_assessment ──► news_article + security + portfolio
 ```
+
+| Table | Primary key | Key constraint |
+|-------|-------------|----------------|
+| `portfolio` | `id` | — |
+| `holding` | `id` | FK to portfolio, **UNIQUE** (portfolio_id, symbol) |
+| `security` | `symbol` | Natural key — no surrogate id |
+| `news_article` | `id` | **UNIQUE (external_id)** — dedupe depends entirely on this |
+| `article_security_link` | (article_id, symbol) | Composite key, inherently duplicate-proof |
+| `sentiment_score` | `id` | **UNIQUE (article_id)** — single engine, one score per article |
+| `price_quote` | `symbol` | Latest row only, written by upsert |
+| `price_bar` | (symbol, trade_date) | Composite |
+| `price_point` | (symbol, captured_at) | Composite — key order is query order, no secondary index needed |
+| `impact_assessment` | `id` | **UNIQUE** (article_id, symbol, portfolio_id, attribution_date) + index on (portfolio_id, attribution_date) |
+| `portfolio_valuation_snapshot` | (portfolio_id, snapshot_date) | FK to portfolio, composite PK |
+
+### Three Modelling Points
+
+**`news_article.external_id` must be unique.** Deduplication relies on it completely.
+Without the constraint, every scheduled run re-inserts the same articles.
+
+**News-to-symbol is many-to-many and needs its own table.** One article can move several
+stocks ("chip stocks rally"), and one stock has many articles. Putting a `symbol` column
+on `news_article` is the easiest mistake to make here, and undoing it later means
+rewriting the migration and every query that touches it. The link table also carries how
+the association was made, which a bare `@ManyToMany` join table cannot store.
+
+**`sentiment_score.article_id` is unique**, which usefully also guarantees no article gets
+analyzed twice — reruns cost no extra LLM calls. `model_version` is retained even without
+multi-engine comparison: after a model or prompt change it is the only way to tell which
+version produced a given verdict.
+
+### Migration Rules
+
+- **Never edit a committed script.** Flyway stores a checksum, so a modified file makes
+  every other checkout fail at startup. Add a new version instead.
+- V1–V7 are applied. Claim V8+ and tell the team.
+- `ddl-auto: validate` — Hibernate never creates or alters tables, it only verifies that
+  the entities match what Flyway built. A mismatch fails startup, which is the point.
 
 ---
 
 ## External API Integration
 
-### Finnhub (Primary)
+### Finnhub
 
-| Endpoint | Usage | Rate Limit |
-|----------|-------|------------|
-| `/api/v1/news?category=general` | General market news | 60 req/min (free) |
-| `/api/v1/company-news?symbol=AAPL&from=2026-01-01&to=2026-07-27` | Company-specific news (1 year history) | 60 req/min |
-| `/api/v1/quote?symbol=AAPL` | Real-time quote (c, h, l, o, pc) | 60 req/min |
-| `/api/v1/stock/candle?symbol=AAPL&resolution=D&from=...&to=...` | Historical candles | 60 req/min |
+| Endpoint | Usage | Key |
+|----------|-------|-----|
+| `/company-news?symbol=AAPL&from=…&to=…` | Per-ticker news | `FINNHUB_KEY_NEWS` |
+| `/quote?symbol=AAPL` | Current quote incl. previous close | `FINNHUB_KEY_PRICE` |
+| `/stock/candle?symbol=AAPL&resolution=D&…` | Historical daily bars | `FINNHUB_KEY_PRICE` |
 
-**Rate Limit Strategy:** Cache all responses in the `stock_prices` and `news_articles` tables. Never call the API directly from the frontend. Scheduled jobs fetch data and populate the local cache.
+Which key gets used is an internal detail of the integration layer. `FinnhubNewsProvider`
+reads only the news key, `FinnhubPriceProvider` only the price key, and no business code
+knows how many keys exist.
 
-**Fallback Strategy:** If Finnhub returns 429 (rate limited) or 5xx, the system reads from the local cache. If the cache is stale (> 15 minutes for prices, > 1 hour for news), the UI displays a "Data may be delayed" banner.
+**Rate limiting.** One Resilience4j limiter instance per key. Sharing one would let the
+news poll saturate the limiter and take quote refresh down with it, which would make the
+two accounts pointless. A 429 on the news key degrades only the news chain — prices keep
+working and only the news panel shows a stale marker.
 
-### Alpha Vantage (Fallback)
+**Degradation.** Reads are served from the database, so a rate-limited or dead upstream
+produces older data flagged `stale: true`, not an error. `UPSTREAM_UNAVAILABLE` is only
+returned for a symbol that has never been fetched successfully, so there is nothing to
+serve.
 
-| Endpoint | Usage |
-|----------|-------|
-| `GLOBAL_QUOTE&symbol=AAPL` | Real-time quote fallback |
-| `TIME_SERIES_DAILY&symbol=AAPL` | Historical data fallback |
+**Keys never reach the logs.** Request URLs are logged with `token=***`.
+
+### Known Risks
+
+**Does the free tier expose historical daily bars?** The impact engine reads
+today's-close vs. previous-close from `price_bar`. If that endpoint is unavailable, the
+fallback is to build the bar table from daily closing snapshots — which needs **several
+days of lead time** before there is enough data to chart. This is the highest-priority
+day-one question, and extra API keys cannot solve it: a quota problem and a permission
+problem are different things.
+
+**Is rate limiting per key or per IP?** If per IP, separate accounts on one machine buy
+nothing and the multi-key design collapses back to a single key with a longer poll
+interval.
+
+**Does the free tier allow one person holding several accounts?** Most vendors prohibit
+it outright, and the worst case is every account banned the day before the demo. Keep the
+Mock Provider switchable regardless — "hoping the keys still work" is not a fallback plan.
 
 ---
 
-## NLP Sentiment Analysis
+## Sentiment Analysis
 
-### Approach: finBERT (local, open-source)
+### Approach: LLM Agent, Single Engine
 
-[finBERT](https://github.com/ProsusAI/finBERT) is a BERT model fine-tuned on financial text (SEC filings, earnings reports, analyst notes). It outperforms general sentiment models on financial-domain text.
+A single LLM-backed `SentimentEngine` classifies each headline as POSITIVE, NEGATIVE, or
+NEUTRAL with a score and confidence. There is no local model and no Python service.
 
-**Why local instead of LLM API:**
+Multi-engine comparison was considered and dropped: two engines double the failure modes
+and the demo narration for a comparison nobody asked for.
 
-1. No API cost at any scale
-2. No rate limiting — process hundreds of articles instantly
-3. Works offline — demo won't fail if internet drops
-4. Financial-domain accuracy (finBERT understands "beat estimates" vs "missed earnings")
+### What Has to Be Handled
 
-### Sentiment Service (Python + Flask)
+An LLM is a network call that returns text, so the engine treats every response as
+untrusted and validates before persisting:
 
-```python
-# nlp-service/app.py
-from flask import Flask, request, jsonify
-from transformers import pipeline
+| Failure | Handling |
+|---------|----------|
+| Illegal label | Reject |
+| Score out of range | Reject |
+| Response is not JSON | Reject |
+| Score disagrees with its own label (`NEGATIVE` with `+0.8`) | Reject |
 
-app = Flask(__name__)
+Each of these has a test. Temperature is 0 and the prompt is versioned in
+`resources/prompts/` — `model_version` on each row records which prompt produced it, so
+after a prompt change you can still tell where an old verdict came from.
 
-# Load once at startup
-classifier = pipeline(
-    "sentiment-analysis",
-    model="ProsusAI/finbert"
-)
+`StubSentimentEngine` returns fixed results with no network call. CI and E2E tests use it,
+which is why CI needs no real API keys.
 
-def map_to_score(result):
-    """Map finBERT output to -2..+2 scale."""
-    label = result["label"].lower()
-    score = result["score"]
-    if label == "positive":
-        return {"sentiment": "POSITIVE", "confidence": score, "score": 2 if score > 0.8 else 1}
-    elif label == "negative":
-        return {"sentiment": "NEGATIVE", "confidence": score, "score": -2 if score > 0.8 else -1}
-    else:
-        return {"sentiment": "NEUTRAL", "confidence": score, "score": 0}
-
-@app.route("/analyze", methods=["POST"])
-def analyze():
-    data = request.get_json()
-    text = f"{data.get('headline', '')}. {data.get('summary', '')}"
-    results = classifier(text[:512])  # finBERT max token limit
-    return jsonify(map_to_score(results[0]))
-
-@app.route("/analyze/batch", methods=["POST"])
-def analyze_batch():
-    """Batch mode: process multiple articles at once."""
-    articles = request.get_json().get("articles", [])
-    results = []
-    for article in articles:
-        text = f"{article.get('headline', '')}. {article.get('summary', '')}"
-        r = classifier(text[:512])[0]
-        results.append(map_to_score(r))
-    return jsonify(results)
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "model": "ProsusAI/finbert"})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
-```
-
-### Fallback: LLM API (if finBERT is unavailable)
-
-```java
-// Backend fallback — call LLM API for sentiment
-// Only used if the NLP microservice is unreachable
-public SentimentResult analyzeViaLLM(String headline, String summary) {
-    String prompt = String.format("""
-        Classify this financial news headline.
-        Reply with EXACTLY one word: POSITIVE, NEGATIVE, or NEUTRAL.
-
-        Headline: %s
-        Summary: %s
-        """, headline, summary != null ? summary : "");
-
-    // Call DeepSeek / OpenAI / Claude API
-    String response = llmClient.complete(prompt);
-    return parseSentiment(response);
-}
-```
+The unique constraint on `sentiment_score.article_id` means an article is never analyzed
+twice, so a rerun costs nothing.
 
 ---
 
@@ -590,53 +619,58 @@ public SentimentResult analyzeViaLLM(String headline, String summary) {
 |  +-----------------------------------------------------+ |
 |                                                          |
 |  +-- Today's Sentiment --------------------------------+ |
-|  | GREEN  POSITIVE  12 articles                         | |
-|  | RED    NEGATIVE   5 articles                         | |
-|  | GRAY   NEUTRAL     3 articles                        | |
+|  | POSITIVE  12    NEGATIVE  5    NEUTRAL  3            | |
 |  +-----------------------------------------------------+ |
+|                                                          |
+|  Data as of 2026-07-27 15:42 UTC                         |
 |                                                          |
 |  [+ Add Holding]  [View Impact Feed ->]                   |
 +----------------------------------------------------------+
 ```
 
+Every page that shows external data shows `asOf`, and surfaces a marker when `stale` is
+true. This is a product feature, not a debug affordance — it is what lets the app stay
+readable when an upstream is down.
+
 ### Page 2: News & Impact Feed (Core Demo Page)
 
 ```
 +--------------------------------------------------------------+
-|  News & Impact Feed                              Last 7 days  |
+|  News & Impact Feed                    Last 7 days   [Refresh]|
 |                                                              |
-|  +-- Top Impact Events ------------------------------------+ |
+|  +-- Impact Assessments -----------------------------------+ |
 |  |                                                        | |
-|  |  RED  AAPL  -3.38%   STRONG correlation                 | |
+|  |  AAPL   -3.38%    NEGATIVE    CONFIRMED                | |
 |  |  +----------------------------------------------------+ | |
 |  |  | "Apple cuts iPhone production forecast             | | |
 |  |  |  by 10M units" — Reuters                           | | |
-|  |  |  Sentiment: NEGATIVE (97%)                         | | |
-|  |  |  $195.30 -> $188.70  |  -$6.60 per share           | | |
+|  |  |  Sentiment: NEGATIVE (conf 0.97)                   | | |
+|  |  |  Weight 21.3%  |  Value impact -$1,320.00          | | |
 |  |  +----------------------------------------------------+ | |
 |  |                                                        | |
-|  |  GREEN  MSFT  +1.82%   MEDIUM correlation               | |
+|  |  TSLA   +0.41%    NEGATIVE    DIVERGENT                | |
 |  |  +----------------------------------------------------+ | |
-|  |  | "Microsoft beats Q4 earnings estimates"            | | |
-|  |  | Sentiment: POSITIVE (89%)                          | | |
-|  |  | $452.10 -> $460.30  |  +$8.20 per share            | | |
+|  |  | "Tesla recalls 12,000 vehicles" — Reuters          | | |
+|  |  |  Sentiment: NEGATIVE (conf 0.81)                   | | |
+|  |  |  The market shrugged it off. This is the           | | |
+|  |  |  interesting case, not an error.                   | | |
 |  |  +----------------------------------------------------+ | |
 |  +--------------------------------------------------------+ |
 |                                                              |
-|  Sentiment Trend (30d)                                       |
-|  +--------------------------------------------------------+  |
-|  |  jul 1                                      jul 27    |  |
-|  +--------------------------------------------------------+  |
+|  Data as of 2026-07-27 16:05 UTC                             |
 +--------------------------------------------------------------+
 ```
 
 ### Page 3: Side-by-Side Comparison (Presentation Hook)
 
+Served by one call to `/news/{id}/impact-view`. The vertical line marking the news
+timestamp is what the Chart.js annotation plugin is for.
+
 ```
 +--------------------------------+--------------------------------+
-|  News Analysis                 |  Price Chart (AAPL)            |
+|  News Analysis                 |  Price (AAPL)                  |
 |                                |                                |
-|  RED  NEGATIVE (97%)           |  $196 -|                       |
+|  NEGATIVE   conf 0.97          |  $196 -|                       |
 |                                |  $194 -|    \                  |
 |  "Apple cuts iPhone            |  $192 -|     \                 |
 |   production forecast          |  $190 -|      \_____           |
@@ -644,58 +678,99 @@ public SentimentResult analyzeViaLLM(String headline, String summary) {
 |                                |  $186 -|                \___   |
 |  Source: Reuters               |        |----|----|----|----|   |
 |  Published: 2026-07-27         |      9:00 10:00 11:00 12:00  |
-|  09:30 AM ET                   |           |                    |
-|                                |      News published            |
-|  Impact: -3.38%                |                                |
-|  Correlation: STRONG (check)   |  Price before: $195.30        |
-|  Direction: ALIGNED            |  Price after:  $188.70        |
-|                                |  Drop:  -$6.60 (-3.38%)       |
+|  13:30 UTC                     |           :                    |
+|                                |      news published            |
+|  Weight:        21.3%          |                                |
+|  Price change:  -3.38%         |  Previous close: $195.30      |
+|  Expected:      -0.19          |  Attribution:    2026-07-27   |
+|  Observed:      -0.72          |                                |
+|  Value impact:  -$1,320.00     |  Data as of 15:42 UTC         |
+|  Direction:     NEGATIVE       |  stale: false                  |
+|  Alignment:     CONFIRMED      |                                |
 +--------------------------------+--------------------------------+
 ```
+
+### Page 4: Portfolio Value History
+
+A line chart from `/portfolios/{id}/valuation-history`. On a fresh install `points` is
+empty, since snapshots accumulate one per trading day — render "collecting data", not an
+empty chart and not an error.
 
 ---
 
 ## Scheduled Jobs
 
-| Job | Frequency | Description |
-|-----|-----------|-------------|
-| `NewsFetcher` | Every 15 min | Fetch latest news from Finnhub for all tickers in all portfolios |
-| `PricePoller` | Every 5 min | Fetch real-time quotes for all tracked tickers, cache to `stock_prices` |
-| `SentimentAnalyzer` | After NewsFetcher | Run NLP sentiment analysis on any unanalyzed articles |
-| `ImpactCorrelator` | Every hour | For new articles: find nearest price before/after, calculate impact, write `impact_events` |
-| `CacheCleaner` | Daily at 03:00 | Purge price data older than 90 days, news older than 1 year |
+Nothing the frontend does triggers an external API call. Every external fetch happens
+here, ahead of time, and lands in the database. That single property is what shapes the
+whole architecture.
+
+| Job | Cadence | Description |
+|-----|---------|-------------|
+| News poll | 15 min | Incremental fetch per watchlist symbol, deduped on `external_id` |
+| Sentiment | After news lands | Only articles with no `sentiment_score` row |
+| Quote refresh | 1 min, market hours only | Upserts `price_quote` |
+| Closing snapshot | Daily after close | Writes `price_bar` + portfolio valuation snapshot |
+| Impact recompute | After the snapshot | Generates the day's `impact_assessment` rows |
+
+```
+news poll ──► sentiment ──┐
+                          ├──► impact recompute
+closing snapshot ─────────┘
+```
+
+Impact recompute must wait for both branches, or it runs on incomplete data.
+
+**Do not skip the closing snapshot.** It is the only source for the portfolio value chart,
+and re-querying history from the API repeatedly does not fit in the free quota. Worth
+knowing: portfolio value cannot be back-derived later. `price_bar` keeps historical
+prices, but historical *holdings* are not kept — today's positions multiplied by an old
+close answers a different question. Each night that passes without the snapshot running is
+a data point gone for good.
+
+### Concurrency
+
+Overlap is inevitable when a free API is slow, so it is handled explicitly rather than
+hoped away.
+
+`@Scheduled` with `fixedDelay` (not `fixedRate`) means a job can never overlap itself —
+the next run is counted from the end of the previous one. Manual triggers arrive on an
+HTTP thread and still need an explicit lock; failing to acquire it returns 409.
+
+**Skip, never queue.** The news poll is idempotent thanks to `external_id`, so skipping a
+round costs at most 15 minutes of freshness. Queueing piles up requests that all fire when
+the upstream recovers, tripping the rate limiter — strictly worse.
 
 ---
 
 ## Testing
 
-### Unit Tests
+| Level | Tools | What it covers |
+|-------|-------|----------------|
+| Unit | JUnit 5 + Mockito | Providers mocked. **The impact engine must have unit tests** — the requirements document's three worked examples exist to be used verbatim as cases |
+| Integration | `@SpringBootTest` + **Testcontainers MySQL** | Scheduled jobs, dedupe, Flyway scripts against a real database |
+| Integration layer | **WireMock** | Field mapping, rate-limit retry, error handling |
+| Sentiment validation | JUnit 5 | Malformed LLM responses (see [Sentiment Analysis](#sentiment-analysis)) |
+| Frontend | Jest + React Testing Library | Component rendering, mocked API responses |
+| E2E | Playwright or Cypress | All-Mock providers, so results are deterministic and network-independent |
+
+**Testcontainers with real MySQL, not H2.** H2's compatibility mode differs from MySQL on
+`DECIMAL` precision, date functions, and unique-index length limits. A Flyway script that
+passes on H2 can still fail on real MySQL, which makes the test worse than useless — it
+reports safety it did not verify.
+
+The requirements document lists 24 edge cases (EC-01–EC-24) written from real bug
+scenarios; aim for one test each. Three are division-by-zero traps that must be covered:
+zero cost basis, missing previous close, and zero total value when computing weight.
+
+### End-to-End Scenarios
 
 ```
-Backend (JUnit 5 + Mockito):
-  - Service layer: PortfolioService, SentimentService, ImpactCorrelatorService
-  - Impact correlation algorithm: edge cases (no price data, single-sided news)
-  - Data validation: ticker format, share amounts, percentage ranges
-
-NLP Service (pytest):
-  - finBERT inference: known positive/negative/neutral headlines
-  - Score mapping: confidence thresholds -> score ranges
-  - Batch processing: correct N results for N inputs
-
-Frontend (Jest + React Testing Library):
-  - Component rendering: dashboard cards, impact event rows
-  - API mock responses
-```
-
-### End-to-End Tests (Cypress / Playwright)
-
-```
-1. Add a holding -> verify it appears in portfolio
-2. Trigger news fetch -> verify news feed populates
-3. Verify sentiment labels appear on news articles
-4. Trigger impact calculation -> verify impact events generated
-5. Open side-by-side view -> verify chart renders with news annotation
-6. Remove a holding -> verify cleanup
+1. Add a holding            -> appears in the portfolio
+2. Trigger news refresh     -> feed populates; second click inserts 0 (dedupe)
+3. Sentiment labels         -> appear on articles
+4. Trigger impact recompute -> assessments generated
+5. Open the impact view     -> chart renders with the news marker line
+6. Remove a holding         -> cleanup verified
 ```
 
 ---
@@ -704,101 +779,52 @@ Frontend (Jest + React Testing Library):
 
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
-| Job | What It Runs | Triggers |
-|-----|-------------|----------|
-| `lint` | ESLint (backend + frontend), Checkstyle (Java) or Prettier | PR to `dev` / `master`; push to `dev` / `master` |
-| `type-check` | `tsc --noEmit` (TypeScript) or `javac` (Java) | PR to `dev` / `master` |
-| `unit-test` | Backend: JUnit / Jest; Frontend: Jest + React Testing Library; NLP: pytest | PR to `dev` / `master` |
-| `build` | Verify the project compiles / bundles without errors | PR to `dev` / `master` |
-| `commitlint` | Reject commits that don't follow Conventional Commits | PR to `dev` / `master` |
+Jobs activate conditionally — a job whose directory does not exist yet is skipped rather
+than failed.
+
+| Job | Active when | What it runs |
+|-----|-------------|--------------|
+| `commitlint` | Always | Conventional Commits, checked across every commit in the PR |
+| `backend-lint` | `backend/` exists | Checkstyle |
+| `backend-type-check` | `backend/` exists | `mvn compile` |
+| `backend-test` | `backend/` exists | JUnit 5 |
+| `frontend-lint` | `frontend/` exists | ESLint |
+| `frontend-type-check` | `frontend/tsconfig.json` exists | `tsc --noEmit` |
+| `frontend-test` | `frontend/` exists | Jest |
+| `build` | Always | Validate compose config + package the backend jar |
+
+`build` seeds `.env` from `.env.example` first: the compose file uses required-variable
+syntax, so interpolation fails outright without it. That also turns the job into a sync
+check on the template — adding a required variable without listing it in `.env.example`
+turns this red.
+
+**CI needs no real API keys.** Finnhub is stubbed with WireMock and sentiment uses
+`StubSentimentEngine`. Testcontainers works on the GitHub ubuntu runner as-is, since
+Docker is preinstalled.
 
 > **Critical rule:** CI must trigger on **both** PR and push to `dev`/`master`. The push trigger catches post-merge failures when two PRs pass individually but break `dev` when combined (see [Dev CI Failure](#dev-ci-failure)).
 
-### Docker Compose (`docker-compose.yml`)
+### Docker
 
-```yaml
-version: "3.8"
-services:
-  db:
-    image: mysql:8
-    environment:
-      MYSQL_DATABASE: fnpis
-      MYSQL_USER: fnpis_user
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    volumes:
-      - mysqldata:/var/lib/mysql
-    ports:
-      - "3306:3306"
+Three services: `mysql`, `backend`, and `frontend` (commented out until it has a
+Dockerfile). The file itself is the source of truth — see
+[`docker-compose.yml`](docker-compose.yml). Four things in it are load-bearing:
 
-  nlp-service:
-    build: ./nlp-service
-    ports:
-      - "5001:5001"
-    restart: unless-stopped
+**utf8mb4 is set explicitly on the server.** Headlines carry emoji and symbols that plain
+`utf8` cannot store, and the insert fails rather than degrading.
 
-  backend:
-    build: ./backend
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - NLP_SERVICE_URL=http://nlp-service:5001
-      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
-    depends_on:
-      - db
-      - nlp-service
-    restart: unless-stopped
+**The MySQL healthcheck is not optional.** Flyway connects the instant the backend starts,
+and the container accepts connections several seconds after the process launches. Without
+`depends_on: condition: service_healthy` the backend dies on boot.
 
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    restart: unless-stopped
+**Secrets use required-variable syntax** (`${MYSQL_PASSWORD:?…}`), so a missing value
+fails immediately with a message naming the variable instead of silently starting with a
+blank password.
 
-volumes:
-  mysqldata:
-```
-
-### GitHub Actions CI (`ci.yml`)
-
-```yaml
-name: CI Pipeline
-on: [push, pull_request]
-jobs:
-  backend-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run backend tests
-        run: cd backend && ./mvnw test
-
-  frontend-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run frontend tests
-        run: cd frontend && npm ci && npm test
-
-  nlp-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run NLP tests
-        run: cd nlp-service && pip install -r requirements.txt && pytest
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Lint backend
-        run: cd backend && ./mvnw checkstyle:check
-      - name: Lint frontend
-        run: cd frontend && npm run lint
-```
+**The backend image is multi-stage.** `pom.xml` is copied and dependencies resolved before
+the sources, so editing a Java file does not re-download everything. The runtime layer
+carries a JRE and no Maven, runs as a non-root user, and sizes its heap from the
+container's memory limit rather than the host's.
 
 ---
 
@@ -824,7 +850,7 @@ All branch names use **kebab-case** (`lowercase-with-hyphens`).
 
 | Prefix | Purpose | Example |
 |--------|---------|---------|
-| `feature/` | New functionality | `feature/nlp-sentiment`, `feature/add-holding-form` |
+| `feature/` | New functionality | `feature/sentiment-engine`, `feature/add-holding-form` |
 | `fix/` | Bug fixes | `fix/price-cache-timeout`, `fix/sentiment-score-range` |
 | `hotfix/` | Critical production bug (branched from `master`) | `hotfix/crash-on-login`, `hotfix/api-key-expired` |
 | `release/` | Release candidate (branched from `dev`, targets `master`) | `release/v0.1.0`, `release/v1.0.0` |
@@ -842,7 +868,7 @@ fix: resolve NPE when price data is empty for ticker
 docs: document impact correlator algorithm
 refactor: extract price normalisation into shared util
 test: add edge cases for sentiment score mapping
-chore: update Docker Compose to PostgreSQL 16
+chore: pin MySQL to 8.4 in Docker Compose
 ```
 
 ### Rules
@@ -995,17 +1021,17 @@ A self-contained PR template is provided at [`.github/pull_request_template.md`]
 
 ### Tool: Jira
 
-Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for a 6-week timeline).
+Free for teams up to 10 users. Use a **Kanban** project (simpler than Scrum for a 5-day timeline).
 
 **Board Columns:**
 
 ```
-Backlog          To Do           In Progress      Review           Done
+Backlog          TODO            IN PROCESS      IN REVIEW        COMPLETED
 +----------+    +----------+    +----------+    +----------+    +----------+
-| User auth|    | DB schema|    | Finnhub  |    | Portfolio|    | Project  |
-| E2E tests|    | design   |    | integrat.|    | CRUD PR  |    | skeleton |
-| CI/CD    |    | NLP model|    | Impact   |    | Frontend |    | GitHub   |
-| ...      |    | training |    | correlat.|    | dashboard|    | repo     |
+| User auth|    | Sentiment|    | Finnhub  |    | Portfolio|    | DB schema|
+| E2E tests|    | engine   |    | integrat.|    | CRUD PR  |    | skeleton |
+| ...      |    | Impact   |    | Quote    |    | Frontend |    | GitHub   |
+|          |    | engine   |    | refresh  |    | dashboard|    | repo     |
 +----------+    +----------+    +----------+    +----------+    +----------+
 ```
 
@@ -1013,28 +1039,29 @@ Backlog          To Do           In Progress      Review           Done
 
 | Type | Use For |
 |------|---------|
-| Epic | Each week's milestone (Week 1 ~ Week 6) |
-| Story | User-facing feature (P0-P3 items) |
-| Task | Technical work item (e.g. "Set up Finnhub API client") |
-| Bug | Defect found during testing |
+| 长篇故事 (Epic) | Feature module grouping (A–G, Infrastructure) |
+| 故事 (Story) | User-facing feature (A1–A7, B1–B5, …, G1–G3) |
+| 子任务 (Subtask) | Implementation task, child of a Story |
+| Feature | Cross-story technical capability |
+| 缺陷 (Bug) | Defect found during testing |
 
-**Labels:** `backend`, `frontend`, `nlp`, `devops`, `docs`
+**Labels:** `p0`, `p1`, `p2`, `backend`, `frontend`, `core-logic`, `demo-hook`, `test`, `data`, `api`, `infra`
 
 **Status Flow:**
 
 ```
-To Do  →  In Progress  →  In Review  →  Done
-                ↕
-             Blocked
+TODO  →  IN PROCESS  →  IN REVIEW  →  COMPLETED
+  ↓
+BLOCKED   (draggable from IN PROCESS, its own column)
 ```
 
 | Status | Meaning | Trigger |
 |--------|---------|---------|
-| **To Do** | Ready, waiting for someone to pick up | Default on issue creation |
-| **In Progress** | Actively being worked on | Assignee drags after claiming |
-| **Blocked** | Stuck — waiting on API key / teammate / environment | Anyone, any time |
-| **In Review** | PR opened, awaiting teammate review | Dragged when PR is created |
-| **Done** | Merged into `dev` | Dragged after PR merge |
+| **TODO** | Ready, waiting for someone to pick up | Default on issue creation |
+| **IN PROCESS** | Actively being worked on | Assignee drags after claiming |
+| **BLOCKED** | Stuck — waiting on API key / teammate / environment | Anyone, any time |
+| **IN REVIEW** | PR opened, awaiting teammate review | Dragged when PR is created |
+| **COMPLETED** | Merged into `dev` | Dragged after PR merge |
 
 **Board Views:**
 
@@ -1052,7 +1079,7 @@ To Do  →  In Progress  →  In Review  →  Done
 | **Week 1** | Project skeleton, GitHub repo, DB schema, Jira setup | Runnable app with DB connection | — |
 | **Week 2** | Portfolio + Holdings CRUD (backend + frontend) | Can add/view/remove holdings | Week 1 |
 | **Week 3** | Finnhub integration: news fetch + price polling + caching | Data flowing into DB | Week 2 |
-| **Week 4** | NLP sentiment service up, Impact Correlator algorithm | Impact events generated | Week 3 |
+| **Week 4** | Sentiment engine + impact assessment engine | Impact assessments generated | Week 3 |
 | **Week 5** | Frontend: Impact Feed, Side-by-Side view, Dashboard charts | Core UI complete | Week 4 |
 | **Week 6** | Polish, tests, Swagger docs, Docker, presentation prep | Production-ready demo | Week 5 |
 
@@ -1080,17 +1107,18 @@ To Do  →  In Progress  →  In Review  →  Done
 
 | Time | Speaker | Content |
 |------|---------|---------|
-| 0:00-1:00 | Team Lead | Introduce team; what we've been learning; what we were asked to do; how much time we've had (6 weeks) |
+| 0:00-1:00 | Team Lead | Introduce team; what we've been learning; what we were asked to do; how much time we've had (5 days) |
 | 1:00-2:00 | Team Lead | How we approached the project — roles, tools, technologies, team name |
 | 2:00-3:30 | Backend | High-level architecture (diagram), data model walkthrough — explain our design decisions |
-| 3:30-5:00 | NLP Lead | Explain sentiment analysis pipeline, finBERT, why local model over LLM API |
+| 3:30-5:00 | Sentiment owner | Sentiment pipeline: why one LLM engine, how malformed responses are rejected, why `DIVERGENT` is a feature |
 | 5:00-9:00 | **ALL** | **LIVE DEMO — The "Wow" Moment** |
 | | | 5:00 — Show portfolio dashboard, everything normal |
 | | | 6:00 — Trigger breaking news: "Apple cuts iPhone forecast by 10M units" |
 | | | 6:30 — Sentiment instantly shows NEGATIVE (97%) |
 | | | 7:00 — Side-by-side: news text vs price chart, -3.38% drop |
-| | | 7:30 — Impact card: "STRONG negative correlation" |
-| | | 8:00 — Show multiple impact events in the feed |
+| | | 7:30 — Impact card: direction NEGATIVE, alignment CONFIRMED, value impact in dollars |
+| | | 8:00 — Show a DIVERGENT case and explain why we report it instead of hiding it |
+| | | 8:30 — Flip a provider to Mock live: page still reads, `stale: true` appears |
 | 9:00-11:00 | Team | Challenges faced — did we work well together? technical hurdles? mistakes made? what would we do differently? |
 | 11:00-13:00 | Team Lead | What we'd do next with more time: multi-language news, real-time WebSocket alerts, LLM-based summarization |
 | 13:00-15:00 | **ALL** | Thank you for listening — any questions? |
@@ -1100,8 +1128,9 @@ To Do  →  In Progress  →  In Review  →  Done
 | # | Task | Owner |
 |---|------|-------|
 | 1 | Pre-load 50+ news articles for 3-5 tickers into the database | Backend |
-| 2 | Pre-run sentiment analysis on all (so labels appear instantly) | NLP Lead |
-| 3 | Pre-calculate impact events (so correlation data is ready) | Backend |
+| 2 | Pre-run sentiment analysis on all (so labels appear instantly) | Sentiment owner |
+| 3 | Pre-compute impact assessments, including at least one DIVERGENT case | Backend |
+| 3b | **Start the closing-snapshot job days in advance** — the value chart has no other data source | Backend |
 | 4 | Test the "trigger new news" flow end-to-end for the live demo moment | ALL |
 | 5 | Record a backup demo video in case of internet outage | Frontend |
 | 6 | Prepare fallback demo mode: switch to local-only data if Finnhub is down | Backend |
@@ -1112,10 +1141,11 @@ To Do  →  In Progress  →  In Review  →  Done
 ## Notes
 
 1. **User Management:** Per the project specification, a single user can be assumed initially. User authentication is optional and should only be added if time permits after core features are complete.
-2. **Start Small:** The first working version should store a minimal data model — a portfolio with just `id`, `ticker`, and `shares`. Enhance incrementally.
-3. **External API Resilience:** Every project should demonstrate fallback behavior when an external API is unavailable. Our caching layer in `stock_prices` and `news_articles` serves this purpose — the demo should explicitly show this resilience.
-4. **Quality Over Quantity:** A polished 3-ticker demo with clean UI and working NLP beats a buggy 20-ticker system.
-5. **Stay Agile:** The single biggest problem teams face is starting with a data model that is too complex. Begin with `Portfolio(id, name)` + `Holding(id, portfolioId, ticker, shares)`. Add sentiment, prices, and impact tables after the core CRUD works.
+2. **Start Small:** Build in the order the requirements document lays out — holdings CRUD, then prices and valuation, then news, then sentiment, then impact, then the linked view. Each step should leave the system runnable and demonstrable. A finished medium-difficulty project presents far better than an 80%-complete hard one.
+3. **External API Resilience:** Every project should demonstrate fallback behavior when an external API is unavailable. Because reads are served from the database and every response carries `asOf`/`stale`, a dead upstream degrades to older data instead of an error — the demo should show this explicitly by switching a provider to Mock mid-session.
+4. **Quality Over Quantity:** A polished 3-ticker demo with clean UI and working sentiment beats a buggy 20-ticker system.
+5. **Stay Agile:** The single biggest problem teams face is starting with a data model that is too complex. The nine tables here are the minimum the requirements need, not an aspiration — resist adding more. Two shapes are worth getting right on the first pass because changing them later means rewriting a migration and every query that touches it: the many-to-many link between news and symbols, and the unique constraint that makes deduplication work.
+6. **Scope Excluded:** Multi-user, real order execution, tick-level intraday data, currency conversion (all USD, all US equities), full-article analysis (headlines only), and market-wide news scanning beyond the watchlist.
 
 ---
 

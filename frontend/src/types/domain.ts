@@ -1,0 +1,69 @@
+export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
+export type SentimentState = Sentiment | null
+export type AnalysisStatus = 'PENDING' | 'FAILED' | null
+
+export type Holding = {
+  id: number
+  ticker: string
+  companyName: string
+  shares: number
+  averageCost: number
+  currentPrice: number
+  dayChangePct: number
+  marketValue: number
+  totalCost: number
+  unrealizedPnL: number
+  unrealizedPnLPct: number | null
+  weight: number
+  quoteUpdatedAt: string | null
+  quoteSource: 'LIVE' | 'CACHE'
+}
+
+export type Portfolio = {
+  id: number
+  name: string
+  holdings: Holding[]
+  createdAt: string
+  totalMarketValue?: number
+  holdingCount?: number
+  stale?: boolean
+  asOf?: string | null
+}
+
+export type PortfolioSummary = {
+  totalValue: number
+  todayChange: number
+  todayChangePct: number
+  allocation: Array<{ ticker: string; weight: number; value: number }>
+  sentimentTrend: Array<{ date: string; positive: number; negative: number; neutral: number }>
+}
+
+export type PortfolioValuePoint = {
+  date: string
+  totalValue: number
+}
+
+export type ImpactEvent = {
+  id: number
+  externalId: string
+  ticker: string
+  affectedTickers: string[]
+  headline: string
+  source: string
+  url: string
+  publishedAt: string
+  sentiment: SentimentState
+  analysisStatus: AnalysisStatus
+  sentimentScore: number
+  confidence: number
+  impactDirection: Sentiment
+  hasImpact: boolean
+  priceChange: number
+  portfolioImpact: number
+  strength: 'Strong' | 'Moderate' | 'Watch'
+  alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE'
+  content: string
+  summary?: string | null
+  image?: string | null
+  priceSeries: Array<{ time: string; price: number }>
+}

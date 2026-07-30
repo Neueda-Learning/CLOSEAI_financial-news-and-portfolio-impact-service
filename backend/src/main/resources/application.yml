@@ -1,0 +1,184 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: fnpis-backend
+
+  datasource:
+    # connectionTimeZone=UTC is deliberate: Finnhub returns Unix timestamps,
+    # US markets run on US/Eastern, users read the page in another zone.
+    # All three mixed without a fixed baseline gets attribution dates wrong
+    # (EC-16 / EC-17). Store UTC, convert in the presentation layer.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${MYSQL_DATABASE:fnpis}?connectionTimeZone=UTC&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:fnpis_user}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    # Flyway owns the schema. Hibernate must never alter it.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # Fail on boot if that directory goes missing, rather than starting against
+    # an empty schema and failing later on the first query. Spring's default is
+    # false, so this line is the protection - deleting it removes it.
+    fail-on-missing-locations: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+# ---------------------------------------------------------------------------
+# Application settings. Every value here is a knob the team agreed on in the
+# architecture document - change the doc first, then this file.
+# ---------------------------------------------------------------------------
+app:
+  # Flip any of these to the mock/stub implementation. On demo day this is the
+  # fallback path when quota is gone or a provider is down (decision 1, 8.1).
+  providers:
+    news: ${PROVIDER_NEWS:finnhub}       # finnhub (mock: reserved, not wired yet)
+    price: ${PROVIDER_PRICE:finnhub}     # finnhub | mock (mock wired via @ConditionalOnProperty)
+    sentiment: ${PROVIDER_SENTIMENT:agent}  # agent | stub (wired by D/E)
+
+  sentiment:
+    model: ${LLM_MODEL:}
+    temperature: 0
+    prompt-version: v1
+    # Each article costs one LLM call, so cap parallelism (decision 5, cost 2)
+    max-concurrency: 3
+    # How many headlines one analysis run pays for. Below the llmSentiment
+    # limiter's 20/min so a run cannot exhaust it, and a longer backlog just
+    # drains over successive runs instead of spending the quota in one pass.
+    batch-size: ${SENTIMENT_BATCH_SIZE:15}
+
+  impact:
+    # Below this absolute price move the result is INCONCLUSIVE - the swing is
+    # noise, not a reaction. Tunable before the demo (requirements 5.3).
+    epsilon: 0.005
+
+  valuation:
+    # How old a quote may be before a valuation reports stale: true. Five times
+    # the one-minute refresh interval, so a few missed cycles do not cry wolf
+    # while a genuinely dead provider still surfaces within minutes (B4, SC-009).
+    quote-freshness-budget-seconds: 300
+
+  schedule:
+    # fixedDelay, not fixedRate: a run only starts after the previous one
+    # finished, so a task can never overlap itself (EC-23).
+    news-poll-delay: 900000      # 15 min
+    quote-refresh-delay: 60000   # 1 min, trading hours only
+    # Faster than the news poll on purpose: a batch is capped, so a burst of
+    # articles needs several runs to drain and waiting a full poll interval
+    # between them would leave stories unscored for an hour.
+    sentiment-delay: 300000      # 5 min
+    # Last in the chain, and it keeps running rather than firing once at close:
+    # a session assessed before the snapshot lands falls back to the live quote,
+    # and a later pass upgrades those rows to the real close (E4, EC-18).
+    impact-recompute-delay: 600000   # 10 min
+
+  admin:
+    # Off by default (contract 4.4 requirement 1). The destructive endpoints -
+    # recompute overwrites a whole session's assessments - only exist when this
+    # is explicitly switched on, and a disabled endpoint answers 404 rather than
+    # 403 so its existence is not advertised.
+    enabled: ${ADMIN_ENABLED:false}
+    # No default: enabling admin without setting a token would leave the
+    # endpoint open, so startup fails instead (same rule as the API keys below).
+    token: ${ADMIN_TOKEN:}
+    # Shown in the audit fields of a recompute response. Never the token itself.
+    identity: ${ADMIN_IDENTITY:admin-token:demo}
+
+finnhub:
+  base-url: https://finnhub.io/api/v1
+  # News and price use separate accounts so one hitting its quota cannot
+  # starve the other. Rate limiters must be configured per key, not shared
+  # (architecture 6.5 requirement 1).
+  keys:
+    news: ${FINNHUB_KEY_NEWS}
+    price: ${FINNHUB_KEY_PRICE}
+
+twelvedata:
+  base-url: https://api.twelvedata.com
+  key: ${TWELVEDATA_API_KEY:}
+
+llm:
+  api-key: ${LLM_API_KEY}
+  base-url: ${LLM_BASE_URL:}
+
+# No defaults on the three secrets above on purpose: a default value is the
+# same risk surface as committing the key. Startup fails fast when one is
+# missing, which beats collecting 401s minutes later (architecture 7.5).
+
+# ---------------------------------------------------------------------------
+# One rate limiter per key, never a shared instance. Sharing lets the news
+# poll drain the limiter and get quote refreshes rejected as collateral, which
+# defeats the whole point of holding separate keys (architecture 6.5 req 1).
+# A 429 must degrade only its own chain (req 2).
+# ---------------------------------------------------------------------------
+resilience4j:
+  ratelimiter:
+    instances:
+      finnhubNews:
+        limit-for-period: 30
+        limit-refresh-period: 60s
+        timeout-duration: 0s
+      finnhubPrice:
+        limit-for-period: 30
+        limit-refresh-period: 60s
+        timeout-duration: 0s
+      llmSentiment:
+        limit-for-period: 20
+        limit-refresh-period: 60s
+        timeout-duration: 5s
+      twelvedata:
+        limit-for-period: 8
+        limit-refresh-period: 60s
+        timeout-duration: 0s
+
+  retry:
+    instances:
+      # Do not retry a 429. Retrying a rate limit makes it worse - fall back
+      # to cached data and surface stale=true instead.
+      externalApi:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
+  # Circuit breaker instances are configured but @CircuitBreaker annotations
+  # are not wired yet — the rate limiter alone catches most quota issues.
+  # When wired, these open on sustained failures and stop the refresh cycle
+  # until the upstream is reachable again.
+  circuitbreaker:
+    instances:
+      finnhub:
+        sliding-window-size: 20
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: 30s
+      llm:
+        sliding-window-size: 10
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: 60s

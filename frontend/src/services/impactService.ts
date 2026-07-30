@@ -1,0 +1,92 @@
+import { apiFetch, asNumber, type PagedResponse } from './apiClient'
+import type { AnalysisStatus, ImpactEvent, Sentiment } from '../types/domain'
+
+type Article = { id: number; headline: string; source: string; url: string; publishedAt: string; sentiment: { label: Sentiment; score: number; confidence: number } | null; analysisStatus?: 'PENDING' | 'FAILED'; sentimentStatus?: 'PENDING' | 'FAILED' }
+type NewsRow = Article & { symbols: string[]; hasImpact: boolean }
+type ImpactView = { article: Article; impactedSymbols: string[]; selectedSymbol: string; impacts: Array<{ symbol: string; priceChangePct: number | null; valueImpact: string | null; direction: Sentiment; alignment: 'CONFIRMED' | 'DIVERGENT' | 'INCONCLUSIVE' }>; priceSeries: { points: Array<{ t: string; price: string }> } | null }
+type NewsDetail = { summary: string | null; image: string | null }
+
+export type ImpactEventPage = {
+  content: ImpactEvent[]
+  page: number
+  totalPages: number
+  totalElements: number
+}
+
+function mapView(view: ImpactView, detail?: NewsDetail): ImpactEvent {
+  const primary = view.impacts[0]
+  const sentiment = view.article.sentiment
+  return {
+    id: view.article.id, externalId: String(view.article.id), ticker: view.selectedSymbol, affectedTickers: view.impactedSymbols,
+    headline: view.article.headline, source: view.article.source, url: view.article.url, publishedAt: view.article.publishedAt,
+    sentiment: sentiment?.label ?? null, analysisStatus: analysisStatus(view.article), sentimentScore: sentiment?.score ?? 0, confidence: sentiment?.confidence ?? 0,
+    impactDirection: primary?.direction ?? 'NEUTRAL', hasImpact: view.impacts.length > 0, priceChange: primary?.priceChangePct ?? 0, portfolioImpact: asNumber(primary?.valueImpact),
+    strength: 'Watch', alignment: primary?.alignment ?? 'INCONCLUSIVE', content: detail?.summary ?? '', summary: detail?.summary ?? null, image: detail?.image ?? null,
+    priceSeries: view.priceSeries?.points.map((point) => ({ time: point.t, price: asNumber(point.price) })) ?? [],
+  }
+}
+
+function analysisStatus(article: Article): AnalysisStatus {
+  if (article.sentiment) return null
+  return article.analysisStatus === 'FAILED' || article.sentimentStatus === 'FAILED' ? 'FAILED' : 'PENDING'
+}
+
+function mapNewsRow(row: NewsRow): ImpactEvent {
+  const sentiment = row.sentiment
+  return {
+    id: row.id, externalId: String(row.id), ticker: row.symbols[0] ?? '', affectedTickers: row.symbols,
+    headline: row.headline, source: row.source, url: row.url, publishedAt: row.publishedAt,
+    sentiment: sentiment?.label ?? null, analysisStatus: analysisStatus(row), sentimentScore: sentiment?.score ?? 0, confidence: sentiment?.confidence ?? 0,
+    impactDirection: 'NEUTRAL', hasImpact: false, priceChange: 0, portfolioImpact: 0,
+    strength: 'Watch', alignment: 'INCONCLUSIVE', content: '', summary: null, image: null, priceSeries: [],
+  }
+}
+
+export const impactService = {
+  async getImpactEvents(portfolioId: number, page = 1, symbol?: string): Promise<ImpactEventPage> {
+    const query = new URLSearchParams({ page: String(page), size: '20' })
+    if (symbol) query.set('symbol', symbol)
+    const news = await apiFetch<PagedResponse<NewsRow>>(`/news?${query}`)
+    const results = await Promise.all(news.content.map(async (row) => {
+      try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
+    }))
+    return {
+      content: results,
+      page: news.page,
+      totalPages: news.totalPages,
+      totalElements: news.totalElements,
+    }
+  },
+  async getImpactEventsForTickers(portfolioId: number, tickers: string[], page = 1): Promise<ImpactEventPage> {
+    const result = await this.getImpactEvents(portfolioId, page)
+    const requested = new Set(tickers.map((ticker) => ticker.toUpperCase()))
+    return { ...result, content: result.content.filter((event) => event.affectedTickers.some((ticker) => requested.has(ticker))) }
+  },
+  async getAllImpactEvents(portfolioId: number, symbol?: string): Promise<ImpactEvent[]> {
+    const firstQuery = new URLSearchParams({ page: '1', size: '100' })
+    if (symbol) firstQuery.set('symbol', symbol)
+    const first = await apiFetch<PagedResponse<NewsRow>>(`/news?${firstQuery}`)
+    const allRows = [...first.content]
+    for (let p = 2; p <= first.totalPages; p++) {
+      const q = new URLSearchParams({ page: String(p), size: '100' })
+      if (symbol) q.set('symbol', symbol)
+      try { const page = await apiFetch<PagedResponse<NewsRow>>(`/news?${q}`); allRows.push(...page.content) } catch { break }
+    }
+    const results = await Promise.all(allRows.map(async (row) => {
+      try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
+    }))
+    return results
+  },
+  async getImpactEvent(id: number, portfolioId: number) {
+    const [view, detail] = await Promise.all([
+      apiFetch<ImpactView>(`/news/${id}/impact-view?portfolioId=${portfolioId}`),
+      apiFetch<NewsDetail>(`/news/${id}`),
+    ])
+    return mapView(view, detail)
+  },
+  async getImpactSummary(portfolioId: number) {
+    return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
+  },
+  async refreshNews() { return apiFetch('/news/refresh', { method: 'POST' }) },
+  async refreshSentiment() { return apiFetch('/sentiment/refresh', { method: 'POST' }) },
+}
