@@ -86,6 +86,10 @@ public class ImpactViewService {
      * @throws ApiException 404 when the article or the portfolio does not exist
      */
     @Transactional(readOnly = true)
+    public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol) {
+        return view(articleId, portfolioId, requestedSymbol, false);
+    }
+
     public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol, boolean weekly) {
         NewsArticle article = articles.findById(articleId)
                 .orElseThrow(() -> new ApiException(

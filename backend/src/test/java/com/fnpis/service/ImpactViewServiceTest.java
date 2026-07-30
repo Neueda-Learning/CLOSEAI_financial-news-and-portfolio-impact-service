@@ -152,7 +152,7 @@ class ImpactViewServiceTest {
             noPriceHistory();
             noPoints();
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null);
 
             assertThat(view.selectedSymbol()).isEqualTo("NVDA");
             assertThat(view.priceSeries().symbol()).isEqualTo("NVDA");
@@ -170,7 +170,7 @@ class ImpactViewServiceTest {
             noPriceHistory();
             noPoints();
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, "AMD", false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, "AMD");
 
             assertThat(view.selectedSymbol()).isEqualTo("AMD");
             assertThat(view.priceSeries().symbol()).isEqualTo("AMD");
@@ -184,7 +184,7 @@ class ImpactViewServiceTest {
             noPriceHistory();
             noPoints();
 
-            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, "nvda", false, false).selectedSymbol())
+            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, "nvda").selectedSymbol())
                     .isEqualTo("NVDA");
         }
 
@@ -196,7 +196,7 @@ class ImpactViewServiceTest {
 
             // Falling back to NVDA's curve here would answer a question the caller
             // did not ask, and the page would caption it with the wrong symbol.
-            assertThatThrownBy(() -> service.view(ARTICLE_ID, PORTFOLIO_ID, "TSLA", false, false))
+            assertThatThrownBy(() -> service.view(ARTICLE_ID, PORTFOLIO_ID, "TSLA"))
                     .isInstanceOf(ApiException.class)
                     .extracting(e -> ((ApiException) e).code())
                     .isEqualTo(ErrorCode.SECURITY_NOT_FOUND);
@@ -213,7 +213,7 @@ class ImpactViewServiceTest {
             noPriceHistory();
             noPoints();
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null);
 
             assertThat(view.selectedSymbol()).isEqualTo("NVDA");
             // Still rendered - it is a real assessment, just not a rankable one.
@@ -238,7 +238,7 @@ class ImpactViewServiceTest {
                             point("2026-07-27T12:00:00Z", "121.85"),
                             point("2026-07-27T12:35:00Z", "125.60")));
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null);
 
             // Published 12:31, and no capture exists at that instant. The marker
             // takes 12:35 rather than 12:31, so the line lands on a plotted point
@@ -259,7 +259,7 @@ class ImpactViewServiceTest {
 
             // Drawing it past the end of the line would imply a reaction that was
             // never recorded.
-            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false)
+            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null)
                     .priceSeries().newsMarker()).isNull();
         }
     }
@@ -286,7 +286,7 @@ class ImpactViewServiceTest {
                     eq("NVDA"), eq(SESSION)))
                     .thenReturn(List.of(today, prior));
 
-            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false)
+            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null)
                     .priceSeries().previousClose()).isEqualByComparingTo("121.40");
         }
 
@@ -303,7 +303,7 @@ class ImpactViewServiceTest {
             quote.setPreviousClose(new BigDecimal("121.40"));
             when(quotes.findById("NVDA")).thenReturn(Optional.of(quote));
 
-            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false)
+            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null)
                     .priceSeries().previousClose()).isEqualByComparingTo("121.40");
         }
     }
@@ -319,7 +319,7 @@ class ImpactViewServiceTest {
             assessed();
             when(attributionDates.resolve(PUBLISHED)).thenReturn(SESSION);
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null);
 
             assertThat(view.impacts()).isEmpty();
             assertThat(view.selectedSymbol()).isNull();
@@ -339,7 +339,7 @@ class ImpactViewServiceTest {
             noPoints();
             when(sentiments.findByArticleId(ARTICLE_ID)).thenReturn(Optional.empty());
 
-            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false);
+            ImpactViewResponse view = service.view(ARTICLE_ID, PORTFOLIO_ID, null);
 
             assertThat(view.article().sentiment()).isNull();
             // The impacts are still there - they were computed when a verdict did
@@ -361,7 +361,7 @@ class ImpactViewServiceTest {
             verdict.setModelVersion("agent-v1");
             when(sentiments.findByArticleId(ARTICLE_ID)).thenReturn(Optional.of(verdict));
 
-            var sentiment = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false).article().sentiment();
+            var sentiment = service.view(ARTICLE_ID, PORTFOLIO_ID, null).article().sentiment();
 
             assertThat(sentiment.label()).isEqualTo(SentimentLabel.POSITIVE);
             // Without this, a verdict cannot be traced to the model that made it.
@@ -377,7 +377,7 @@ class ImpactViewServiceTest {
             noPoints();
             when(securities.findBySymbolIn(any())).thenReturn(List.of());
 
-            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false)
+            assertThat(service.view(ARTICLE_ID, PORTFOLIO_ID, null)
                     .impacts().get(0).companyName()).isEqualTo("XYZQ");
         }
 
@@ -393,7 +393,7 @@ class ImpactViewServiceTest {
             nvda.setCompanyName("NVIDIA Corporation");
             when(securities.findBySymbolIn(any())).thenReturn(List.of(nvda));
 
-            var first = service.view(ARTICLE_ID, PORTFOLIO_ID, null, false, false).impacts().get(0);
+            var first = service.view(ARTICLE_ID, PORTFOLIO_ID, null).impacts().get(0);
 
             assertThat(first.companyName()).isEqualTo("NVIDIA Corporation");
             assertThat(first.priceChangePct()).isEqualTo(4.15);
@@ -409,7 +409,7 @@ class ImpactViewServiceTest {
         void unknownArticle() {
             when(articles.findById(anyLong())).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.view(404L, PORTFOLIO_ID, null, false, false))
+            assertThatThrownBy(() -> service.view(404L, PORTFOLIO_ID, null))
                     .isInstanceOf(ApiException.class)
                     .extracting(e -> ((ApiException) e).code())
                     .isEqualTo(ErrorCode.ARTICLE_NOT_FOUND);
@@ -421,7 +421,7 @@ class ImpactViewServiceTest {
             when(articles.findById(ARTICLE_ID)).thenReturn(Optional.of(article()));
             when(portfolios.existsById(anyLong())).thenReturn(false);
 
-            assertThatThrownBy(() -> service.view(ARTICLE_ID, 404L, null, false, false))
+            assertThatThrownBy(() -> service.view(ARTICLE_ID, 404L, null))
                     .isInstanceOf(ApiException.class)
                     .extracting(e -> ((ApiException) e).code())
                     .isEqualTo(ErrorCode.PORTFOLIO_NOT_FOUND);
@@ -432,4 +432,3 @@ class ImpactViewServiceTest {
         }
     }
 }
-
