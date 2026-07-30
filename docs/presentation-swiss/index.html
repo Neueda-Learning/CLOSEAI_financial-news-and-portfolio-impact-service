@@ -625,7 +625,7 @@
   }
   [data-pause].revealed{opacity:1!important;transform:translateY(0)!important;pointer-events:auto}
   #overview [data-pause]{opacity:1!important;transform:none!important}
-  body.low-power [data-pause]{opacity:1!important;transform:none!important;pointer-events:auto!important}
+  body.low-power [data-pause]{transition:none!important}
 
   /* ============================================================
      ↓↓↓ V2 EXTENSIONS · Canvas Mode + 参考图新类
@@ -2110,9 +2110,10 @@ function currentDeckHtml(){
   clone.classList.remove('editing');
   const body=clone.querySelector('body');
   if(body){
-    body.classList.remove('editing');
+    body.classList.remove('editing','low-power');
     body.removeAttribute('data-download-ready');
     body.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','false'));
+    body.querySelectorAll('[data-pause].revealed').forEach(el=>el.classList.remove('revealed'));
   }
   const hint=clone.querySelector('#hint');
   if(hint) hint.textContent='→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · D 下载 · ESC 索引';
@@ -2257,6 +2258,13 @@ function jumpTo(n){
   go(n);
 }
 
+function jumpToFresh(n){
+  const items=pauseItemsFor(n);
+  items.forEach(el=>el.classList.remove('revealed'));
+  pauseRevealed.set(n,0);
+  go(n);
+}
+
 function forward(){
   if(overviewOn)return;
   if(revealNextTeam(idx))return;
@@ -2395,7 +2403,7 @@ deck.addEventListener('click',e=>{
 
 const initialSlideParam = new URLSearchParams(location.search).get('slide');
 const initialSlide = initialSlideParam ? Number(initialSlideParam) - 1 : 0;
-jumpTo(Number.isFinite(initialSlide) ? initialSlide : 0);
+jumpToFresh(Number.isFinite(initialSlide) ? initialSlide : 0);
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>lucide.createIcons();</script>
