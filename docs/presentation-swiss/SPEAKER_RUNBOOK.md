@@ -76,16 +76,16 @@ Transition:
 The user starts with the stocks they actually own.
 Then the website finds news connected to those stocks.”
 
-“After that, the AI reads the headline and gives a simple signal:
+“After that, the LLM analyses the headline and gives a simple signal:
 positive, negative, or neutral.
 But we also check the market, because a headline alone is not enough.
 If the price moves in the same direction, that supports the signal.
 If it moves the other way, that disagreement is also useful.”
 
-“The final step is the impact.
+“The final step is portfolio metrics.
 Instead of showing news in one place and portfolio data somewhere else,
-the website brings them together so the user can understand what changed
-and why it matters to their own holdings.”
+the website brings them together as sentiment, confidence, portfolio impact,
+and alignment, so the user can understand what changed and why it matters.”
 
 Transition:
 
@@ -116,16 +116,31 @@ Transition:
 
 ## Timothy Xue script · Slide 6
 
-### Slide 6 — Complete Demo Flow
+### Slide 6 — Additional Features
 
-“This is the live demo path.
-We open the portfolio, trigger or show the Apple breaking-news example,
-reveal sentiment, show the chart marker, read the impact,
-and then demonstrate the fallback path if we need to.”
+“For this slide, I will not read the text on screen.
+I will use it as a map for the live demo.
+The story is simple: I hold AAPL, news breaks, and the dashboard tells me whether that news really matters to my portfolio.”
 
-“The demo should feel calm. If live provider data is slow or stale, we switch to the cached or Mock story and explain that freshness is visible by design.”
+“First I point to the 53 percent direction agreement.
+That number checks whether the news direction matches the price direction.
+In this example, 23 confirmed records out of 43 clear records gives roughly 53 percent.”
 
-“The important line to say out loud is: the user does not just read the headline — they see the headline connected to the holding, the price move, and the final impact state.”
+“Then I use the three state boxes to explain the result.
+Confirmed means the news and market price move in the same direction.
+Divergent means the news says one thing, but price action says the opposite.
+Inconclusive means the move is too small, neutral, or unclear to judge.”
+
+“Next I point to weighted sentiment.
+This is not a simple count of positive and negative news.
+It is weighted by the portfolio holding size, so a bigger position has more influence than a tiny position.”
+
+“Then I point to news coverage.
+Coverage answers: how many of my portfolio symbols had at least one analysed news item today?
+If it is 100 percent, every holding had news coverage; if it is lower, the user knows the picture is incomplete.”
+
+“The stronger story is that the system makes the result explainable:
+agreement, market confirmation, portfolio sentiment, and coverage.”
 
 Transition:
 
