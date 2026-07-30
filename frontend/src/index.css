@@ -1093,6 +1093,8 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   background: var(--accent-soft);
   border-color: rgba(39, 80, 111, .16);
 }
+.ticker-link { all: unset; cursor: pointer; color: var(--accent); font-weight: 650; transition: color 120ms var(--spring); }
+.ticker-link:hover { color: var(--text); text-decoration: underline; }
 .compact-button { padding: 9px 12px; }
 .pagination-row {
   justify-content: center;

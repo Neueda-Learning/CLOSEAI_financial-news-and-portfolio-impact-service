@@ -25,7 +25,7 @@ const hoverArcShadow = {
 
 ChartJS.register(ArcElement, Tooltip, Legend, hoverArcShadow)
 
-export function PieChart({ labels, values, colors = allocationColors }: { labels: string[]; values: number[]; colors?: string[] }) {
+export function PieChart({ labels, values, colors = allocationColors, onSliceClick }: { labels: string[]; values: number[]; colors?: string[]; onSliceClick?: (label: string) => void }) {
   const chartRef = useRef<ChartJS<'doughnut'> | null>(null)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const total = values.reduce((sum, value) => sum + value, 0)
@@ -94,7 +94,7 @@ export function PieChart({ labels, values, colors = allocationColors }: { labels
             onMouseLeave={() => setFocusedSlice(null)}
             onFocus={() => setFocusedSlice(index)}
             onBlur={() => setFocusedSlice(null)}
-            onClick={() => setFocusedSlice(activeIndex === index ? null : index)}
+            onClick={() => { setFocusedSlice(activeIndex === index ? null : index); onSliceClick?.(label) }}
           >
             <i style={{ backgroundColor: colors[index % colors.length] }} aria-hidden="true" />
             <span>{label}</span>
