@@ -1,4 +1,4 @@
-﻿package com.fnpis.api.internal;
+package com.fnpis.api.internal;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
@@ -222,7 +222,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("the sentiment score is a number; prices stay strings")
         void sentimentIsANumber() throws Exception {
-            given(views.view(any(), any(), any(, false))).willReturn(response());
+            given(views.view(any(), any(), any(, false, false))).willReturn(response());
 
             mvc.perform(get(PATH).param("portfolioId", String.valueOf(PORTFOLIO_ID)))
                     .andExpect(status().isOk())
@@ -243,7 +243,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("the curve is captioned by selectedSymbol, and the two agree")
         void curveIsBound() throws Exception {
-            given(views.view(any(), any(), any(, false))).willReturn(response());
+            given(views.view(any(), any(), any(, false, false))).willReturn(response());
 
             mvc.perform(get(PATH).param("portfolioId", String.valueOf(PORTFOLIO_ID)))
                     .andExpect(status().isOk())
