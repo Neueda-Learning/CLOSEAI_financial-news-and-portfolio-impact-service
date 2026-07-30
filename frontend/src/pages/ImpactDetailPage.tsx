@@ -13,12 +13,14 @@ export function ImpactDetailPage() {
   const navigate = useNavigate()
   const [event, setEvent] = useState<ImpactEvent | undefined>(undefined)
   const [nextArticle, setNextArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
+  const [prefetchedNextEvent, setPrefetchedNextEvent] = useState<ImpactEvent | null>(null)
   const [previousArticle, setPreviousArticle] = useState<{ id: number; headline: string; source: string } | null>(null)
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isCommitting, setIsCommitting] = useState(false)
   const [commitDirection, setCommitDirection] = useState<'next' | 'previous'>('next')
   const { activePortfolioId } = usePortfolio()
+  const [chartRange, setChartRange] = useState<'intraday' | 'weekly'>('intraday')
   const gesture = useRef<{ pointerId: number; startX: number; lastX: number; lastTime: number; velocity: number } | null>(null)
   const commitTimer = useRef<number | null>(null)
 
@@ -28,15 +30,23 @@ export function ImpactDetailPage() {
     let cancelled = false
     setDragX(0)
     setIsCommitting(false)
-    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId), impactService.getNextNews(eventId), impactService.getPreviousNews(eventId)]).then(([nextEvent, nextNews, previousNews]) => {
+    void Promise.all([impactService.getImpactEvent(eventId, activePortfolioId, chartRange), impactService.getNextNews(eventId), impactService.getPreviousNews(eventId)]).then(([nextEvent, nextNews, previousNews]) => {
       if (!cancelled) {
         setEvent(nextEvent)
         setNextArticle(nextNews)
         setPreviousArticle(previousNews)
+        setPrefetchedNextEvent(null)
+        if (nextNews) {
+          void impactService.getImpactEvent(nextNews.id, activePortfolioId, chartRange).then((prefetchedEvent) => {
+            if (!cancelled) setPrefetchedNextEvent(prefetchedEvent)
+          }).catch(() => {
+            if (!cancelled) setPrefetchedNextEvent(null)
+          })
+        }
       }
     })
     return () => { cancelled = true }
-  }, [id, activePortfolioId])
+  }, [id, activePortfolioId, chartRange])
 
   useEffect(() => () => {
     if (commitTimer.current !== null) window.clearTimeout(commitTimer.current)
@@ -83,7 +93,10 @@ export function ImpactDetailPage() {
     setCommitDirection('next')
     setIsCommitting(true)
     setDragX(Math.max(window.innerWidth, releasedX + 220))
-    commitTimer.current = window.setTimeout(() => navigate(`/impact/${nextArticle.id}`), 280)
+    commitTimer.current = window.setTimeout(() => {
+      if (prefetchedNextEvent) setEvent(prefetchedNextEvent)
+      navigate(`/impact/${nextArticle.id}`)
+    }, 280)
   }
 
   function advanceToPrevious() {
@@ -99,7 +112,6 @@ export function ImpactDetailPage() {
   }
 
   const swipeProgress = Math.min(Math.abs(dragX) / Math.max(1, window.innerWidth * 0.72), 1)
-  const nextCardTransform = `translate3d(${(-42 + swipeProgress * 42).toFixed(1)}px, 0, 0) scale(${(0.94 + swipeProgress * 0.06).toFixed(3)})`
   const detailTransform = `translate3d(${dragX}px, 0, 0) scale(${(1 - swipeProgress * 0.035).toFixed(3)})`
 
   return (
@@ -110,34 +122,14 @@ export function ImpactDetailPage() {
       onPointerUp={finishGesture}
       onPointerCancel={finishGesture}
     >
-      {nextArticle && <aside className="news-swipe-next-card" aria-hidden="true" style={{ transform: nextCardTransform }}><small>Up next</small><strong>{nextArticle.headline}</strong><span>{nextArticle.source} · Swipe right to open</span></aside>}
       <div className="news-detail-swipe-content" style={{ transform: detailTransform }}>
       <div className="page-stack">
       <p className="eyebrow">Impact detail</p>
       <NewsInfoCard event={event} />
-      <section className="grid-2">
-        <Card>
-          <h2>News Content</h2>
-          <p className="body-copy">{event.content}</p>
-        </Card>
-        <Card>
-          <h2>Stock Price Chart</h2>
-          <div className="chart-box">
-            <LineChart
-              labels={event.priceSeries.map((point) => point.time)}
-              datasets={[
-                {
-                  label: event.affectedTickers.join(', '),
-                  data: event.priceSeries.map((point) => point.price),
-                  borderColor: '#1f4e79',
-                  backgroundColor: 'rgba(31, 78, 121, 0.15)',
-                },
-              ]}
-              markerLabel={event.priceSeries[2]?.time}
-            />
-          </div>
-        </Card>
-      </section>
+      <Card>
+        <h2>News Content</h2>
+        <p className="body-copy">{event.content}</p>
+      </Card>
       <ImpactSummaryCard event={event} />
       </div>
       </div>

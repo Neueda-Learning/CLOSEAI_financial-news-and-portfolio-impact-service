@@ -43,7 +43,9 @@ public class ImpactViewController {
             @PathVariable Long id,
             @RequestParam Long portfolioId,
             @Parameter(description = "缺省时返回影响金额绝对值最大的那只")
-            @RequestParam(required = false) String symbol) {
-        return service.view(id, portfolioId, symbol);
+            @RequestParam(required = false) String symbol,
+            @Parameter(description = "intraday=单日分钟级, week=5天日线级")
+            @RequestParam(required = false, defaultValue = "intraday") String range) {
+        return service.view(id, portfolioId, symbol, "week".equals(range));
     }
 }

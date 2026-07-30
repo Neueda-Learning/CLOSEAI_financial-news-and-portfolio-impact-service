@@ -3,6 +3,8 @@ package com.fnpis.service;
 import com.fnpis.api.internal.dto.ImpactViewResponse;
 import com.fnpis.common.Freshness;
 import com.fnpis.common.error.ApiException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fnpis.common.error.ErrorCode;
 import com.fnpis.domain.ImpactAssessment;
 import com.fnpis.domain.NewsArticle;
@@ -48,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ImpactViewService {
 
+    private static final Logger log = LoggerFactory.getLogger(ImpactViewService.class);
     private final NewsArticleRepository articles;
     private final SentimentScoreRepository sentiments;
     private final ImpactAssessmentRepository assessments;
@@ -87,6 +90,10 @@ public class ImpactViewService {
      */
     @Transactional(readOnly = true)
     public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol) {
+        return view(articleId, portfolioId, requestedSymbol, false);
+    }
+
+    public ImpactViewResponse view(Long articleId, Long portfolioId, String requestedSymbol, boolean weekly) {
         NewsArticle article = articles.findById(articleId)
                 .orElseThrow(() -> new ApiException(
                         ErrorCode.ARTICLE_NOT_FOUND, "No article with id " + articleId));
@@ -121,7 +128,7 @@ public class ImpactViewService {
                 impactedSymbols,
                 selected,
                 rows.stream().map(row -> ImpactRowMapper.toRow(row, names)).toList(),
-                selected == null ? null : priceSeries(selected, session, article.getPublishedAt()),
+                selected == null ? null : priceSeries(selected, session, article.getPublishedAt(), weekly),
                 freshness.asOf(),
                 freshness.stale());
     }
@@ -169,16 +176,30 @@ public class ImpactViewService {
      * days of points into one line, and the marker would land ambiguously.
      */
     private ImpactViewResponse.PriceSeries priceSeries(
-            String symbol, LocalDate session, Instant publishedAt) {
-        Instant from = session.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant to = from.plus(java.time.Duration.ofDays(1));
+            String symbol, LocalDate session, Instant publishedAt, boolean weekly) {
+        Instant from = (weekly ? session.minusDays(5) : session).atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = session.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        List<ImpactViewResponse.PriceSeries.Point> curve = points
-                .findBySymbolAndCapturedAtBetweenOrderByCapturedAtAsc(symbol, from, to)
-                .stream()
+        var pointRows = points.findBySymbolAndCapturedAtBetweenOrderByCapturedAtAsc(symbol, from, to);
+        log.warn("priceSeries for {}: price_point found {} rows in [{}, {}]", symbol, pointRows.size(), from, to);
+        List<ImpactViewResponse.PriceSeries.Point> curve = pointRows.stream()
                 .map(p -> new ImpactViewResponse.PriceSeries.Point(
                         p.getCapturedAt(), p.getPrice()))
                 .toList();
+
+        // Fallback to daily bars when intraday price_points are sparse or absent
+        // (EC-18: no price data for the session, e.g. today before market close).
+        if (curve.isEmpty()) {
+            var barFrom = from.atZone(ZoneOffset.UTC).toLocalDate();
+            var barTo = to.atZone(ZoneOffset.UTC).toLocalDate();
+            log.warn("price_point empty for {} [{}-{}], falling back to price_bar", symbol, barFrom, barTo);
+            var fallback = bars.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(symbol, barFrom, barTo);
+            log.warn("price_bar fallback returned {} rows for {}", fallback.size(), symbol);
+            curve = fallback.stream()
+                    .map(b -> new ImpactViewResponse.PriceSeries.Point(
+                            b.getTradeDate().atStartOfDay(ZoneOffset.UTC).toInstant(), b.getClosePrice()))
+                    .toList();
+        }
 
         return new ImpactViewResponse.PriceSeries(
                 symbol,
