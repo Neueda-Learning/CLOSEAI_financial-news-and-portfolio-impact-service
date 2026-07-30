@@ -567,6 +567,17 @@
   body.dark-bg #hint{color:var(--paper);opacity:.4}
   body.low-power #hint{color:var(--accent);opacity:.5}
   body.dark-bg.low-power #hint{color:var(--paper);opacity:.5}
+  #deck-status{
+    position:fixed;right:1.4vw;bottom:.9vh;z-index:32;
+    display:flex;gap:14px;align-items:center;justify-content:flex-end;
+    font-family:var(--mono);font-size:12px;font-weight:500;
+    letter-spacing:.12em;text-transform:uppercase;
+    color:var(--text-helper);opacity:.46;pointer-events:none;
+    white-space:nowrap
+  }
+  #deck-status .slide-count{font-feature-settings:"tnum";color:var(--text-secondary)}
+  body.dark-bg #deck-status{color:rgba(255,255,255,.58)}
+  body.dark-bg #deck-status .slide-count{color:rgba(255,255,255,.74)}
   #deck-controls{position:fixed;right:1.4vw;top:1.2vh;z-index:40;display:flex;gap:6px;align-items:center}
   #deck-controls button{
     width:30px;height:30px;border:1px solid rgba(127,127,127,.28);
@@ -652,7 +663,7 @@
     width:100vw;
     height:100vh;
     background:var(--paper);color:var(--ink);
-    padding:5.6vh 5vw 4.4vh;
+    padding:7vh 5vw 7.4vh;
     display:flex;flex-direction:column;
     position:relative;overflow:hidden;
     box-shadow:none;
@@ -1563,7 +1574,7 @@
     letter-spacing:.14em;text-transform:uppercase;
     color:var(--text-helper);
     flex:0 0 auto;
-    margin-bottom:var(--sp-9);   /* 48px */
+    margin-bottom:var(--sp-7);   /* 32px */
   }
   .canvas-card .chrome-min.tight{margin-bottom:var(--sp-7)}   /* 32px */
   .canvas-card .chrome-min .l, .canvas-card .chrome-min .r{
@@ -1584,7 +1595,7 @@
   }
 </style>
 </head>
-<body class="canvas-mode controls-hidden">
+<body class="canvas-mode controls-hidden dark-bg">
 <script>
   // Windows 平台标记 — 雅黑没有 ExtraLight,需要字重补偿
   if(/Win/i.test(navigator.platform || navigator.userAgentData?.platform || '')){
@@ -1649,7 +1660,6 @@
     <canvas class="ascii-bg" aria-hidden="true"></canvas>
     <div class="chrome-min">
       <div class="l">Project 15 · CLOSEAI</div>
-      <div class="r">01 / 14</div>
     </div>
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
       <h1 data-anim="title" style="align-self: center; font-family: var(--sans),var(--sans-zh); font-weight: 200; font-size: min(9.2vw, 16.5vh); line-height: 0.96; letter-spacing: -0.03em; color: rgb(255, 255, 255)">Financial News &amp;<br>Portfolio <span style="font-style:italic;font-weight:300">Impact</span> Service</h1>
@@ -1662,7 +1672,6 @@
 
 <section class="slide" data-animate="grid-reveal" data-layout="S04">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Team</div><div class="r">02 / 14</div></div>
     <div data-anim="line">
       <div class="t-cat">OUR TEAM MEMBERS</div>
       <h2 class="h-xl" style="margin-top:1.4vh">Five people, five angles on the same product</h2>
@@ -1679,7 +1688,6 @@
 
 <section class="slide" data-animate="statement" data-layout="S03">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Problem</div><div class="r">03 / 14</div></div>
     <div class="problem-stage">
       <div class="problem-panel active" data-problem-step="intro">
         <div class="problem-intro-card">
@@ -1721,7 +1729,6 @@
 
 <section class="slide" data-animate="measure-up" data-layout="S06">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · User Journey</div><div class="r">04 / 14</div></div>
     <div data-anim="line"><div class="t-cat">USER JOURNEY</div><h2 class="h-xl" style="margin-top:1.4vh">From noisy headline to portfolio decision</h2></div>
     <div class="demo-step-grid">
       <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Portfolio first</div><div class="step-note">The user starts from holdings they actually own, not a generic market feed.</div></div>
@@ -1736,7 +1743,6 @@
 
 <section class="slide" data-animate="duo-mirror" data-layout="S08">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Breaking News</div><div class="r">05 / 14</div></div>
     <div data-anim="line"><div class="t-cat">BREAKING NEWS PAGE</div><h2 class="h-xl" style="margin-top:1.4vh">One live story can prove the product</h2></div>
     <div class="news-board">
       <div class="headline-panel" data-pause="">
@@ -1755,7 +1761,6 @@
 
 <section class="slide" data-animate="timeline-walk" data-layout="S11">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Product</div><div class="r">06 / 14</div></div>
     <div data-anim="line"><div class="t-cat">WHAT THE WEBSITE DOES</div><h2 class="h-xl" style="margin-top:1.4vh">It turns a headline into a holding-level answer</h2></div>
     <div class="timeline-h" style="margin-top:2vh"><div class="tl-row" style="grid-template-columns:repeat(5,1fr)">
       <div class="th-node up" data-pause=""><span class="label"><span class="yr">01</span><span class="name">Watch holdings</span><span class="desc">User stores the portfolio first</span></span><span class="dot"></span></div>
@@ -1770,7 +1775,6 @@
 
 <section class="slide" data-animate="measure-up" data-layout="S06">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Demo Steps</div><div class="r">07 / 14</div></div>
     <div data-anim="line"><div class="t-cat">COMPLETE DEMO FLOW</div><h2 class="h-xl" style="margin-top:1.4vh">The 6 clicks we show live</h2></div>
     <div class="demo-step-grid">
       <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Open the portfolio</div><div class="step-note">Start from the normal holdings dashboard so the audience sees a calm baseline.</div></div>
@@ -1785,7 +1789,6 @@
 
 <section class="slide" data-animate="stack-build" data-layout="S05">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Architecture</div><div class="r">08 / 14</div></div>
     <div data-anim="line"><div class="t-cat">CACHE-FIRST ARCHITECTURE</div><h2 class="h-xl" style="margin-top:1.4vh">Read fast, stay honest, recover gracefully</h2></div>
     <div class="stack-row">
       <div class="stack-block b-ink" data-pause=""><span class="layer-nb">LAYER 01</span><div class="layer-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="monitor" aria-hidden="true" class="lucide lucide-monitor"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></div><h3 class="layer-ttl">Frontend</h3><p class="layer-desc">Swiss-style SPA with editable text, step-by-step reveal, and a download button for the edited copy.</p><span class="layer-tag">EXPERIENCE</span></div>
@@ -1798,7 +1801,6 @@
 
 <section class="slide" data-animate="stack-build" data-layout="S05">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Data Reliability</div><div class="r">09 / 14</div></div>
     <div data-anim="line"><div class="t-cat">EXTERNAL DATA &amp; FALLBACK</div><h2 class="h-xl" style="margin-top:1.4vh">The demo should not depend on one lucky API call</h2></div>
     <div class="stack-row">
       <div class="stack-block b-accent" data-pause=""><span class="layer-nb">NEWS</span><h3 class="layer-ttl">Finnhub company-news</h3><p class="layer-desc">Fetched per ticker every 15 minutes, deduped by external article id, then stored before the UI reads it.</p><span class="layer-tag">FINNHUB_KEY_NEWS</span></div>
@@ -1810,7 +1812,6 @@
 
 <section class="slide" data-animate="duo-mirror" data-layout="S08">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Engine</div><div class="r">10 / 14</div></div>
     <div data-anim="line"><div class="t-cat">SENTIMENT &amp; IMPACT ENGINE</div><h2 class="h-xl" style="margin-top:1.4vh">The agent is powerful only when boxed in</h2></div>
     <div class="news-board">
       <div class="headline-panel" data-pause="">
@@ -1833,7 +1834,6 @@
 
 <section class="slide" data-animate="measure-up" data-layout="S06">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Honest Output</div><div class="r">11 / 14</div></div>
     <div data-anim="line"><div class="t-cat">DIRECTION ≠ ALIGNMENT</div><h2 class="h-xl" style="margin-top:1.4vh">We separate prediction from market evidence</h2></div>
     <div class="bar-towers">
       <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-4 b-accent"><span class="lbl">DIRECTION</span><span class="nb">News</span><span class="sub">POSITIVE / NEGATIVE / NEUTRAL from sentiment only</span></div></div>
@@ -1846,22 +1846,20 @@
 
 <section class="slide" data-animate="grid-reveal" data-layout="S04">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Engineering Quality</div><div class="r">12 / 14</div></div>
-    <div data-anim="line"><div class="t-cat">DETAILS THAT MAKE IT CREDIBLE</div><h2 class="h-xl" style="margin-top:1.4vh">The boring rules are the demo insurance</h2></div>
+    <div data-anim="line"><div class="t-cat">HOW IT FAILS</div><h2 class="h-xl" style="margin-top:1.4vh">Failure was designed, not discovered</h2></div>
     <div class="sub-grid-3-2">
-      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">BigDecimal money</div><div class="desc">Shares, prices, and value impact avoid floating-point surprises.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Money as strings</div><div class="desc">JSON preserves precision instead of forcing JavaScript number arithmetic.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">UTC Instant</div><div class="desc">News time, market time, and local display time do not get mixed.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">Enum strings</div><div class="desc">Historical rows stay readable even if verdict enums evolve later.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh reports conflict instead of silently racing.</div></div>
-      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testable fallback</div><div class="desc">Stub sentiment and Mock providers keep CI and rehearsal deterministic.</div></div>
+      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">Fails at boot, not on stage</div><div class="desc">A missing key or a schema that drifted from the entities refuses to start, instead of failing on slide seven.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Three provider interfaces</div><div class="desc">A dead quote source falls through to a backup; the service layer never sees a vendor DTO.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">Written once, never revised</div><div class="desc">One verdict per article, so a network failure fails loudly instead of storing a fabricated NEUTRAL.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">24 edge cases listed</div><div class="desc">Seventeen already have a test; three of those are divide-by-zero traps.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh skips rather than queues: the run is idempotent, queueing only burns quota.</div></div>
+      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testcontainers, not H2</div><div class="desc">Integration tests hit real MySQL, where DECIMAL and index limits actually behave like production.</div></div>
     </div>
   </div>
 </section>
 
 <section class="slide" data-animate="progression" data-layout="S02">
   <div class="canvas-card">
-    <div class="chrome-min"><div class="l">Section · Build Plan</div><div class="r">13 / 14</div></div>
     <div data-anim="line"><div class="t-cat">5-DAY BUILD PLAN</div><h2 class="h-xl" style="margin-top:1.4vh">A working slice every day</h2></div>
     <div class="time-grid">
       <div class="time-card" data-pause=""><div class="time-code">Day 1</div><div class="time-line">Schema owner unblocks all</div><div class="time-note">Flyway scripts, entities, portfolio + holdings CRUD.</div></div>
@@ -1874,7 +1872,7 @@
 
 <section class="slide split" data-animate="split-statement" data-layout="S10">
   <div class="canvas-card"><div class="split-half">
-    <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden"><canvas class="ascii-bg" aria-hidden="true"></canvas><div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1"><div class="l">14 / 14</div><div class="r">CLOSING</div></div><div data-anim="manifesto" style="display: flex; flex-direction: column; gap: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div><h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2><div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">The product promise is simple: one headline, one holding, one market move, one honest state.</div></div><div data-anim="signature" style="display: flex; justify-content: space-between; align-items: end; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI</div><div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div></div></div>
+    <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden"><canvas class="ascii-bg" aria-hidden="true"></canvas><div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1"><div class="l"></div><div class="r">CLOSING</div></div><div data-anim="manifesto" style="display: flex; flex-direction: column; gap: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div><h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2><div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">The product promise is simple: one headline, one holding, one market move, one honest state.</div></div><div data-anim="signature" style="display: flex; justify-content: space-between; align-items: end; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI</div><div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div></div></div>
     <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between"><div class="chrome-min"><div class="l">TAKEAWAYS</div><div class="r">03 RULES</div></div><div data-anim="rules" style="display: flex; flex-direction: column; gap: 0px"><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One linked view</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The user sees the headline and the holding in the same breath.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One resilient path</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider fallback and stale/asOf keep the demo alive and honest.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">One 15-minute story</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The pace is fixed: team, problem, news, demo, engine, roadmap, close.</p></div></div></div><div data-anim="foot" class="t-meta" style="color: var(--text-helper); text-align: right">→ 完 · END OF FIELD NOTE</div></div>
   </div></div>
 </section>
@@ -1888,6 +1886,9 @@
   <button id="next-slide" class="control-action" type="button" title="Next slide">›</button>
   <button id="edit-toggle" class="control-action" type="button" title="Edit text">✎</button>
   <button id="download-toggle" class="control-action" type="button" title="Download edited copy">⇩</button>
+</div>
+<div id="deck-status" aria-live="polite">
+  <span id="slide-counter" class="slide-count">01 / 14</span>
 </div>
 
 <script>
@@ -2047,6 +2048,7 @@ const prevSlideBtn=document.getElementById('prev-slide');
 const nextSlideBtn=document.getElementById('next-slide');
 const editToggle=document.getElementById('edit-toggle');
 const downloadToggle=document.getElementById('download-toggle');
+const slideCounter=document.getElementById('slide-counter');
 let idx=0,total=slides.length,lock=false;
 let editing=false;
 let controlsHidden=document.body.classList.contains('controls-hidden');
@@ -2114,6 +2116,11 @@ function setControlsHidden(hidden){
   }
 }
 
+function updateSlideCounter(){
+  if(!slideCounter)return;
+  slideCounter.textContent=`${String(idx+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+}
+
 function currentDeckHtml(){
   const clone=document.documentElement.cloneNode(true);
   clone.classList.remove('editing');
@@ -2156,6 +2163,7 @@ function go(n){
   if(lock)return;
   idx=Math.max(0,Math.min(total-1,n));
   window.__currentSlideIndex = idx;
+  updateSlideCounter();
   deck.style.transform=`translateX(${-idx*100}vw)`;
   nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
   const el=slides[idx];
