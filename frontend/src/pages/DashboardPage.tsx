@@ -25,7 +25,7 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
       .catch(() => setImpactSummary(null))
   }, [activePortfolioId])
 
-  useEffect(() => { if (activePortfolioId) setHistoryPortfolioId(activePortfolioId) }, [activePortfolioId])
+  useEffect(() => { if (activePortfolioId) setHistoryPortfolioId(activePortfolioId) }, []) // sync once on mount
 
   useEffect(() => {
     if (!historyPortfolioId) return
