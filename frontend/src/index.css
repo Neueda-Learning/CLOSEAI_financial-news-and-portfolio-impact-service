@@ -537,6 +537,50 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   padding-inline: 28px;
 }
 
+.news-detail-swipe-shell {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 48px);
+  padding: 8px 0 22px;
+  touch-action: pan-y;
+}
+.news-detail-swipe-content {
+  position: relative;
+  z-index: 1;
+  will-change: transform;
+  transition: transform 360ms var(--ease-out-expo), filter 280ms var(--ease-out-expo), opacity 280ms var(--ease-out-expo);
+}
+.news-detail-swipe-shell.is-dragging .news-detail-swipe-content { transition: none; }
+.news-detail-swipe-shell.is-committing .news-detail-swipe-content { opacity: .54; filter: saturate(.84) blur(1px); }
+.news-swipe-next-card {
+  position: absolute;
+  z-index: 0;
+  inset: 24px 18% auto 0;
+  display: grid;
+  gap: 8px;
+  min-height: 172px;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--surface-strong), var(--surface));
+  box-shadow: var(--shadow);
+  transform: translateX(-18%) scale(.975);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.news-swipe-next-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: inherit;
+  background: var(--accent);
+}
+.news-swipe-next-card small, .news-swipe-next-card span { color: var(--muted); font-size: .76rem; font-weight: 720; letter-spacing: .05em; }
+.news-swipe-next-card strong { max-width: 48ch; font-size: clamp(1.05rem, 1.7vw, 1.45rem); line-height: 1.25; letter-spacing: -.015em; }
+.news-swipe-hint { margin: 14px 2px 0; color: var(--muted); font-size: .78rem; font-weight: 650; user-select: none; }
+
 @media (max-width: 720px) {
   .news-info-card-kicker { align-items: flex-start; flex-direction: column; gap: 5px; }
   .news-info-card-content { padding: 18px; }

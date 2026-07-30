@@ -13,6 +13,8 @@ export type ImpactEventPage = {
   totalElements: number
 }
 
+export type NewsNavigationItem = Pick<NewsRow, 'id' | 'headline' | 'source'>
+
 function mapView(view: ImpactView, detail?: NewsDetail): ImpactEvent {
   const primary = view.impacts[0]
   const sentiment = view.article.sentiment
@@ -68,6 +70,29 @@ export const impactService = {
       apiFetch<NewsDetail>(`/news/${id}`),
     ])
     return mapView(view, detail)
+  },
+  async getNextNews(id: number): Promise<NewsNavigationItem | null> {
+    let page = 1
+    let totalPages = 1
+
+    while (page <= totalPages) {
+      const result = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page}&size=20`)
+      totalPages = result.totalPages
+      const index = result.content.findIndex((article) => article.id === id)
+      if (index >= 0) {
+        const next = result.content[index + 1]
+        if (next) return { id: next.id, headline: next.headline, source: next.source }
+        if (page < totalPages) {
+          const nextPage = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page + 1}&size=20`)
+          const first = nextPage.content[0]
+          return first ? { id: first.id, headline: first.headline, source: first.source } : null
+        }
+        return null
+      }
+      page += 1
+    }
+
+    return null
   },
   async getImpactSummary(portfolioId: number) {
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
