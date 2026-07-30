@@ -5,8 +5,10 @@ import com.fnpis.api.internal.dto.ValuationHistoryResponse;
 import com.fnpis.common.Freshness;
 import com.fnpis.domain.PortfolioValuationSnapshot;
 import com.fnpis.domain.PriceQuote;
+import com.fnpis.domain.PriceBar;
 import com.fnpis.repository.PortfolioRepository;
 import com.fnpis.repository.PortfolioValuationSnapshotRepository;
+import com.fnpis.repository.PriceBarRepository;
 import com.fnpis.repository.PriceQuoteRepository;
 import com.fnpis.repository.SecurityRepository;
 import java.math.BigDecimal;
@@ -36,6 +38,7 @@ public class PriceReadService {
     private final PortfolioValuationSnapshotRepository snapshotRepo;
     private final PortfolioRepository portfolioRepo;
     private final SecurityRepository securityRepo;
+    private final PriceBarRepository barRepo;
     private final Duration freshnessBudget;
     private static final int PCT_SCALE = 2;
 
@@ -44,11 +47,13 @@ public class PriceReadService {
             PortfolioValuationSnapshotRepository snapshotRepo,
             PortfolioRepository portfolioRepo,
             SecurityRepository securityRepo,
+            PriceBarRepository barRepo,
             @Value("${app.valuation.quote-freshness-budget-seconds}") int freshnessSeconds) {
         this.quoteRepo = quoteRepo;
         this.snapshotRepo = snapshotRepo;
         this.portfolioRepo = portfolioRepo;
         this.securityRepo = securityRepo;
+        this.barRepo = barRepo;
         this.freshnessBudget = Duration.ofSeconds(freshnessSeconds);
     }
 
@@ -92,6 +97,29 @@ public class PriceReadService {
                 .toList();
         Instant latest = snapshots.get(snapshots.size() - 1).getCreatedAt();
         return new ValuationHistoryResponse(portfolioId, points, latest, false);
+    }
+
+    /**
+     * Single-symbol daily close history for charting (F5 individual stock view).
+     *
+     * @return the symbol's price bars as valuation points, or null when the symbol
+     *         is not in the security table
+     */
+    public ValuationHistoryResponse symbolHistory(Long portfolioId, String symbol,
+            LocalDate from, LocalDate to) {
+        if (!securityRepo.existsById(symbol.toUpperCase())) {
+            return null;
+        }
+        List<PriceBar> bars = barRepo.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(
+                symbol.toUpperCase(), from, to);
+        if (bars.isEmpty()) {
+            return new ValuationHistoryResponse(portfolioId, Collections.emptyList(), null, true);
+        }
+        var points = bars.stream()
+                .map(b -> new ValuationHistoryResponse.ValuationPoint(
+                        b.getTradeDate().toString(), b.getClosePrice()))
+                .toList();
+        return new ValuationHistoryResponse(portfolioId, points, null, false);
     }
 
     private PriceQuoteDTO toDto(PriceQuote q, Instant now) {
