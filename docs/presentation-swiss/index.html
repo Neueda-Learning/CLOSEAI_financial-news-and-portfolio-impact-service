@@ -1811,7 +1811,7 @@
     <div data-anim="line"><div class="t-cat">SENTIMENT &amp; IMPACT ENGINE</div><h2 class="h-xl" style="margin-top:1.4vh">The agent is powerful only when boxed in</h2></div>
     <div class="news-board">
       <div class="headline-panel" data-pause="">
-        <div><div class="news-tag">VALIDATION FIRST</div><div class="news-title" style="font-size:min(3.6vw,6.8vh)">One LLM Agent, one JSON shape, one stored result</div><div class="news-meta">Three fields, nothing else. The headline is untrusted third-party text, so it is fenced as data — and nothing reaches the database without matching this shape.</div></div>
+        <div><div class="news-tag">VALIDATION FIRST</div><div class="news-title" style="font-size:min(3.6vw,6.8vh)">One LLM Agent, one JSON shape, one stored result</div><div class="news-meta">Three fields, nothing else. We do not trust the headline, and we do not trust the answer — nothing is saved unless it looks exactly like this.</div></div>
         <pre style="margin:0;padding:1.6vh 0 0;font-family:var(--mono);font-size:max(14px,1vw);line-height:1.55;white-space:pre-wrap;color:rgba(255,255,255,.82)">{
   "label": "NEGATIVE",
   "score": -0.82,
@@ -1819,10 +1819,10 @@
 }</pre>
       </div>
       <div class="signal-stack">
-        <div data-pause=""><span>Model · claude-opus-4-8</span><strong>Temperature 0, and the model plus prompt version is stored on every row</strong></div>
-        <div data-pause=""><span>Constraint 01 · Prompt</span><strong>One headline in, one JSON object out, capped at 256 tokens — no room to wander</strong></div>
-        <div data-pause=""><span>Constraint 02 · Self-check</span><strong>The score's sign must match the label; we trust the number and rewrite the word</strong></div>
-        <div data-pause=""><span>Constraint 03 · Gate</span><strong>Nothing is stored unless code says it fits the schema — no matter how the model was talked around</strong></div>
+        <div data-pause=""><span>Model · claude-opus-4-8</span><strong>Temperature 0, so the same headline gives the same answer</strong></div>
+        <div data-pause=""><span>Limit 01 · Small job</span><strong>One headline in, one JSON object out, and a 256-token cap</strong></div>
+        <div data-pause=""><span>Limit 02 · Self-check</span><strong>If the score and the label disagree, we keep the score and fix the label</strong></div>
+        <div data-pause=""><span>Limit 03 · Our code decides</span><strong>The model proposes an answer; our code decides whether to save it</strong></div>
       </div>
     </div>
   </div>
@@ -1832,12 +1832,12 @@
   <div class="canvas-card">
     <div data-anim="line"><div class="t-cat">DIRECTION ≠ ALIGNMENT</div><h2 class="h-xl" style="margin-top:1.4vh">We separate prediction from market evidence</h2></div>
     <div class="bar-towers">
-      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-4 b-accent"><span class="lbl">DIRECTION</span><span class="nb">News</span><span class="sub">POSITIVE / NEGATIVE / NEUTRAL from sentiment only</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-4 b-accent"><span class="lbl">DIRECTION</span><span class="nb">News</span><span class="sub">POSITIVE / NEGATIVE / NEUTRAL — from the news alone</span></div></div>
       <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-3"><span class="lbl">CONFIRMED</span><span class="nb">Agree</span><span class="sub">Price moved in the same direction as the headline</span></div></div>
-      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-2"><span class="lbl">DIVERGENT</span><span class="nb">Signal</span><span class="sub">The market moved the other way; that is worth surfacing</span></div></div>
-      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-1"><span class="lbl">INCONCLUSIVE</span><span class="nb">Wait</span><span class="sub">Noise-level movement or missing previous close</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-2"><span class="lbl">DIVERGENT</span><span class="nb">Signal</span><span class="sub">The price went the other way — and that is worth knowing</span></div></div>
+      <div class="bar-tower" data-pause=""><div class="cap"></div><div class="body-block h-1"><span class="lbl">INCONCLUSIVE</span><span class="nb">Wait</span><span class="sub">Too small to mean anything, or no price to compare</span></div></div>
     </div>
-    <div class="t-meta" style="margin-top:2.4vh">Both are descriptions of what happened · we never merge them into buy or sell · a system allowed to answer "cannot tell" is not giving advice</div>
+    <div class="t-meta" style="margin-top:2.4vh">Both of these describe what happened · neither one says buy or sell · a system that can say "we don't know" is not giving advice</div>
   </div>
 </section>
 
@@ -1845,12 +1845,12 @@
   <div class="canvas-card">
     <div data-anim="line"><div class="t-cat">HOW IT FAILS</div><h2 class="h-xl" style="margin-top:1.4vh">Failure was designed, not discovered</h2></div>
     <div class="sub-grid-3-2">
-      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">Fails at boot, not on stage</div><div class="desc">A missing key or a schema that drifted from the entities refuses to start, instead of failing on slide seven.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Three provider interfaces</div><div class="desc">A dead quote source falls through to a backup; the service layer never sees a vendor DTO.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">Written once, never revised</div><div class="desc">One verdict per article, so a network failure fails loudly instead of storing a fabricated NEUTRAL.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">24 edge cases listed</div><div class="desc">Seventeen already have a test; three of those are divide-by-zero traps.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh skips rather than queues: the run is idempotent, queueing only burns quota.</div></div>
-      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testcontainers, not H2</div><div class="desc">Integration tests hit real MySQL, where DECIMAL and index limits actually behave like production.</div></div>
+      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">Breaks at startup, not on stage</div><div class="desc">If a key is missing or the database does not match the code, the app refuses to start — so we find out before the demo, not during it.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Any provider can be swapped</div><div class="desc">If a price source goes down we fall back to another one, and the rest of the system never notices the difference.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">One answer per article</div><div class="desc">A verdict is written once and never rewritten. If the call fails we raise an error rather than guess NEUTRAL.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">24 edge cases written down</div><div class="desc">Seventeen already have a test. Three of them are divide-by-zero traps we hit on purpose.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">Double-click is harmless</div><div class="desc">A second refresh is turned away instead of queued. Running it twice would change nothing and only waste our API quota.</div></div>
+      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Tests run on real MySQL</div><div class="desc">Not an in-memory stand-in. Decimal precision and index limits only behave like production on the real database.</div></div>
     </div>
   </div>
 </section>

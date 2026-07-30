@@ -161,45 +161,45 @@ Transition:
 
 > Four reveals on the right. Say the line, then click.
 
-“The agent is powerful only because it is boxed in.
-Three fields, nothing else: label, score, confidence.
-The headline is untrusted third-party text, so we fence it as data.”
+“We use an LLM here, but we give it a very small job.
+It reads one headline and gives us three things back: a label, a score, and a confidence.
+Nothing else.”
 
-*(click)* “Claude Opus at temperature zero, and we store the model and prompt version on every row — so any verdict traces back to what produced it.”
+*(click)* “The model is Claude Opus, and we run it at temperature zero — so the same headline gives us the same answer every time.”
 
-*(click)* “One headline in, one JSON object out, capped at 256 tokens. A small task is hard to get wrong.”
+*(click)* “The job itself is small. One headline in, one JSON object out, with a token limit. There is not much room to go wrong.”
 
-*(click)* “Then a self-check: the sign of the score must match the label. If they disagree, we trust the number and rewrite the word.”
+*(click)* “Then we check its work. If the score says negative but the label says positive, we keep the number and fix the label.”
 
-*(click)* “And a gate — code decides what gets stored, not the model. However the model is talked around, nothing lands unless it fits the schema.”
+*(click)* “And the last word is ours, not the model's. It proposes an answer; our code decides whether to save it.”
 
-“Stored once, one verdict per article, so the answer cannot drift between refreshes.”
+“We save that answer once, and we never rewrite it. So what you see on the page does not change behind your back.”
 
 ### Slide 10 — Honest Output
 
-“Direction and alignment are separate, and we never merge them.
-Direction comes from sentiment: positive, negative, or neutral.
-Alignment comes from the price: confirmed, divergent, or inconclusive.”
+“We answer two questions, and we keep them apart.
+First: what does the news say? Positive, negative, or neutral.
+Second: did the price agree? That is where confirmed, divergent, and inconclusive come from.”
 
-“Divergent is not a bug. Bad news, stock rises — that disagreement is the interesting part, and averaging it into one score would destroy it.”
+“Divergent is not a bug. Bad news comes out and the stock goes up anyway — that is the interesting case, and if we averaged the two into one number we would lose it.”
 
-“Both describe what happened. Neither says buy or sell. A system allowed to answer ‘cannot tell’ is not giving advice.”
+“Both of these just describe what happened. Neither one says buy or sell. And a system that can say ‘we don't know’ is not giving advice.”
 
 ### Slide 11 — How It Fails
 
-> Six cards. Do not read all six — land 01, then pick two, then close on 06.
+> Six cards. Do not read all six — open with 01, pick two from the middle, close on 06.
 
-“Everything on this slide is a decision we made about failing, taken before the demo instead of during it.”
+“Things go wrong. So we decided in advance how they should go wrong.”
 
-“If a key is missing, or the schema drifted from the entities, the app refuses to start — so it fails here, not on slide seven.”
+“If a key is missing, or the database does not match the code, the app refuses to start. We would rather find out now than in the middle of this demo.”
 
-“A dead quote source falls through to a backup, and the service layer never sees a vendor type — which is what makes swapping a provider cheap.”
+“If a price source goes down, we switch to another one, and the rest of the system never notices.”
 
-“A verdict is written once. So a network failure fails loudly rather than storing a fabricated NEUTRAL that would mislabel the story permanently.”
+“Every article gets one answer, written once. If the call fails, we say so — we do not quietly save a neutral and pretend we asked.”
 
-“Twenty-four edge cases are listed, seventeen have a test, and three of those are divide-by-zero traps — zero cost basis, missing previous close, zero portfolio value.”
+“We wrote down twenty-four edge cases. Seventeen have a test. Three of them are divide-by-zero traps, and we hit those on purpose.”
 
-“And the tests run against real MySQL, not H2, because DECIMAL precision and index limits only behave like production on the real thing.”
+“And the tests run against a real MySQL, not an in-memory stand-in — because decimal precision only behaves like production on the real thing.”
 
 Transition:
 
