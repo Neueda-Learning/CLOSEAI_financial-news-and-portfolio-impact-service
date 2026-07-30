@@ -170,8 +170,8 @@ public class ImpactViewService {
      */
     private ImpactViewResponse.PriceSeries priceSeries(
             String symbol, LocalDate session, Instant publishedAt) {
-        Instant from = session.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant to = from.plus(java.time.Duration.ofDays(1));
+        Instant from = session.minusDays(5).atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = session.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
         List<ImpactViewResponse.PriceSeries.Point> curve = points
                 .findBySymbolAndCapturedAtBetweenOrderByCapturedAtAsc(symbol, from, to)
