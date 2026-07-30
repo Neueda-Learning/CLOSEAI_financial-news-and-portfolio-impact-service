@@ -64,7 +64,7 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
     <div className="page-stack">
       <header className="hero">
         <div>
-          <p className="eyebrow">{isForestTheme ? 'Forest palette preview' : 'Dashboard'}</p>
+          {isForestTheme && <p className="eyebrow">Forest palette preview</p>}
           <div className="portfolio-picker" ref={pickerRef}>
             <button type="button" className="portfolio-picker-trigger" onClick={() => setPickerOpen((p) => !p)}>
               <h1>{activePortfolio?.name ?? 'Portfolio health'}</h1>

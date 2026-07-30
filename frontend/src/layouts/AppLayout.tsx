@@ -18,14 +18,25 @@ export function AppLayout() {
   }
 
   return (
-    <div className={`${sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}${isForestPreview ? ' forest-theme-preview' : ''}`}>
+    <div className={`app-frame${isForestPreview ? ' forest-theme-preview' : ''}`}>
+      <div className={sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}>
       <aside className={sidebarCollapsed ? 'sidebar sidebar-collapsed' : 'sidebar'}>
         <div>
           <div className="brand brand-with-toggle">
-            <span className="brand-mark">F</span>
+            <span className="brand-mark brand-bolt-mark" role="img" aria-label="FNPIS">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <defs>
+                  <linearGradient id="brand-bolt-blue" x1="5" y1="4" x2="27" y2="28" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#76c5f3" />
+                    <stop offset="0.48" stopColor="#2878c8" />
+                    <stop offset="1" stopColor="#164d9b" />
+                  </linearGradient>
+                </defs>
+                <path d="M17.5 2 4 17.2h8.8l-1.2 12.8L28 13.9h-9.1L17.5 2Z" fill="url(#brand-bolt-blue)" />
+              </svg>
+            </span>
             <div className={sidebarCollapsed ? 'brand-copy hidden' : 'brand-copy'}>
-              <strong>FNPIS</strong>
-              <p>Financial news, portfolio impact</p>
+              <strong>FNPI</strong>
             </div>
             <button
               type="button"
@@ -49,6 +60,7 @@ export function AppLayout() {
       <main className="main">
         <Outlet />
       </main>
+      </div>
     </div>
   )
 }

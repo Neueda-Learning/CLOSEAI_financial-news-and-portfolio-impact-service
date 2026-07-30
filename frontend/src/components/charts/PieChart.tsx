@@ -3,7 +3,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip, type Chart } from 'chart
 import { Doughnut } from 'react-chartjs-2'
 import { currency } from '../../utils/formatters'
 
-const allocationColors = ['#43718e', '#8a5a3c', '#bd8d63', '#3a2e2d', '#d6b393', '#6e8e9e']
+const allocationColors = ['#2d668f', '#3f89a5', '#5ca5b8', '#7695bd', '#7bb9c8', '#4d7899']
 
 const hoverArcShadow = {
   id: 'allocationHoverShadow',
@@ -15,7 +15,7 @@ const hoverArcShadow = {
     const arc = chart.getDatasetMeta(0).data[active.index] as ArcElement
     const context = chart.ctx
     context.save()
-    context.shadowColor = 'rgba(15, 37, 62, .28)'
+    context.shadowColor = 'rgba(38, 96, 136, .3)'
     context.shadowBlur = 16
     context.shadowOffsetY = 7
     arc.draw(context)
