@@ -3,6 +3,8 @@ package com.fnpis.service;
 import com.fnpis.api.internal.dto.ImpactViewResponse;
 import com.fnpis.common.Freshness;
 import com.fnpis.common.error.ApiException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fnpis.common.error.ErrorCode;
 import com.fnpis.domain.ImpactAssessment;
 import com.fnpis.domain.NewsArticle;
@@ -48,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ImpactViewService {
 
+    private static final Logger log = LoggerFactory.getLogger(ImpactViewService.class);
     private final NewsArticleRepository articles;
     private final SentimentScoreRepository sentiments;
     private final ImpactAssessmentRepository assessments;
@@ -187,10 +190,12 @@ public class ImpactViewService {
         // Fallback to daily bars when intraday price_points are sparse or absent
         // (EC-18: no price data for the session, e.g. today before market close).
         if (curve.isEmpty()) {
-            curve = bars.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(symbol,
-                            from.atZone(ZoneOffset.UTC).toLocalDate(),
-                            to.atZone(ZoneOffset.UTC).toLocalDate())
-                    .stream()
+            var barFrom = from.atZone(ZoneOffset.UTC).toLocalDate();
+            var barTo = to.atZone(ZoneOffset.UTC).toLocalDate();
+            log.warn("price_point empty for {} [{}-{}], falling back to price_bar", symbol, barFrom, barTo);
+            var fallback = bars.findBySymbolAndTradeDateBetweenOrderByTradeDateAsc(symbol, barFrom, barTo);
+            log.warn("price_bar fallback returned {} rows for {}", fallback.size(), symbol);
+            curve = fallback.stream()
                     .map(b -> new ImpactViewResponse.PriceSeries.Point(
                             b.getTradeDate().atStartOfDay(ZoneOffset.UTC).toInstant(), b.getClosePrice()))
                     .toList();
