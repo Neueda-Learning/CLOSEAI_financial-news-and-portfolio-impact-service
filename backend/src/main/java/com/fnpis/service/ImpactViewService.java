@@ -180,9 +180,9 @@ public class ImpactViewService {
         Instant from = (weekly ? session.minusDays(5) : session).atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant to = session.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        List<ImpactViewResponse.PriceSeries.Point> curve = points
-                .findBySymbolAndCapturedAtBetweenOrderByCapturedAtAsc(symbol, from, to)
-                .stream()
+        var pointRows = points.findBySymbolAndCapturedAtBetweenOrderByCapturedAtAsc(symbol, from, to);
+        log.warn("priceSeries for {}: price_point found {} rows in [{}, {}]", symbol, pointRows.size(), from, to);
+        List<ImpactViewResponse.PriceSeries.Point> curve = pointRows.stream()
                 .map(p -> new ImpactViewResponse.PriceSeries.Point(
                         p.getCapturedAt(), p.getPrice()))
                 .toList();
