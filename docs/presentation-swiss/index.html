@@ -985,6 +985,13 @@
     min-height:0;
     overflow:hidden
   }
+  .headline-panel.centered-news{
+    justify-content:center;
+    text-align:center
+  }
+  .headline-panel.centered-news .news-tag{
+    margin-bottom:2.2vh
+  }
   .news-tag{
     font-family:var(--mono);
     font-size:max(11px,.78vw);
@@ -1032,6 +1039,11 @@
     letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--text-helper)
+  }
+  .signal-stack.clear-metrics span{
+    font-size:max(14px,.9vw);
+    font-weight:600;
+    color:var(--accent)
   }
   .signal-stack strong{
     font-family:var(--sans),var(--sans-zh);
@@ -1193,8 +1205,8 @@
 
   /* 横向时间线 (.timeline-h) — 与 .timeline-v 共享 axis token, 视觉语言一致 */
   .timeline-h{
-    --tl-axis-w:8px;
-    --tl-dot:8px;
+    --tl-axis-w:10px;
+    --tl-dot:10px;
     position:relative;
     flex:1;
     display:flex;align-items:center
@@ -1224,24 +1236,24 @@
   .timeline-h .th-node.accent .dot{background:var(--accent)}
   .timeline-h .th-node .label{
     position:absolute;left:50%;transform:translateX(-50%);
-    width:13vw;text-align:center;
-    display:flex;flex-direction:column;gap:.4vh
+    width:15.5vw;text-align:center;
+    display:flex;flex-direction:column;gap:.7vh
   }
-  .timeline-h .th-node.up .label{bottom:calc(50% + 22px)}
-  .timeline-h .th-node.down .label{top:calc(50% + 22px)}
+  .timeline-h .th-node.up .label{bottom:calc(50% + 28px)}
+  .timeline-h .th-node.down .label{top:calc(50% + 28px)}
   .timeline-h .th-node .yr{
-    font-family:var(--mono);font-size:max(15px,.9vw);letter-spacing:.05em;
+    font-family:var(--mono);font-size:max(18px,1.02vw);letter-spacing:.05em;
     color:var(--text-helper);font-weight:500
   }
   .timeline-h .th-node.accent .yr{color:var(--accent)}
   .timeline-h .th-node .name{
-    font-family:var(--sans);font-size:max(18px,1.15vw);font-weight:400;
+    font-family:var(--sans);font-size:max(27px,1.7vw);font-weight:450;
     color:var(--text-primary);line-height:1.2;letter-spacing:-.005em
   }
   .timeline-h .th-node.accent .name{color:var(--accent)}
   .timeline-h .th-node .desc{
-    font-family:var(--sans),var(--sans-zh);font-size:max(16px,.95vw);
-    color:var(--text-secondary);font-weight:400;line-height:1.4
+    font-family:var(--sans),var(--sans-zh);font-size:max(20px,1.12vw);
+    color:var(--text-secondary);font-weight:400;line-height:1.34
   }
 
   /* 几何图示 (参考图 5) — SVG-friendly 容器 */
@@ -1727,17 +1739,16 @@
   </div>
 </section>
 
-<section class="slide" data-animate="measure-up" data-layout="S06">
+<section class="slide" data-animate="timeline-walk" data-layout="S11">
   <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">USER JOURNEY</div><h2 class="h-xl" style="margin-top:1.4vh">From noisy headline to portfolio decision</h2></div>
-    <div class="demo-step-grid">
-      <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Portfolio first</div><div class="step-note">The user starts from holdings they actually own, not a generic market feed.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Ticker-linked news</div><div class="step-note">Company news is fetched per symbol so the article-to-holding link is explicit.</div></div>
-      <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">AI sentiment</div><div class="step-note">The LLM classifies direction with a confidence score, validated against a fixed schema.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">04</div><div class="step-title">Price reaction</div><div class="step-note">Daily bars decide impact; intraday quotes help the demo view feel live.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">05</div><div class="step-title">Holding impact</div><div class="step-note">The system weights movement by position size, so the answer is portfolio-specific.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">06</div><div class="step-title">Honest verdict</div><div class="step-note">Confirmed, divergent, or inconclusive appears as a state, not a hidden score.</div></div>
-    </div>
+    <div data-anim="line"><div class="t-cat">WHAT THE WEBSITE DOES</div><h2 class="h-xl" style="margin-top:1.4vh">The user sees what the news means for them</h2></div>
+    <div class="timeline-h" style="margin-top:2vh"><div class="tl-row" style="grid-template-columns:repeat(5,1fr)">
+      <div class="th-node up" data-pause=""><span class="label"><span class="yr">01</span><span class="name">Start with portfolio</span><span class="desc">The stocks the user actually owns</span></span><span class="dot"></span></div>
+      <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">02</span><span class="name">Find related news</span><span class="desc">Only stories tied to those tickers</span></span></div>
+      <div class="th-node up" data-pause=""><span class="label"><span class="yr">03</span><span class="name">Read the signal</span><span class="desc">Positive, negative, or neutral</span></span><span class="dot"></span></div>
+      <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">04</span><span class="name">Check the market</span><span class="desc">Did the price move the same way?</span></span></div>
+      <div class="th-node up accent" data-pause=""><span class="label"><span class="yr">05</span><span class="name">Show the impact</span><span class="desc">A clear answer for this portfolio</span></span><span class="dot"></span></div>
+    </div></div>
   </div>
 </section>
 
@@ -1745,31 +1756,16 @@
   <div class="canvas-card">
     <div data-anim="line"><div class="t-cat">BREAKING NEWS PAGE</div><h2 class="h-xl" style="margin-top:1.4vh">One live story can prove the product</h2></div>
     <div class="news-board">
-      <div class="headline-panel" data-pause="">
-        <div><div class="news-tag">JUL 29, 2026 · DEMO CANDIDATE</div><div class="news-title">Seagate jumps after AI-storage demand drives earnings beat</div><div class="news-meta">STX reported adjusted EPS of $5.71 on about $3.6B revenue, above analyst expectations. This is exactly the kind of story our impact view should catch fast.</div></div>
-        <div class="t-meta" style="color:rgba(255,255,255,.62)">Source cue: MarketWatch / Barron's · live quote still comes from the provider.</div>
+      <div class="headline-panel centered-news" data-pause="">
+        <div><div class="news-tag">AAPL · Tue, July 28, 2026 at 5:10 PM</div><div class="news-title">“Apple tops $5 trillion market cap”</div></div>
       </div>
-      <div class="signal-stack" data-pause="">
-        <div><span>Headline</span><strong>POSITIVE</strong></div>
-        <div><span>Evidence</span><strong>EPS $5.71 vs about $5.10 expected</strong></div>
-        <div><span>Market response</span><strong>roughly +7% to +9% after-hours</strong></div>
-        <div><span>State</span><strong>CONFIRMED</strong></div>
+      <div class="signal-stack clear-metrics" data-pause="">
+        <div><span>Sentiment</span><strong>POSITIVE · 0.90</strong></div>
+        <div><span>Confidence</span><strong>95%</strong></div>
+        <div><span>Portfolio impact</span><strong>+$391.39 on AAPL</strong></div>
+        <div><span>Alignment</span><strong>CONFIRMED</strong></div>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="slide" data-animate="timeline-walk" data-layout="S11">
-  <div class="canvas-card">
-    <div data-anim="line"><div class="t-cat">WHAT THE WEBSITE DOES</div><h2 class="h-xl" style="margin-top:1.4vh">It turns a headline into a holding-level answer</h2></div>
-    <div class="timeline-h" style="margin-top:2vh"><div class="tl-row" style="grid-template-columns:repeat(5,1fr)">
-      <div class="th-node up" data-pause=""><span class="label"><span class="yr">01</span><span class="name">Watch holdings</span><span class="desc">User stores the portfolio first</span></span><span class="dot"></span></div>
-      <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">02</span><span class="name">Pull news</span><span class="desc">Company stories are fetched per ticker</span></span></div>
-      <div class="th-node up" data-pause=""><span class="label"><span class="yr">03</span><span class="name">Score sentiment</span><span class="desc">The LLM Agent returns validated JSON</span></span><span class="dot"></span></div>
-      <div class="th-node down" data-pause=""><span class="dot"></span><span class="label"><span class="yr">04</span><span class="name">Join price</span><span class="desc">Daily bar creates reproducible attribution</span></span></div>
-      <div class="th-node up accent" data-pause=""><span class="label"><span class="yr">05</span><span class="name">Serve linked view</span><span class="desc">One endpoint returns article, impact rows, and chart series</span></span><span class="dot"></span></div>
-    </div></div>
-    <div class="t-meta" style="margin-top:auto">The linked view is the point: the user sees the story, the market response, and the impact in one place.</div>
   </div>
 </section>
 
@@ -1778,7 +1774,7 @@
     <div data-anim="line"><div class="t-cat">COMPLETE DEMO FLOW</div><h2 class="h-xl" style="margin-top:1.4vh">The 6 clicks we show live</h2></div>
     <div class="demo-step-grid">
       <div class="demo-step" data-pause=""><div class="step-num">01</div><div class="step-title">Open the portfolio</div><div class="step-note">Start from the normal holdings dashboard so the audience sees a calm baseline.</div></div>
-      <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Trigger breaking news</div><div class="step-note">Load the Seagate/STX example and show the headline inside the portfolio context.</div></div>
+      <div class="demo-step" data-pause=""><div class="step-num">02</div><div class="step-title">Trigger breaking news</div><div class="step-note">Load the Apple/AAPL example and show the headline inside the portfolio context.</div></div>
       <div class="demo-step accent" data-pause=""><div class="step-num">03</div><div class="step-title">Reveal sentiment</div><div class="step-note">The LLM Agent gives a validated label, not a vague paragraph.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">04</div><div class="step-title">Show the chart marker</div><div class="step-note">The price line and news marker make the timing obvious.</div></div>
       <div class="demo-step" data-pause=""><div class="step-num">05</div><div class="step-title">Read impact</div><div class="step-note">Direction, alignment, and dollar impact are separated on purpose.</div></div>
@@ -1889,7 +1885,7 @@
   <button id="download-toggle" class="control-action" type="button" title="Download edited copy">⇩</button>
 </div>
 <div id="deck-status" aria-live="polite">
-  <span id="slide-counter" class="slide-count">01 / 14</span>
+  <span id="slide-counter" class="slide-count">01 / 13</span>
 </div>
 
 <script>
