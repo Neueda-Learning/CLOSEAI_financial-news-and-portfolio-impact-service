@@ -2,6 +2,7 @@ package com.fnpis.api.internal;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -222,7 +223,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("the sentiment score is a number; prices stay strings")
         void sentimentIsANumber() throws Exception {
-            given(views.view(any(), any(), any(), any())).willReturn(response());
+            given(views.view(any(), any(), any(), anyBoolean())).willReturn(response());
 
             mvc.perform(get(PATH).param("portfolioId", String.valueOf(PORTFOLIO_ID)))
                     .andExpect(status().isOk())
@@ -243,7 +244,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("the curve is captioned by selectedSymbol, and the two agree")
         void curveIsBound() throws Exception {
-            given(views.view(any(), any(), any(), any())).willReturn(response());
+            given(views.view(any(), any(), any(), anyBoolean())).willReturn(response());
 
             mvc.perform(get(PATH).param("portfolioId", String.valueOf(PORTFOLIO_ID)))
                     .andExpect(status().isOk())
