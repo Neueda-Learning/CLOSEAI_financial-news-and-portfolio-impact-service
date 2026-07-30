@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AddHoldingModal } from '../components/portfolio/AddHoldingModal'
@@ -24,6 +24,69 @@ const directionLabels: Record<ImpactEvent['impactDirection'], string> = {
   POSITIVE: 'Positive',
   NEGATIVE: 'Negative',
   NEUTRAL: 'Neutral',
+}
+
+type FilterOption = { value: string; label: string }
+
+function FilterDropdown({
+  ariaLabel,
+  value,
+  options,
+  onChange,
+}: {
+  ariaLabel: string
+  value: string
+  options: FilterOption[]
+  onChange: (value: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const selected = options.find((option) => option.value === value) ?? options[0]
+
+  useEffect(() => {
+    if (!open) return
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
+
+  return (
+    <div className={open ? 'news-filter-dropdown is-open' : 'news-filter-dropdown'} ref={rootRef}>
+      <button type="button" className="news-filter-trigger" aria-label={ariaLabel} aria-expanded={open} aria-haspopup="listbox" onClick={() => setOpen((current) => !current)}>
+        <span>{selected?.label}</span>
+        <span className="news-filter-chevron" aria-hidden="true">⌄</span>
+      </button>
+      {open && (
+        <div className="news-filter-menu" role="listbox" aria-label={ariaLabel}>
+          {options.map((option) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              className={option.value === value ? 'is-selected' : ''}
+              key={option.value}
+              onClick={() => { onChange(option.value); setOpen(false) }}
+            >
+              <span>{option.label}</span>
+              {option.value === value && <span aria-hidden="true">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function minutesAgo(value: string | null) {
@@ -138,7 +201,6 @@ export function PortfolioImpactPage() {
   const {
     portfolios,
     activePortfolioId,
-    activePortfolio,
     holdings,
     summary,
     createPortfolio,
@@ -152,6 +214,8 @@ export function PortfolioImpactPage() {
   const [open, setOpen] = useState(false)
   const [portfolioDetailsExpanded, setPortfolioDetailsExpanded] = useState(true)
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
+  const [scrollingPane, setScrollingPane] = useState<'portfolio' | 'news' | null>(null)
+  const scrollbarFadeTimer = useRef<number | undefined>(undefined)
   const [portfolioToDelete, setPortfolioToDelete] = useState<{ id: number; name: string } | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
@@ -188,6 +252,16 @@ export function PortfolioImpactPage() {
       })
   }, [activePortfolioId, newsPage, analyzedParam, symbolParam])
 
+  useEffect(() => () => {
+    if (scrollbarFadeTimer.current !== undefined) window.clearTimeout(scrollbarFadeTimer.current)
+  }, [])
+
+  function showScrollbar(pane: 'portfolio' | 'news') {
+    setScrollingPane(pane)
+    if (scrollbarFadeTimer.current !== undefined) window.clearTimeout(scrollbarFadeTimer.current)
+    scrollbarFadeTimer.current = window.setTimeout(() => setScrollingPane(null), 700)
+  }
+
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
       await updateHolding(editingHolding.id, { shares: input.shares, averageCost: input.averageCost })
@@ -209,10 +283,11 @@ export function PortfolioImpactPage() {
     setTimeout(() => setToast(''), 4000)
   }
 
-  async function refreshNewsNow() {
+  async function getNews() {
     setRefreshing(true)
     try {
       await impactService.refreshNews()
+      await impactService.refreshSentiment()
       setNewsPage(1)
       setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
       const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
@@ -220,19 +295,8 @@ export function PortfolioImpactPage() {
       setNewsTotalPages(nextPage.totalPages)
       setNewsTotalElements(nextPage.totalElements)
     } catch {
-      showToast('Refresh unavailable — a fetch is already running')
+      showToast('News or sentiment refresh is already running — try again in a moment')
     } finally {
-      setRefreshing(false)
-    }
-  }
-
-  async function runSentiment() {
-    setRefreshing(true)
-    try {
-      await impactService.refreshSentiment()
-      await refreshNewsNow()
-    } catch {
-      showToast('Sentiment is already analysing — try again in a moment')
       setRefreshing(false)
     }
   }
@@ -259,18 +323,14 @@ export function PortfolioImpactPage() {
       <>
         <div className="pane-summary">
           <div>
-            <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
-            <strong>{currency(summary.totalValue)}</strong>
-          </div>
-          <div>
-            <small>Total Cost</small>
+            <small>Cost</small>
             <strong>{currency(summary.totalCost)}</strong>
           </div>
           <div>
-            <small>Total P/L</small>
+            <small>P/L</small>
             <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
           </div>
-          <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
+          <Button className="add-holding-button" onClick={() => setOpen(true)}>+ Add Holding</Button>
         </div>
         <div className="portfolio-service-strip">
           <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
@@ -320,12 +380,12 @@ export function PortfolioImpactPage() {
       <section className="split-pages">
         <section className="split-pane portfolio-pane" aria-label="Portfolio page">
           <div className="panel-header sticky-panel-header">
-            <div>
+            <div className="panel-title-row">
               <span className="panel-title">Portfolio Market Data</span>
+              <span className="panel-badge live"><span className="status-dot green" />Quote monitor</span>
             </div>
-            <span className="panel-badge live"><span className="status-dot green" />Quote monitor</span>
           </div>
-          <div className="split-scroll">
+          <div className={scrollingPane === 'portfolio' ? 'split-scroll is-scrolling' : 'split-scroll'} onScroll={() => showScrollbar('portfolio')}>
             <div className="portfolio-management">
               <form className="portfolio-create-form" onSubmit={submitPortfolio}>
                 <label>
@@ -366,13 +426,12 @@ export function PortfolioImpactPage() {
 
         <section className="split-pane news-pane" aria-label="News impact page">
           <div className="panel-header sticky-panel-header">
-            <div>
+            <div className="panel-title-row">
               <span className="panel-title">News Impact</span>
-              <p>Sentiment, confidence, price movement, and portfolio contribution.</p>
+              <span className="panel-badge polling">{negativeCount} risk headlines</span>
             </div>
-            <span className="panel-badge polling">{negativeCount} risk headlines</span>
           </div>
-          <div className="split-scroll">
+          <div className={scrollingPane === 'news' ? 'split-scroll is-scrolling' : 'split-scroll'} onScroll={() => showScrollbar('news')}>
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
@@ -389,24 +448,21 @@ export function PortfolioImpactPage() {
             </div>
             <div className="news-controls" aria-label="News filters and refresh controls">
               <div className="news-filter-selects">
-                <label>
-                  <span>Holding</span>
-                  <select value={tickerFilter} onChange={(event) => { setTickerFilter(event.target.value); setNewsPage(1) }}>
-                    {tickers.map((ticker) => <option key={ticker} value={ticker}>{ticker === 'ALL' ? 'All holdings' : ticker === 'OTHER' ? 'Other stocks' : `$${ticker}`}</option>)}
-                  </select>
-                </label>
-                <label>
-                  <span>Analysis</span>
-                  <select value={impactFilter} onChange={(event) => { setImpactFilter(event.target.value as typeof impactFilter); setNewsPage(1) }}>
-                    <option value="ALL">All news</option>
-                    <option value="ANALYZED">Analyzed</option>
-                    <option value="PENDING">Pending</option>
-                  </select>
-                </label>
+                <FilterDropdown
+                  ariaLabel="Filter news by holding"
+                  value={tickerFilter}
+                  options={tickers.map((ticker) => ({ value: ticker, label: ticker === 'ALL' ? 'All holdings' : ticker === 'OTHER' ? 'Other stocks' : `$${ticker}` }))}
+                  onChange={(ticker) => { setTickerFilter(ticker); setNewsPage(1) }}
+                />
+                <FilterDropdown
+                  ariaLabel="Filter news by analysis status"
+                  value={impactFilter}
+                  options={[{ value: 'ALL', label: 'All news' }, { value: 'ANALYZED', label: 'Analyzed' }, { value: 'PENDING', label: 'Pending' }]}
+                  onChange={(filter) => { setImpactFilter(filter as typeof impactFilter); setNewsPage(1) }}
+                />
               </div>
               <div className="news-actions">
-                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
-                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={getNews}>{refreshing ? 'Getting news…' : 'Get news'}</Button>
               </div>
             </div>
             {toast && <div className="toast">{toast}</div>}

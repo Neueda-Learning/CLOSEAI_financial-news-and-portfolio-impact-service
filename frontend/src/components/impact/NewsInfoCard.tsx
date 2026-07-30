@@ -55,34 +55,43 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
       <div className="news-info-card-shade" aria-hidden="true" />
       <div className="news-info-card-content">
         <div className="news-info-card-kicker">
-          <p className="eyebrow">News Information</p>
           <span>{event.affectedTickers.map((ticker) => `$${ticker}`).join(' ')}</span>
         </div>
         <h2>{event.headline}</h2>
         <div className="news-info-grid">
-          <div className="news-info-cell">
-            <span>Original</span>
-            <a className="inline-link" href={event.url} target="_blank" rel="noreferrer">Open article</a>
-          </div>
-          <div className="news-info-cell">
-            <span>Published</span>
-            <b>{dateTime(event.publishedAt)}</b>
-          </div>
-          <div className="news-info-cell">
-            <span>Source</span>
-            <b>{event.source}</b>
-          </div>
-          <div className="news-info-cell">
-            <span>Sentiment</span>
-            <SentimentBadge sentiment={event.sentiment} analysisStatus={event.analysisStatus} score={event.sentimentScore} confidence={event.confidence} />
-          </div>
-          <div className="news-info-cell">
-            <span>Score</span>
-            <b>{event.sentimentScore.toFixed(2)}</b>
-          </div>
-          <div className="news-info-cell">
-            <span>Confidence</span>
-            <b>{Math.round(event.confidence * 100)}%</b>
+          <div className="news-info-meta">
+            <div className="news-info-column">
+              <div className="news-info-cell">
+                <span>Original</span>
+                <a className="inline-link" href={event.url} target="_blank" rel="noreferrer">Open article</a>
+              </div>
+              <div className="news-info-cell">
+                <span>Source</span>
+                <b>{event.source}</b>
+              </div>
+              <div className="news-info-cell">
+                <span>Score</span>
+                <b>{event.sentimentScore.toFixed(2)}</b>
+              </div>
+            </div>
+            <div className="news-info-column">
+              <div className="news-info-cell">
+                <span>Published</span>
+                <b>{dateTime(event.publishedAt)}</b>
+              </div>
+              <div className="news-info-cell">
+                <span>Sentiment</span>
+                <SentimentBadge sentiment={event.sentiment} analysisStatus={event.analysisStatus} score={event.sentimentScore} confidence={event.confidence} />
+              </div>
+              <div className="news-info-cell">
+                <span>Confidence</span>
+                <b>{Math.round(event.confidence * 100)}%</b>
+              </div>
+            </div>
+            <figure className="news-info-image">
+              <img src={event.image ?? brand.logo} alt={`${event.source} article`} onError={(imageEvent) => { imageEvent.currentTarget.onerror = null; imageEvent.currentTarget.src = brand.logo }} />
+              <figcaption>{event.source}</figcaption>
+            </figure>
           </div>
           <div className="news-info-flow">
             <div>
