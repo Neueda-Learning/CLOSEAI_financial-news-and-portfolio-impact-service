@@ -149,10 +149,10 @@ export function PortfolioImpactPage() {
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
-  const largestImpact = useMemo(
-    () => Math.max(0, ...events.map((event) => Math.abs(event.portfolioImpact))),
-    [events],
-  )
+  const largestImpact = useMemo(() => {
+    const impacts = events.filter((e) => e.hasImpact).map((e) => Math.abs(e.portfolioImpact))
+    return impacts.length > 0 ? Math.max(0, ...impacts) : 0
+  }, [events])
 
   const analyzedParam = impactFilter === 'ANALYZED' ? true : impactFilter === 'PENDING' ? false : undefined
   const symbolParam = tickerFilter === 'ALL' ? undefined : tickerFilter
