@@ -126,12 +126,10 @@ export function ImpactDetailPage() {
       <div className="page-stack">
       <p className="eyebrow">Impact detail</p>
       <NewsInfoCard event={event} />
-      <section className="grid-2">
-        <Card>
-          <h2>News Content</h2>
-          <p className="body-copy">{event.content}</p>
-        </Card>
-      </section>
+      <Card>
+        <h2>News Content</h2>
+        <p className="body-copy">{event.content}</p>
+      </Card>
       <ImpactSummaryCard event={event} />
       </div>
       </div>
