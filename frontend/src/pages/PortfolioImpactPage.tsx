@@ -36,10 +36,14 @@ function PortfolioMarketCard({
   holding,
   onEdit,
   onDelete,
+  onSelect,
+  isSelected,
 }: {
   holding: Holding
   onEdit: (holding: Holding) => void
   onDelete: (id: number) => void
+  onSelect: (ticker: string) => void
+  isSelected: boolean
 }) {
   const marketValue = holding.marketValue
   const totalCost = holding.totalCost
@@ -48,7 +52,18 @@ function PortfolioMarketCard({
   const weight = holding.weight
 
   return (
-    <article className="market-card">
+    <article
+      className={isSelected ? 'market-card holding-filter-trigger is-selected' : 'market-card holding-filter-trigger'}
+      tabIndex={0}
+      aria-label={`Filter news by ${holding.ticker}`}
+      onClick={() => onSelect(holding.ticker)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(holding.ticker)
+        }
+      }}
+    >
       <div className="market-card-top">
         <div>
           <div className="stock-symbol">${holding.ticker}</div>
@@ -56,8 +71,8 @@ function PortfolioMarketCard({
         </div>
         <div className="market-actions">
           <span className={holding.dayChangePct >= 0 ? 'stock-change up' : 'stock-change down'}>{percent(holding.dayChangePct)}</span>
-          <button type="button" onClick={() => onEdit(holding)}>Edit</button>
-          <button type="button" className="danger-text" onClick={() => onDelete(holding.id)}>Delete</button>
+          <button type="button" onClick={(event) => { event.stopPropagation(); onEdit(holding) }}>Edit</button>
+          <Button type="button" variant="danger" className="compact-button" onClick={(event) => { event.stopPropagation(); onDelete(holding.id) }}>Delete</Button>
         </div>
       </div>
       <div className="stock-price-row">
@@ -138,34 +153,38 @@ export function PortfolioImpactPage() {
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
+  const [newsPage, setNewsPage] = useState(1)
+  const [refreshing, setRefreshing] = useState(false)
+  const [toast, setToast] = useState('')
   const [lastRefresh, setLastRefresh] = useState('—')
   const [portfolioName, setPortfolioName] = useState('')
   const [events, setEvents] = useState<ImpactEvent[]>([])
+  const [newsTotalElements, setNewsTotalElements] = useState(0)
+  const [newsTotalPages, setNewsTotalPages] = useState(1)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
-  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
-  const filteredEvents = useMemo(
-    () => events.filter((event) => {
-      if (tickerFilter !== 'ALL' && !event.affectedTickers.includes(tickerFilter)) return false
-      if (impactFilter === 'ANALYZED') return event.hasImpact || event.analysisStatus === null
-      if (impactFilter === 'PENDING') return !event.hasImpact && event.analysisStatus !== null
-      return true
-    }),
-    [events, tickerFilter, impactFilter],
-  )
-  const largestImpact = useMemo(
-    () => Math.max(0, ...filteredEvents.map((event) => Math.abs(event.portfolioImpact))),
-    [filteredEvents],
-  )
-  const [visiblePage, setVisiblePage] = useState(0)
-  const pageSize = 20
-  const filteredPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
-  const visibleEvents = filteredEvents.slice(visiblePage * pageSize, (visiblePage + 1) * pageSize)
+  const holdingSymbols = useMemo(() => new Set(holdings.map((h) => h.ticker)), [holdings])
+  const tickers = useMemo(() => ['ALL', ...holdings.map((h) => h.ticker), 'OTHER'], [holdings])
+  const largestImpact = useMemo(() => {
+    const impacts = events.filter((e) => e.hasImpact).map((e) => Math.abs(e.portfolioImpact))
+    return impacts.length > 0 ? Math.max(0, ...impacts) : 0
+  }, [events])
+
+  const analyzedParam = impactFilter === 'ANALYZED' ? true : impactFilter === 'PENDING' ? false : undefined
+  const symbolParam = tickerFilter === 'ALL' || tickerFilter === 'OTHER' ? undefined : tickerFilter
+  const displayEvents = tickerFilter === 'OTHER'
+    ? events.filter((e) => !e.affectedTickers.some((t) => holdingSymbols.has(t)))
+    : events
 
   useEffect(() => {
     if (!activePortfolioId) return
-    impactService.getAllImpactEvents(activePortfolioId).then((all) => setEvents(all))
-  }, [activePortfolioId])
+    impactService.getImpactEvents(activePortfolioId, newsPage, { symbol: symbolParam, analyzed: analyzedParam })
+      .then((nextPage) => {
+        setEvents(nextPage.content)
+        setNewsTotalElements(nextPage.totalElements)
+        setNewsTotalPages(nextPage.totalPages)
+      })
+  }, [activePortfolioId, newsPage, analyzedParam, symbolParam])
 
   async function submitHolding(input: { ticker: string; shares: number; averageCost: number }) {
     if (editingHolding) {
@@ -183,12 +202,37 @@ export function PortfolioImpactPage() {
     setPortfolioName('')
   }
 
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 4000)
+  }
+
   async function refreshNewsNow() {
-    await impactService.refreshNews()
-    const all = await impactService.getAllImpactEvents(activePortfolioId)
-    setEvents(all)
-    setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setVisiblePage(0)
+    setRefreshing(true)
+    try {
+      await impactService.refreshNews()
+      setNewsPage(1)
+      setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+      const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
+      setEvents(nextPage.content)
+      setNewsTotalPages(nextPage.totalPages)
+      setNewsTotalElements(nextPage.totalElements)
+    } catch {
+      showToast('Refresh unavailable — a fetch is already running')
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  async function runSentiment() {
+    setRefreshing(true)
+    try {
+      await impactService.refreshSentiment()
+      await refreshNewsNow()
+    } catch {
+      showToast('Sentiment is already analysing — try again in a moment')
+      setRefreshing(false)
+    }
   }
 
   function cycleViewMode() {
@@ -208,12 +252,57 @@ export function PortfolioImpactPage() {
     void setActivePortfolio(id)
   }
 
+  function PortfolioPanel() {
+    return (
+      <>
+        <div className="pane-summary">
+          <div>
+            <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
+            <strong>{currency(summary.totalValue)}</strong>
+          </div>
+          <div>
+            <small>Total Cost</small>
+            <strong>{currency(summary.totalCost)}</strong>
+          </div>
+          <div>
+            <small>Total P/L</small>
+            <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
+          </div>
+          <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
+        </div>
+        <div className="portfolio-service-strip">
+          <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
+          <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached fallback active' : 'Live quote feed active'}</span>
+          <span>{holdings.length} holdings — weights total {weightTotal.toFixed(1)}%</span>
+        </div>
+        <div className="market-stack">
+          {holdings.map((holding) => (
+            <PortfolioMarketCard
+              key={holding.id}
+              holding={holding}
+              isSelected={tickerFilter === holding.ticker}
+              onEdit={setEditingHolding}
+              onDelete={deleteHolding}
+              onSelect={(ticker) => { setTickerFilter(ticker); setNewsPage(1) }}
+            />
+          ))}
+          {holdings.length === 0 && (
+            <article className="empty-state">
+              <strong>No holdings in this portfolio</strong>
+              <span>Add a ticker, quantity, and cost basis to start valuation.</span>
+            </article>
+          )}
+        </div>
+      </>
+    )
+  }
+
   return (
     <div className={`split-module split-${viewMode}`}>
       <header className="module-topbar">
         <div>
           <p className="eyebrow">Portfolio Impact</p>
-          <h1>Holdings and news impact, side by side</h1>
+          <h1>News Impact</h1>
         </div>
         <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
           <span className={`view-cycle-glyph mode-${viewMode}`} aria-hidden="true">
@@ -256,9 +345,7 @@ export function PortfolioImpactPage() {
                         <strong>{portfolio.name}</strong>
                         <span>{currency(portfolioValue)} total value</span>
                       </button>
-                      <button type="button" className="danger-text" onClick={() => deletePortfolio(portfolio.id)}>
-                        Delete
-                      </button>
+                      <Button type="button" variant="danger" className="compact-button" onClick={() => deletePortfolio(portfolio.id)}>Delete</Button>
                     </article>
                     {isActive && open && portfolioDetailsExpanded && (
                       <AddHoldingModal
@@ -267,44 +354,12 @@ export function PortfolioImpactPage() {
                         onSubmit={submitHolding}
                       />
                     )}
+                    {isActive && portfolioDetailsExpanded && <PortfolioPanel />}
                     </div>
                   )
                 })}
               </div>
             </div>
-            {portfolioDetailsExpanded && <>
-            <div className="pane-summary">
-              <div>
-                <small>{activePortfolio?.name ?? 'Selected portfolio'}</small>
-                <strong>{currency(summary.totalValue)}</strong>
-              </div>
-              <div>
-                <small>Total Cost</small>
-                <strong>{currency(summary.totalCost)}</strong>
-              </div>
-              <div>
-                <small>Total P/L</small>
-                <strong className={summary.totalPnL >= 0 ? 'positive' : 'negative'}>{currency(summary.totalPnL)} / {percent(summary.totalPnLPct)}</strong>
-              </div>
-              <Button onClick={() => setOpen(true)}>+ Add Holding</Button>
-            </div>
-            <div className="portfolio-service-strip">
-              <span>Latest quotes updated {summary.asOf ? dateTime(summary.asOf) : 'not available'}</span>
-              <span>{holdings.some((holding) => holding.quoteSource === 'CACHE') ? 'Cached fallback active' : 'Live quote feed active'}</span>
-              <span>{holdings.length} holdings - weights total {weightTotal.toFixed(1)}%</span>
-            </div>
-            <div className="market-stack">
-              {holdings.map((holding) => (
-                <PortfolioMarketCard key={holding.id} holding={holding} onEdit={setEditingHolding} onDelete={deleteHolding} />
-              ))}
-              {holdings.length === 0 && (
-                <article className="empty-state">
-                  <strong>No holdings in this portfolio</strong>
-                  <span>Add a ticker, quantity, and cost basis to start valuation.</span>
-                </article>
-              )}
-            </div>
-            </>}
           </div>
         </section>
 
@@ -320,7 +375,7 @@ export function PortfolioImpactPage() {
             <div className="pane-summary news-summary">
               <div>
                 <small>Events</small>
-                <strong>{filteredEvents.length}</strong>
+                <strong>{newsTotalElements}</strong>
               </div>
               <div>
                 <small>Largest impact</small>
@@ -332,41 +387,33 @@ export function PortfolioImpactPage() {
               </div>
             </div>
             <div className="news-controls" aria-label="News filters and refresh controls">
-              <div className="ticker-filter">
-                {tickers.map((ticker) => (
-                  <button
-                    type="button"
-                    key={ticker}
-                    className={tickerFilter === ticker ? 'active' : ''}
-                    onClick={() => {
-                      setTickerFilter(ticker)
-                      setVisiblePage(0)
-                    }}
-                  >
-                    {ticker === 'ALL' ? 'All' : `$${ticker}`}
-                  </button>
-                ))}
+              <div className="news-filter-selects">
+                <label>
+                  <span>Holding</span>
+                  <select value={tickerFilter} onChange={(event) => { setTickerFilter(event.target.value); setNewsPage(1) }}>
+                    {tickers.map((ticker) => <option key={ticker} value={ticker}>{ticker === 'ALL' ? 'All holdings' : ticker === 'OTHER' ? 'Other stocks' : `$${ticker}`}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Analysis</span>
+                  <select value={impactFilter} onChange={(event) => { setImpactFilter(event.target.value as typeof impactFilter); setNewsPage(1) }}>
+                    <option value="ALL">All news</option>
+                    <option value="ANALYZED">Analyzed</option>
+                    <option value="PENDING">Pending</option>
+                  </select>
+                </label>
               </div>
-              <div className="impact-filter">
-                {(['ALL', 'ANALYZED', 'PENDING'] as const).map((mode) => (
-                  <button
-                    type="button"
-                    key={mode}
-                    className={impactFilter === mode ? 'active' : ''}
-                    onClick={() => { setImpactFilter(mode); setVisiblePage(0) }}
-                  >
-                    {mode === 'ALL' ? 'All' : mode === 'ANALYZED' ? 'Analyzed' : 'Pending'}
-                  </button>
-                ))}
+              <div className="news-actions">
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={refreshNewsNow}>{refreshing ? 'Refreshing…' : 'Refresh news'}</Button>
+                <Button variant="ghost" className="compact-button" disabled={refreshing} onClick={runSentiment}>{refreshing ? 'Analysing…' : 'Run sentiment'}</Button>
               </div>
-              <Button variant="ghost" className="compact-button" onClick={refreshNewsNow}>Refresh news</Button>
-              <Button variant="ghost" className="compact-button" onClick={async () => { await impactService.refreshSentiment(); await refreshNewsNow() }}>Run sentiment</Button>
             </div>
-            <div className="news-impact-list page-turn" key={visiblePage}>
-              {visibleEvents.map((event) => (
+            {toast && <div className="toast">{toast}</div>}
+            <div className="news-impact-list page-turn" key={newsPage}>
+              {displayEvents.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
               ))}
-              {visibleEvents.length === 0 && (
+              {displayEvents.length === 0 && (
                 <article className="empty-state">
                   <strong>No matched news</strong>
                   <span>Add holdings with supported tickers to populate the impact stream.</span>
@@ -374,11 +421,11 @@ export function PortfolioImpactPage() {
               )}
             </div>
             <div className="pagination-row">
-              <button type="button" disabled={visiblePage === 0} onClick={() => setVisiblePage((p) => Math.max(0, p - 1))}>
+              <button type="button" disabled={newsPage === 1} onClick={() => setNewsPage((p) => Math.max(1, p - 1))}>
                 Previous
               </button>
-              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={filteredPages} value={visiblePage + 1} onChange={(e) => { const n = Number(e.target.value); if (n >= 1 && n <= filteredPages) setVisiblePage(n - 1) }} /> of {filteredPages} <span>- 20 per page</span></label>
-              <button type="button" disabled={visiblePage >= filteredPages - 1} onClick={() => setVisiblePage((p) => p + 1)}>
+              <label className="page-jump">Page <input aria-label="Jump to news page" type="number" min="1" max={newsTotalPages} value={newsPage} onChange={(e) => { const n = Number(e.target.value); if (n >= 1 && n <= newsTotalPages) setNewsPage(n) }} /> of {newsTotalPages} <span>- 20 per page</span></label>
+              <button type="button" disabled={newsPage >= newsTotalPages} onClick={() => setNewsPage((p) => p + 1)}>
                 Next
               </button>
             </div>

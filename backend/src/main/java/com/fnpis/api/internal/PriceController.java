@@ -64,12 +64,21 @@ public class PriceController {
     public ValuationHistoryResponse valuationHistory(
             @PathVariable Long portfolioId,
             @RequestParam(required = false) String from,
-            @RequestParam(required = false) String to) {
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String symbol) {
         LocalDate toDate = to != null ? LocalDate.parse(to) : LocalDate.now();
         LocalDate fromDate = from != null ? LocalDate.parse(from) : toDate.minusDays(30);
-        ValuationHistoryResponse r = service.valuationHistory(portfolioId, fromDate, toDate);
-        if (r == null) {
-            throw ApiException.portfolioNotFound(portfolioId);
+        ValuationHistoryResponse r;
+        if (symbol != null && !symbol.isBlank()) {
+            r = service.symbolHistory(portfolioId, symbol, fromDate, toDate);
+            if (r == null) {
+                throw ApiException.securityNotFound(symbol);
+            }
+        } else {
+            r = service.valuationHistory(portfolioId, fromDate, toDate);
+            if (r == null) {
+                throw ApiException.portfolioNotFound(portfolioId);
+            }
         }
         return r;
     }

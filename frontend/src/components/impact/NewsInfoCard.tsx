@@ -68,18 +68,6 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
             <span>Published</span>
             <b>{dateTime(event.publishedAt)}</b>
           </div>
-          <div className="news-info-flow">
-            <div>
-              <small>Document flow</small>
-              <strong>{event.sentiment ?? (event.analysisStatus === 'FAILED' ? 'analysis failed' : 'analysis pending')} - {alignmentLabel} by market move</strong>
-            </div>
-            <p>
-              The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} maps to {event.affectedTickers.join(', ')} with a {directionLabels[event.impactDirection].toLowerCase()} direction, then compares the same-day price path to calculate
-              {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
-              <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
-              .
-            </p>
-          </div>
           <div className="news-info-cell">
             <span>Source</span>
             <b>{event.source}</b>
@@ -95,6 +83,18 @@ export function NewsInfoCard({ event }: { event: ImpactEvent }) {
           <div className="news-info-cell">
             <span>Confidence</span>
             <b>{Math.round(event.confidence * 100)}%</b>
+          </div>
+          <div className="news-info-flow">
+            <div>
+              <small>Document flow</small>
+              <strong>{event.sentiment ?? (event.analysisStatus === 'FAILED' ? 'analysis failed' : 'analysis pending')} - {alignmentLabel} by market move</strong>
+            </div>
+            <p>
+              The marked event point at {event.priceSeries[2]?.time ?? 'the same session'} maps to {event.affectedTickers.join(', ')} with a {directionLabels[event.impactDirection].toLowerCase()} direction, then compares the same-day price path to calculate
+              {event.portfolioImpact >= 0 ? ' a gain of ' : ' a loss of '}
+              <span className={event.portfolioImpact >= 0 ? 'positive' : 'negative'}>{impactAmount}</span>
+              .
+            </p>
           </div>
         </div>
       </div>
