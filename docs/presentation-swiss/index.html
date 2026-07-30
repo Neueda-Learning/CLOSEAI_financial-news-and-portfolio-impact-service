@@ -1822,8 +1822,7 @@
         <pre style="margin:0;padding:1.6vh 0 0;font-family:var(--mono);font-size:max(14px,1vw);line-height:1.55;white-space:pre-wrap;color:rgba(255,255,255,.82)">{
   "label": "NEGATIVE",
   "score": -0.82,
-  "confidence": 0.97,
-  "rationale": "forecast cut"
+  "confidence": 0.97
 }</pre>
       </div>
       <div class="signal-stack" data-pause="">
@@ -1852,14 +1851,14 @@
 <section class="slide" data-animate="grid-reveal" data-layout="S04">
   <div class="canvas-card">
     <div class="chrome-min"><div class="l">Section · Engineering Quality</div><div class="r">12 / 14</div></div>
-    <div data-anim="line"><div class="t-cat">DETAILS THAT MAKE IT CREDIBLE</div><h2 class="h-xl" style="margin-top:1.4vh">The boring rules are the demo insurance</h2></div>
+    <div data-anim="line"><div class="t-cat">HOW IT FAILS</div><h2 class="h-xl" style="margin-top:1.4vh">Failure was designed, not discovered</h2></div>
     <div class="sub-grid-3-2">
-      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">BigDecimal money</div><div class="desc">Shares, prices, and value impact avoid floating-point surprises.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Money as strings</div><div class="desc">JSON preserves precision instead of forcing JavaScript number arithmetic.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">UTC Instant</div><div class="desc">News time, market time, and local display time do not get mixed.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">Enum strings</div><div class="desc">Historical rows stay readable even if verdict enums evolve later.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh reports conflict instead of silently racing.</div></div>
-      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testable fallback</div><div class="desc">Stub sentiment and Mock providers keep CI and rehearsal deterministic.</div></div>
+      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">Fails at boot, not on stage</div><div class="desc">A missing key or a schema that drifted from the entities refuses to start, instead of failing on slide seven.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Three provider interfaces</div><div class="desc">A dead quote source falls through to a backup; the service layer never sees a vendor DTO.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">Written once, never revised</div><div class="desc">One verdict per article, so a network failure fails loudly instead of storing a fabricated NEUTRAL.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">24 edge cases listed</div><div class="desc">Seventeen already have a test; three of those are divide-by-zero traps.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh skips rather than queues: the run is idempotent, queueing only burns quota.</div></div>
+      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testcontainers, not H2</div><div class="desc">Integration tests hit real MySQL, where DECIMAL and index limits actually behave like production.</div></div>
     </div>
   </div>
 </section>
