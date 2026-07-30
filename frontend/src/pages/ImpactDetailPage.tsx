@@ -131,29 +131,6 @@ export function ImpactDetailPage() {
           <h2>News Content</h2>
           <p className="body-copy">{event.content}</p>
         </Card>
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2>Stock Price Chart</h2>
-            <div className="chart-range-toggle">
-              <button type="button" className={chartRange === 'intraday' ? 'active' : ''} onClick={() => setChartRange('intraday')}>Intraday</button>
-              <button type="button" className={chartRange === 'weekly' ? 'active' : ''} onClick={() => setChartRange('weekly')}>Weekly</button>
-            </div>
-          </div>
-          <div className="chart-box">
-            <LineChart
-              labels={event.priceSeries.map((point) => point.time)}
-              datasets={[
-                {
-                  label: event.affectedTickers.join(', '),
-                  data: event.priceSeries.map((point) => point.price),
-                  borderColor: '#1f4e79',
-                  backgroundColor: 'rgba(31, 78, 121, 0.15)',
-                },
-              ]}
-              markerLabel={event.priceSeries[2]?.time}
-            />
-          </div>
-        </Card>
       </section>
       <ImpactSummaryCard event={event} />
       </div>
