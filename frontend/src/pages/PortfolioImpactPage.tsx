@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AddHoldingModal } from '../components/portfolio/AddHoldingModal'
 import { Button } from '../components/common/Button'
+import { Modal } from '../components/common/Modal'
 import { SentimentBadge } from '../components/impact/SentimentBadge'
 import { impactService } from '../services/impactService'
 import { usePortfolio } from '../hooks/usePortfolio'
@@ -151,6 +152,7 @@ export function PortfolioImpactPage() {
   const [open, setOpen] = useState(false)
   const [portfolioDetailsExpanded, setPortfolioDetailsExpanded] = useState(true)
   const [editingHolding, setEditingHolding] = useState<Holding | null>(null)
+  const [portfolioToDelete, setPortfolioToDelete] = useState<{ id: number; name: string } | null>(null)
   const [tickerFilter, setTickerFilter] = useState('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'ANALYZED' | 'PENDING'>('ALL')
   const [newsPage, setNewsPage] = useState(1)
@@ -256,7 +258,6 @@ export function PortfolioImpactPage() {
     <div className={`split-module split-${viewMode}`}>
       <header className="module-topbar">
         <div>
-          <p className="eyebrow">Portfolio Impact</p>
           <h1>News Impact</h1>
         </div>
         <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
@@ -300,7 +301,7 @@ export function PortfolioImpactPage() {
                         <strong>{portfolio.name}</strong>
                         <span>{currency(portfolioValue)} total value</span>
                       </button>
-                      <Button type="button" variant="danger" className="compact-button" onClick={() => deletePortfolio(portfolio.id)}>Delete</Button>
+                      <Button type="button" variant="danger" className="compact-button" onClick={() => setPortfolioToDelete({ id: portfolio.id, name: portfolio.name })}>Delete</Button>
                     </article>
                     {isActive && open && portfolioDetailsExpanded && (
                       <AddHoldingModal
@@ -437,6 +438,17 @@ export function PortfolioImpactPage() {
           }}
           onSubmit={submitHolding}
         />
+      )}
+      {portfolioToDelete && (
+        <Modal title="Delete portfolio?" onClose={() => setPortfolioToDelete(null)}>
+          <div className="confirm-delete-dialog">
+            <p>Delete <strong>{portfolioToDelete.name}</strong> and all of its holdings? This cannot be undone.</p>
+            <div className="confirm-delete-actions">
+              <Button type="button" variant="ghost" onClick={() => setPortfolioToDelete(null)}>Cancel</Button>
+              <Button type="button" variant="danger" onClick={() => { void deletePortfolio(portfolioToDelete.id); setPortfolioToDelete(null) }}>Delete portfolio</Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   )

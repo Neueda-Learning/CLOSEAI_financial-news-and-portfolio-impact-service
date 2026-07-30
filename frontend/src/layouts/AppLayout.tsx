@@ -18,7 +18,17 @@ export function AppLayout() {
   }
 
   return (
-    <div className={`${sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}${isForestPreview ? ' forest-theme-preview' : ''}`}>
+    <div className={`app-frame${isForestPreview ? ' forest-theme-preview' : ''}`}>
+      <header className="app-topbar">
+        <div className="brand">
+          <span className="brand-mark">F</span>
+          <div className="brand-copy">
+            <strong>FNPIS</strong>
+            <p>Financial news, portfolio impact</p>
+          </div>
+        </div>
+      </header>
+      <div className={sidebarCollapsed ? 'shell shell-collapsed' : 'shell'}>
       <aside className={sidebarCollapsed ? 'sidebar sidebar-collapsed' : 'sidebar'}>
         <div>
           <div className="brand brand-with-toggle">
@@ -49,6 +59,7 @@ export function AppLayout() {
       <main className="main">
         <Outlet />
       </main>
+      </div>
     </div>
   )
 }
