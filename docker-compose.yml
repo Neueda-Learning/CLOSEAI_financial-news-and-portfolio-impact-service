@@ -57,10 +57,7 @@ services:
       ADMIN_ENABLED: ${ADMIN_ENABLED:-false}
       ADMIN_TOKEN: ${ADMIN_TOKEN:-}
       SENTIMENT_BATCH_SIZE: ${SENTIMENT_BATCH_SIZE:-15}
-<<<<<<< Updated upstream
       SENTIMENT_DELAY: ${SENTIMENT_DELAY:-300000}
-=======
->>>>>>> Stashed changes
     ports:
       - "${SERVER_PORT:-8080}:8080"
     healthcheck:
