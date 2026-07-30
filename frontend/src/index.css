@@ -160,7 +160,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .theme-toggle { margin-top: 16px; background: var(--surface-strong); border-color: var(--line); text-align: left; }
 .main { padding: 24px; }
 .page-stack { display: grid; gap: 18px; animation: page-materialize 360ms var(--ease-out-expo) both; }
-.hero-sticky { position: sticky; top: 0; z-index: 20; padding-top: 4px; background: var(--bg); }
+.hero { position: sticky; top: 0; z-index: 20; padding-top: 4px; background: var(--bg); }
 .hero, .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .hero h1, .section-header h1, .module-topbar h1 {
   margin: 4px 0 8px;
