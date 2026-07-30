@@ -148,14 +148,18 @@ export function PortfolioImpactPage() {
   const [newsTotalPages, setNewsTotalPages] = useState(1)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
-  const tickers = useMemo(() => ['ALL', ...Array.from(new Set(events.flatMap((event) => event.affectedTickers)))], [events])
+  const holdingSymbols = useMemo(() => new Set(holdings.map((h) => h.ticker)), [holdings])
+  const tickers = useMemo(() => ['ALL', ...holdings.map((h) => h.ticker), 'OTHER'], [holdings])
   const largestImpact = useMemo(() => {
     const impacts = events.filter((e) => e.hasImpact).map((e) => Math.abs(e.portfolioImpact))
     return impacts.length > 0 ? Math.max(0, ...impacts) : 0
   }, [events])
 
   const analyzedParam = impactFilter === 'ANALYZED' ? true : impactFilter === 'PENDING' ? false : undefined
-  const symbolParam = tickerFilter === 'ALL' ? undefined : tickerFilter
+  const symbolParam = tickerFilter === 'ALL' || tickerFilter === 'OTHER' ? undefined : tickerFilter
+  const displayEvents = tickerFilter === 'OTHER'
+    ? events.filter((e) => !e.affectedTickers.some((t) => holdingSymbols.has(t)))
+    : events
 
   useEffect(() => {
     if (!activePortfolioId) return
@@ -389,10 +393,10 @@ export function PortfolioImpactPage() {
             </div>
             {toast && <div className="toast">{toast}</div>}
             <div className="news-impact-list page-turn" key={newsPage}>
-              {events.map((event) => (
+              {displayEvents.map((event) => (
                 <NewsImpactItem key={event.externalId} event={event} />
               ))}
-              {events.length === 0 && (
+              {displayEvents.length === 0 && (
                 <article className="empty-state">
                   <strong>No matched news</strong>
                   <span>Add holdings with supported tickers to populate the impact stream.</span>
