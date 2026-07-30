@@ -210,13 +210,15 @@ export function PortfolioImpactPage() {
   async function refreshNewsNow() {
     setRefreshing(true)
     try {
-      await impactService.refreshNews()
+      const result = await impactService.refreshNews()
+      const r = result as { fetched?: number; inserted?: number; skippedDuplicates?: number }
       setNewsPage(1)
       setLastRefresh(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
       const nextPage = await impactService.getImpactEvents(activePortfolioId, 1, { symbol: symbolParam, analyzed: analyzedParam })
       setEvents(nextPage.content)
       setNewsTotalPages(nextPage.totalPages)
       setNewsTotalElements(nextPage.totalElements)
+      showToast(`Fetched ${r.fetched ?? '?'} symbols · ${r.inserted ?? 0} new · ${r.skippedDuplicates ?? 0} skipped`)
     } catch {
       showToast('Refresh unavailable — a fetch is already running')
     } finally {
@@ -227,10 +229,12 @@ export function PortfolioImpactPage() {
   async function runSentiment() {
     setRefreshing(true)
     try {
-      await impactService.refreshSentiment()
+      const result = await impactService.refreshSentiment()
+      const r = result as { analysed?: number; stored?: number }
+      showToast(`Sentiment: ${r.stored ?? r.analysed ?? 0} articles analysed`)
       await refreshNewsNow()
     } catch {
-      showToast('Sentiment is already analysing — try again in a moment')
+      showToast('Sentiment is already running — try again in a moment')
       setRefreshing(false)
     }
   }
