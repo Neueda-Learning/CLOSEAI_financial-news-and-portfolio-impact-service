@@ -563,7 +563,7 @@
   body.dark-bg #nav .dot{background:rgba(255,255,255,.32)}
   body.dark-bg #nav .dot.active{background:var(--accent)}
 
-  #hint{position:fixed;bottom:.9vh;right:1.4vw;z-index:30;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.34}
+  #hint{display:none;position:fixed;bottom:.9vh;right:1.4vw;z-index:30;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.34}
   body.dark-bg #hint{color:var(--paper);opacity:.4}
   body.low-power #hint{color:var(--accent);opacity:.5}
   body.dark-bg.low-power #hint{color:var(--paper);opacity:.5}
@@ -580,6 +580,7 @@
   body.dark-bg #deck-controls button{background:rgba(10,10,10,.42);color:var(--paper);border-color:rgba(255,255,255,.28)}
   body.dark-bg #deck-controls button:hover{border-color:rgba(255,255,255,.8);color:#fff}
   body.dark-bg #deck-controls button.active{background:var(--paper);border-color:var(--paper);color:var(--accent)}
+  body.controls-hidden #deck-controls .control-action{display:none}
   body.editing [data-editable="true"]{
     outline:2px solid var(--accent);outline-offset:4px;
     background:rgba(250,250,248,.78);
@@ -625,7 +626,7 @@
   }
   [data-pause].revealed{opacity:1!important;transform:translateY(0)!important;pointer-events:auto}
   #overview [data-pause]{opacity:1!important;transform:none!important}
-  body.low-power [data-pause]{opacity:1!important;transform:none!important;pointer-events:auto!important}
+  body.low-power [data-pause]{transition:none!important}
 
   /* ============================================================
      ↓↓↓ V2 EXTENSIONS · Canvas Mode + 参考图新类
@@ -1583,7 +1584,7 @@
   }
 </style>
 </head>
-<body class="canvas-mode">
+<body class="canvas-mode controls-hidden">
 <script>
   // Windows 平台标记 — 雅黑没有 ExtraLight,需要字重补偿
   if(/Win/i.test(navigator.platform || navigator.userAgentData?.platform || '')){
@@ -1651,14 +1652,9 @@
       <div class="r">01 / 14</div>
     </div>
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
-      <div data-anim="kicker" class="t-meta" style="color: rgba(255, 255, 255, 0.78); letter-spacing: 0.22em">15-MINUTE PITCH · SWISS EDITION</div>
       <h1 data-anim="title" style="align-self: center; font-family: var(--sans),var(--sans-zh); font-weight: 200; font-size: min(9.2vw, 16.5vh); line-height: 0.96; letter-spacing: -0.03em; color: rgb(255, 255, 255)">Financial News &amp;<br>Portfolio <span style="font-style:italic;font-weight:300">Impact</span> Service</h1>
-      <div data-anim="bottom" style="display: grid; grid-template-rows: auto auto; gap: 1.6vh; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh">
+      <div data-anim="bottom" style="display: grid; grid-template-rows: auto; gap: 1.6vh; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh">
         <div data-anim="lead" class="lead" style="max-width: 54ch; color: rgba(255, 255, 255, 0.86)">We turn breaking finance news into a clear answer: what moved, why it moved, and what it means for the holdings a team actually owns.</div>
-        <div style="display:flex;justify-content:space-between;align-items:end">
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">5 days · 5 people · 1 credible impact loop</div>
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">E edit · D download · arrow keys present</div>
-        </div>
       </div>
     </div>
   </div>
@@ -1675,8 +1671,8 @@
       <div class="team-card has-photo active"><div class="avatar-placeholder"><img src="assets/team/01.jpg" alt="Venessa"><span>VE</span></div><div class="member-name">Venessa</div></div>
       <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/02.jpg" alt="Ethan"><span>ET</span></div><div class="member-name">Ethan</div></div>
       <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/03.jpg" alt="Timothy"><span>TI</span></div><div class="member-name">Timothy</div></div>
-      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/04.jpg" alt="Evan"><span>EV</span></div><div class="member-name">Evan</div></div>
-      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/05.png" alt="David"><span>DA</span></div><div class="member-name">David</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/04.jpg" alt="David"><span>DA</span></div><div class="member-name">David</div></div>
+      <div class="team-card has-photo"><div class="avatar-placeholder"><img src="assets/team/05.png" alt="Evan"><span>EV</span></div><div class="member-name">Evan</div></div>
     </div>
   </div>
 </section>
@@ -1822,8 +1818,7 @@
         <pre style="margin:0;padding:1.6vh 0 0;font-family:var(--mono);font-size:max(14px,1vw);line-height:1.55;white-space:pre-wrap;color:rgba(255,255,255,.82)">{
   "label": "NEGATIVE",
   "score": -0.82,
-  "confidence": 0.97,
-  "rationale": "forecast cut"
+  "confidence": 0.97
 }</pre>
       </div>
       <div class="signal-stack" data-pause="">
@@ -1852,14 +1847,14 @@
 <section class="slide" data-animate="grid-reveal" data-layout="S04">
   <div class="canvas-card">
     <div class="chrome-min"><div class="l">Section · Engineering Quality</div><div class="r">12 / 14</div></div>
-    <div data-anim="line"><div class="t-cat">DETAILS THAT MAKE IT CREDIBLE</div><h2 class="h-xl" style="margin-top:1.4vh">The boring rules are the demo insurance</h2></div>
+    <div data-anim="line"><div class="t-cat">HOW IT FAILS</div><h2 class="h-xl" style="margin-top:1.4vh">Failure was designed, not discovered</h2></div>
     <div class="sub-grid-3-2">
-      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">BigDecimal money</div><div class="desc">Shares, prices, and value impact avoid floating-point surprises.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Money as strings</div><div class="desc">JSON preserves precision instead of forcing JavaScript number arithmetic.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">UTC Instant</div><div class="desc">News time, market time, and local display time do not get mixed.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">Enum strings</div><div class="desc">Historical rows stay readable even if verdict enums evolve later.</div></div>
-      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh reports conflict instead of silently racing.</div></div>
-      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testable fallback</div><div class="desc">Stub sentiment and Mock providers keep CI and rehearsal deterministic.</div></div>
+      <div class="sub-card accent" data-pause=""><span class="nb-corner">01</span><div class="ttl">Fails at boot, not on stage</div><div class="desc">A missing key or a schema that drifted from the entities refuses to start, instead of failing on slide seven.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">02</span><div class="ttl">Three provider interfaces</div><div class="desc">A dead quote source falls through to a backup; the service layer never sees a vendor DTO.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">03</span><div class="ttl">Written once, never revised</div><div class="desc">One verdict per article, so a network failure fails loudly instead of storing a fabricated NEUTRAL.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">04</span><div class="ttl">24 edge cases listed</div><div class="desc">Seventeen already have a test; three of those are divide-by-zero traps.</div></div>
+      <div class="sub-card" data-pause=""><span class="nb-corner">05</span><div class="ttl">409 refresh lock</div><div class="desc">A second manual refresh skips rather than queues: the run is idempotent, queueing only burns quota.</div></div>
+      <div class="sub-card ink" data-pause=""><span class="nb-corner">06</span><div class="ttl">Testcontainers, not H2</div><div class="desc">Integration tests hit real MySQL, where DECIMAL and index limits actually behave like production.</div></div>
     </div>
   </div>
 </section>
@@ -1888,10 +1883,11 @@
 
 <div id="nav"></div>
 <div id="deck-controls" aria-label="Deck controls">
-  <button id="prev-slide" type="button" title="Previous slide">‹</button>
-  <button id="next-slide" type="button" title="Next slide">›</button>
-  <button id="edit-toggle" type="button" title="Edit text">✎</button>
-  <button id="download-toggle" type="button" title="Download edited copy">⇩</button>
+  <button id="controls-toggle" type="button" title="Show controls">☰</button>
+  <button id="prev-slide" class="control-action" type="button" title="Previous slide">‹</button>
+  <button id="next-slide" class="control-action" type="button" title="Next slide">›</button>
+  <button id="edit-toggle" class="control-action" type="button" title="Edit text">✎</button>
+  <button id="download-toggle" class="control-action" type="button" title="Download edited copy">⇩</button>
 </div>
 
 <script>
@@ -2046,12 +2042,14 @@ addEventListener('swiss-low-power-change', e=>{e.detail.on ? stopGrid() : startG
 const deck=document.getElementById('deck');
 const slides=deck.querySelectorAll('.slide');
 const nav=document.getElementById('nav');
+const controlsToggle=document.getElementById('controls-toggle');
 const prevSlideBtn=document.getElementById('prev-slide');
 const nextSlideBtn=document.getElementById('next-slide');
 const editToggle=document.getElementById('edit-toggle');
 const downloadToggle=document.getElementById('download-toggle');
 let idx=0,total=slides.length,lock=false;
 let editing=false;
+let controlsHidden=document.body.classList.contains('controls-hidden');
 
 deck.style.width=(total*100)+'vw';
 
@@ -2105,14 +2103,26 @@ function setEditing(on){
     : `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · E 编辑 · D 下载 · ESC 索引`;
 }
 
+function setControlsHidden(hidden){
+  controlsHidden=!!hidden;
+  document.body.classList.toggle('controls-hidden', controlsHidden);
+  if(controlsToggle){
+    controlsToggle.textContent=controlsHidden ? '☰' : '×';
+    controlsToggle.title=controlsHidden ? 'Show controls' : 'Hide controls';
+    controlsToggle.setAttribute('aria-label', controlsHidden ? 'Show controls' : 'Hide controls');
+    controlsToggle.setAttribute('aria-expanded', controlsHidden ? 'false' : 'true');
+  }
+}
+
 function currentDeckHtml(){
   const clone=document.documentElement.cloneNode(true);
   clone.classList.remove('editing');
   const body=clone.querySelector('body');
   if(body){
-    body.classList.remove('editing');
+    body.classList.remove('editing','low-power');
     body.removeAttribute('data-download-ready');
     body.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','false'));
+    body.querySelectorAll('[data-pause].revealed').forEach(el=>el.classList.remove('revealed'));
   }
   const hint=clone.querySelector('#hint');
   if(hint) hint.textContent='→ / Click 逐条揭示 · ← 收起 · B 静态 · E 编辑 · D 下载 · ESC 索引';
@@ -2137,8 +2147,10 @@ if(prevSlideBtn) prevSlideBtn.addEventListener('click', backward);
 if(nextSlideBtn) nextSlideBtn.addEventListener('click', forward);
 if(editToggle) editToggle.addEventListener('click', ()=>setEditing(!editing));
 if(downloadToggle) downloadToggle.addEventListener('click', downloadCurrentDeck);
+if(controlsToggle) controlsToggle.addEventListener('click', ()=>setControlsHidden(!controlsHidden));
 window.__currentDeckHtml=currentDeckHtml;
 window.__downloadCurrentDeck=downloadCurrentDeck;
+setControlsHidden(controlsHidden);
 
 function go(n){
   if(lock)return;
@@ -2254,6 +2266,13 @@ function jumpTo(n){
   const items=pauseItemsFor(n);
   items.forEach(el=>el.classList.add('revealed'));
   pauseRevealed.set(n,items.length);
+  go(n);
+}
+
+function jumpToFresh(n){
+  const items=pauseItemsFor(n);
+  items.forEach(el=>el.classList.remove('revealed'));
+  pauseRevealed.set(n,0);
   go(n);
 }
 
@@ -2395,7 +2414,7 @@ deck.addEventListener('click',e=>{
 
 const initialSlideParam = new URLSearchParams(location.search).get('slide');
 const initialSlide = initialSlideParam ? Number(initialSlideParam) - 1 : 0;
-jumpTo(Number.isFinite(initialSlide) ? initialSlide : 0);
+jumpToFresh(Number.isFinite(initialSlide) ? initialSlide : 0);
 </script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>lucide.createIcons();</script>

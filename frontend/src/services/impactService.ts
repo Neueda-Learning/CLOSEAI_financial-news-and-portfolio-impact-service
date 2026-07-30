@@ -13,6 +13,8 @@ export type ImpactEventPage = {
   totalElements: number
 }
 
+export type NewsNavigationItem = Pick<NewsRow, 'id' | 'headline' | 'source'>
+
 function mapView(view: ImpactView, detail?: NewsDetail): ImpactEvent {
   const primary = view.impacts[0]
   const sentiment = view.article.sentiment
@@ -43,11 +45,14 @@ function mapNewsRow(row: NewsRow): ImpactEvent {
 }
 
 export const impactService = {
-  async getImpactEvents(portfolioId: number, page = 1, symbol?: string): Promise<ImpactEventPage> {
+  /** Paginated news stream with optional filters — server-side filtering, no full-table scan. */
+  async getImpactEvents(portfolioId: number, page = 1, opts?: { symbol?: string; analyzed?: boolean }): Promise<ImpactEventPage> {
     const query = new URLSearchParams({ page: String(page), size: '20' })
-    if (symbol) query.set('symbol', symbol)
+    if (opts?.symbol) query.set('symbol', opts.symbol)
+    if (opts?.analyzed !== undefined) query.set('analyzed', String(opts.analyzed))
     const news = await apiFetch<PagedResponse<NewsRow>>(`/news?${query}`)
     const results = await Promise.all(news.content.map(async (row) => {
+      if (!row.hasImpact) return mapNewsRow(row)
       try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
     }))
     return {
@@ -62,21 +67,6 @@ export const impactService = {
     const requested = new Set(tickers.map((ticker) => ticker.toUpperCase()))
     return { ...result, content: result.content.filter((event) => event.affectedTickers.some((ticker) => requested.has(ticker))) }
   },
-  async getAllImpactEvents(portfolioId: number, symbol?: string): Promise<ImpactEvent[]> {
-    const firstQuery = new URLSearchParams({ page: '1', size: '100' })
-    if (symbol) firstQuery.set('symbol', symbol)
-    const first = await apiFetch<PagedResponse<NewsRow>>(`/news?${firstQuery}`)
-    const allRows = [...first.content]
-    for (let p = 2; p <= first.totalPages; p++) {
-      const q = new URLSearchParams({ page: String(p), size: '100' })
-      if (symbol) q.set('symbol', symbol)
-      try { const page = await apiFetch<PagedResponse<NewsRow>>(`/news?${q}`); allRows.push(...page.content) } catch { break }
-    }
-    const results = await Promise.all(allRows.map(async (row) => {
-      try { return mapView(await apiFetch<ImpactView>(`/news/${row.id}/impact-view?portfolioId=${portfolioId}`)) } catch { return mapNewsRow(row) }
-    }))
-    return results
-  },
   async getImpactEvent(id: number, portfolioId: number) {
     const [view, detail] = await Promise.all([
       apiFetch<ImpactView>(`/news/${id}/impact-view?portfolioId=${portfolioId}`),
@@ -84,9 +74,55 @@ export const impactService = {
     ])
     return mapView(view, detail)
   },
+  async getNextNews(id: number): Promise<NewsNavigationItem | null> {
+    let page = 1
+    let totalPages = 1
+
+    while (page <= totalPages) {
+      const result = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page}&size=20`)
+      totalPages = result.totalPages
+      const index = result.content.findIndex((article) => article.id === id)
+      if (index >= 0) {
+        const next = result.content[index + 1]
+        if (next) return { id: next.id, headline: next.headline, source: next.source }
+        if (page < totalPages) {
+          const nextPage = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page + 1}&size=20`)
+          const first = nextPage.content[0]
+          return first ? { id: first.id, headline: first.headline, source: first.source } : null
+        }
+        return null
+      }
+      page += 1
+    }
+
+    return null
+  },
+  async getPreviousNews(id: number): Promise<NewsNavigationItem | null> {
+    let page = 1
+    let totalPages = 1
+
+    while (page <= totalPages) {
+      const result = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page}&size=20`)
+      totalPages = result.totalPages
+      const index = result.content.findIndex((article) => article.id === id)
+      if (index >= 0) {
+        const previous = result.content[index - 1]
+        if (previous) return { id: previous.id, headline: previous.headline, source: previous.source }
+        if (page > 1) {
+          const previousPage = await apiFetch<PagedResponse<NewsRow>>(`/news?page=${page - 1}&size=20`)
+          const last = previousPage.content.at(-1)
+          return last ? { id: last.id, headline: last.headline, source: last.source } : null
+        }
+        return null
+      }
+      page += 1
+    }
+
+    return null
+  },
   async getImpactSummary(portfolioId: number) {
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
   },
-  async refreshNews() { return apiFetch('/news/refresh', { method: 'POST' }) },
-  async refreshSentiment() { return apiFetch('/sentiment/refresh', { method: 'POST' }) },
+  async refreshNews() { return apiFetch<{ fetched: number; inserted: number; skippedDuplicates: number }>('/news/refresh', { method: 'POST' }) },
+  async refreshSentiment() { return apiFetch<{ analysed: number; stored: number }>('/sentiment/refresh', { method: 'POST' }) },
 }

@@ -159,7 +159,8 @@ Money and share counts use BigDecimal, monetary JSON values are strings, timesta
 
 Transition:
 
-“Timothy will close with the delivery plan and final takeaway.”
+“We’ve shown the product, the architecture, and the honest output.
+Timothy will close us out with the build plan and the final takeaway.”
 
 ---
 
@@ -167,10 +168,22 @@ Transition:
 
 ### Slide 13 — 5-Day Build Plan
 
-“The build plan is designed around dependencies.
-Day one is schema and portfolio CRUD because entities and Flyway unblock everyone. Days two and three land provider data in the database. Day four connects the agent and impact recompute. Day five is CI, Mock fallback, and rehearsal.”
+“As we close, this slide shows how we turn the idea into a working demo in five days.
+We are not trying to build everything at once. We are building in the order that unblocks the team.”
 
-“The idea is to have a working slice every day, not five days of disconnected pieces.”
+“On day one, we set up the workflow as well as the foundation code.
+That means Jira management for tracking tasks, CI integration so every push is checked, and the database schema, entities, and portfolio CRUD that unblock the rest of the team.”
+
+“On days two and three, we focus on getting provider data into the system.
+That means news polling, quote refresh, daily price bars, and the stale/asOf freshness state, so the frontend can read reliable cached data instead of calling APIs directly.”
+
+“On day four, we connect the LLM sentiment agent to the impact recompute flow.
+This is where the product becomes more than a dashboard: the system can say what the news implies, what the price actually did, and whether those two things agree.”
+
+“On day five, we lock the demo.
+We run CI, prepare the Mock fallback, rehearse the timing, and make sure the presentation still works even if a live provider is slow.”
+
+“So the principle is simple: each day should leave us with a working slice, not a pile of unfinished pieces.”
 
 ### Slide 14 — Closing
 
