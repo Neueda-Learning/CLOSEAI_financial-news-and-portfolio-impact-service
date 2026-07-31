@@ -114,6 +114,11 @@ public class ImpactQueryService {
      * this stays bounded by the watchlist size times the day's news volume.
      */
     @Transactional(readOnly = true)
+    public List<LocalDate> availableDates(Long portfolioId) {
+        return assessments.findDistinctAttributionDatesByPortfolioId(portfolioId);
+    }
+
+    @Transactional(readOnly = true)
     public ImpactSummaryResponse summary(Long portfolioId, LocalDate session) {
         return summary(portfolioId, session, null);
     }
