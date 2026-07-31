@@ -1,6 +1,6 @@
 # Presentation Speaker Runbook · FNPIS
 
-> Based on the 13-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
+> Based on the 12-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
 > Goal: a complete 15-minute team presentation with Timothy owning the demo and Evan owning architecture.
 
 ---
@@ -21,8 +21,8 @@
 | 4–5 | David Hu | Explain the product loop and breaking-news example |
 | 6 | Timothy Xue | Run the live demo walkthrough |
 | 7–8 | Evan Li | Explain architecture and data reliability |
-| 9–11 | Ethan Sun | Explain sentiment, impact states, and failure design |
-| 12–13 | Timothy Xue | Close with build plan and takeaways |
+| 9–10 | Ethan Sun | Explain the sentiment engine and failure design |
+| 11–12 | Timothy Xue | Close with build plan and takeaways |
 
 ---
 
@@ -34,10 +34,10 @@
 | David Hu | 3:00–5:30 | 4–5 |
 | Timothy Xue | 5:30–7:30 | 6 |
 | Evan Li | 7:30–10:15 | 7–8 |
-| Ethan Sun | 10:15–13:00 | 9–11 |
-| Timothy Xue | 13:00–15:00 | 12–13 |
+| Ethan Sun | 10:15–12:45 | 9–10 |
+| Timothy Xue | 12:45–15:00 | 11–12 |
 
-Tip: the deck has 13 slides, but it still fills 15 minutes because the demo slide gets more time.
+Tip: the deck has 12 slides, but it still fills 15 minutes because the demo slide gets more time.
 
 ---
 
@@ -170,7 +170,7 @@ Transition:
 
 ---
 
-## Ethan Sun script · Slides 9–11
+## Ethan Sun script · Slides 9–10
 
 ### Slide 9 — Sentiment & Impact Engine
 
@@ -190,40 +190,28 @@ Nothing else.”
 
 “We save that answer once, and we never rewrite it. So what you see on the page does not change behind your back.”
 
-### Slide 10 — Honest Output
+### Slide 10 — How It Fails
 
-“We answer two questions, and we keep them apart.
-First: what does the news say? Positive, negative, or neutral.
-Second: did the price agree? That is where confirmed, divergent, and inconclusive come from.”
-
-“Both of these just describe what happened. Neither one says buy or sell. And a system that can say ‘we don't know’ is not giving advice.”
-
-### Slide 11 — How It Fails
-
-> Six cards. Do not read all six — open with 01, pick two from the middle, close on 06.
+> Three cards. Say all three.
 
 “Things go wrong. So we decided in advance how they should go wrong.”
 
 “If a key is missing, or the database does not match the code, the app refuses to start. We would rather find out now than in the middle of this demo.”
 
-“If a price source goes down, we switch to another one, and the rest of the system never notices.”
-
 “Every article gets one answer, written once. If the call fails, we say so — we do not quietly save a neutral and pretend we asked.”
 
-“We wrote down twenty-four edge cases. Seventeen have a test. Three of them are divide-by-zero traps, and we hit those on purpose.”
-
-“And the tests run against a real MySQL, not an in-memory stand-in — because decimal precision only behaves like production on the real thing.”
+“And our tests run against a real MySQL. A fake one would be faster, but it rounds money differently — and we would rather find that out here than in front of you.”
 
 Transition:
 
-“We’ve shown the product, the architecture, and the honest output.
-Timothy will close us out with the build plan and the final takeaway.”
+“That's how the system behaves when things break.
+Timothy will take it from here.”
 
 ---
 
-## Timothy Xue script · Slides 12–13
+## Timothy Xue script · Slides 11–12
 
-### Slide 12 — 5-Day Build Plan
+### Slide 11 — 5-Day Build Plan
 
 “As we close, this slide shows how we turn the idea into a working demo in five days.
 We are not trying to build everything at once. We are building in the order that unblocks the team.”
@@ -242,7 +230,7 @@ We run CI, prepare the Mock fallback, rehearse the timing, and make sure the pre
 
 “So the principle is simple: each day should leave us with a working slice, not a pile of unfinished pieces.”
 
-### Slide 13 — Closing
+### Slide 12 — Closing
 
 “The final takeaway is simple: read the news, see the impact.
 The product connects one headline, one holding, one market move, and one honest state.”
