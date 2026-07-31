@@ -150,7 +150,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("the three rates are numbers and topImpacted's money is a string")
         void ratesAreNumbers() throws Exception {
-            given(queries.summary(any(), any()))
+            given(queries.summary(any(), any(), any()))
                     .willReturn(new ImpactSummaryResponse(
                             SESSION, 0.34, 0.60, 0.71, 24,
                             new ImpactSummaryResponse.AlignmentCounts(5, 2, 4),
@@ -174,7 +174,7 @@ class ImpactJsonShapeTest {
         @Test
         @DisplayName("SC-008: too small a sample publishes a null rate, not a misleading one")
         void thinSampleHasNoRate() throws Exception {
-            given(queries.summary(any(), any()))
+            given(queries.summary(any(), any(), any()))
                     .willReturn(new ImpactSummaryResponse(
                             SESSION, null, 0.0, null, 3,
                             new ImpactSummaryResponse.AlignmentCounts(2, 1, 0),
