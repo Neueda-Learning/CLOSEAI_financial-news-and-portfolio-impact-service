@@ -1441,7 +1441,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
   gap: 10px;
   margin-top: 12px;
   color: var(--muted);
-  font-size: .82rem;
+  font-size: .72rem;
 }
 .news-impact-summary {
   padding-top: 10px;

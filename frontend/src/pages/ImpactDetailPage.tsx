@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { Card } from '../components/common/Card'
 import { LineChart } from '../components/charts/LineChart'
-import { ImpactSummaryCard } from '../components/impact/ImpactSummaryCard'
 import { NewsInfoCard } from '../components/impact/NewsInfoCard'
 import { impactService } from '../services/impactService'
 import type { ImpactEvent } from '../types/domain'
@@ -130,7 +129,6 @@ export function ImpactDetailPage() {
         <h2>News Content</h2>
         <p className="body-copy">{event.content}</p>
       </Card>
-      <ImpactSummaryCard event={event} />
       </div>
       </div>
       {(previousArticle || nextArticle) && <div className="news-swipe-controls" aria-label="News navigation">{previousArticle && <button type="button" className="news-swipe-next-button" onClick={advanceToPrevious}><span aria-hidden="true">←</span> Previous</button>}{nextArticle && <button type="button" className="news-swipe-next-button" onClick={() => advanceToNext()}><span aria-hidden="true">→</span> Next</button>}</div>}
