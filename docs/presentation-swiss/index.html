@@ -1236,9 +1236,20 @@
     font-size:max(15px,1.02vw);
     line-height:1.48;
     color:var(--text-secondary);
-    margin-top:auto
+    margin-top:auto;
+    padding-top:.95vh
+  }
+  .time-note ul{
+    margin:0;
+    padding-left:1.05em;
+    display:grid;
+    gap:.28em
+  }
+  .time-note li{
+    margin:0
   }
   .time-card.accent .time-note{color:rgba(255,255,255,.82)}
+  .time-card.accent .time-note li::marker{color:rgba(255,255,255,.82)}
 
   /* 时间线轴 — 通用 axis token, 横纵共享
      axis 列 = 24px 固定宽,dot 直径 8px,绝对居中在 axis 列中线 (12px)
@@ -2065,11 +2076,11 @@
   <div class="canvas-card">
     <div data-anim="line"><div class="t-cat">5-DAY SPRINT</div><h2 class="h-xl" style="margin-top:1.4vh">A working slice every day</h2></div>
     <div class="time-grid">
-      <div class="time-card" data-pause=""><div class="time-code">Day 1 · Jul 27</div><div class="time-line">Schema + CRUD + CI</div><div class="time-note">Flyway V1–V9, JPA entities, portfolio CRUD, CI foundation, Docker Compose.</div></div>
-      <div class="time-card" data-pause=""><div class="time-code">Day 2 · Jul 28</div><div class="time-line">Provider pipelines</div><div class="time-note">News fetch + dedup, 3-provider quote chain, daily close snapshot, stale/asOf.</div></div>
-      <div class="time-card" data-pause=""><div class="time-code">Day 3 · Jul 29</div><div class="time-line">Agent + impact + frontend</div><div class="time-note">LLM sentiment engine, impact mapping + verification, React dashboard.</div></div>
-      <div class="time-card" data-pause=""><div class="time-code">Day 4 · Jul 30</div><div class="time-line">Polish + v0.1.1 release</div><div class="time-note">Mock fallback, batch optimization, 258 commits, 46 PRs, rehearsal.</div></div>
-      <div class="time-card accent" data-pause=""><div class="time-code">Day 5 · Today</div><div class="time-line">Today presentation</div><div class="time-note">Live demo, story walkthrough, final Q&amp;A, and delivery.</div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 1 · Jul 27</div><div class="time-line">Schema + CRUD + CI</div><div class="time-note"><ul><li>Flyway V1–V9</li><li>JPA entities</li><li>Portfolio CRUD</li><li>CI foundation</li><li>Docker Compose</li></ul></div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 2 · Jul 28</div><div class="time-line">Provider pipelines</div><div class="time-note"><ul><li>News fetch + dedup</li><li>3-provider quote chain</li><li>Daily close snapshot</li><li>Stale/asOf handling</li></ul></div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 3 · Jul 29</div><div class="time-line">Agent + impact + frontend</div><div class="time-note"><ul><li>LLM sentiment engine</li><li>Impact mapping + verification</li><li>React dashboard</li></ul></div></div>
+      <div class="time-card" data-pause=""><div class="time-code">Day 4 · Jul 30</div><div class="time-line">Polish + v0.1.1 release</div><div class="time-note"><ul><li>250+ commits</li><li>50 PRs</li><li>150 JIRA tasks</li><li>All 9 JIRA stories told</li><li>10+ project documents</li></ul></div></div>
+      <div class="time-card accent" data-pause=""><div class="time-code">Day 5 · Today</div><div class="time-line">Today presentation</div><div class="time-note"><ul><li>Live demo</li><li>Story walkthrough</li><li>Final Q&amp;A</li><li>Delivery</li></ul></div></div>
     </div>
   </div>
 </section>
@@ -2079,6 +2090,40 @@
     <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden"><canvas class="ascii-bg" aria-hidden="true"></canvas><div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1"><div class="l"></div><div class="r">CLOSING</div></div><div data-anim="manifesto" style="display: flex; flex-direction: column; gap: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">THANK YOU</div><h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.6vw,12vh);line-height:.98;letter-spacing:-.025em;font-weight:200;color:#fff">Read the news.<br>See the <span style="font-style:italic;font-weight:300">impact</span>.</h2><div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">The product promise is simple: one headline, one holding, one market move, one honest state.</div></div><div data-anim="signature" style="display: flex; justify-content: space-between; align-items: end; border-top: 1px solid rgba(255, 255, 255, 0.22); padding-top: 2vh; position: relative; z-index: 1"><div class="t-meta" style="color:rgba(255,255,255,.62)">Team CLOSEAI</div><div class="t-meta" style="color:rgba(255,255,255,.62)">Q&amp;A → 5 min</div></div></div>
     <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between"><div class="chrome-min"><div class="l">TAKEAWAYS</div><div class="r">03 RULES</div></div><div data-anim="rules" style="display: flex; flex-direction: column; gap: 0px"><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One linked view</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The user sees the headline and the holding in the same breath.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">One resilient path</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">Provider fallback and stale/asOf keep the demo alive and honest.</p></div></div><div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)"><div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div><div><h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(21px,2vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">One 15-minute story</h3><p style="font-family:var(--sans),var(--sans-zh);font-size:max(19px,1.1vw);line-height:1.6;color:var(--text-secondary);font-weight:400">The pace is fixed: team, problem, news, demo, engine, roadmap, close.</p></div></div></div></div>
   </div></div>
+</section>
+
+<section class="slide" data-animate="image-hero" data-layout="S12">
+  <div class="canvas-card">
+    <div data-anim="line">
+      <div class="t-cat">TEAM CLOSEAI</div>
+      <h2 class="h-xl" style="margin-top:1.4vh">Built together, shipped together</h2>
+    </div>
+    <div class="image-hero-body">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:2vh;min-width:0">
+        <div data-anim="title-block" style="display:inline-flex;align-self:flex-start;background:var(--accent);color:var(--accent-on);padding:1.15vh 1.3vw;font-family:var(--mono);font-size:max(13px,.88vw);letter-spacing:.18em;text-transform:uppercase">Final team photo</div>
+        <div data-anim="kpi" style="display:flex;flex-direction:column;gap:2vh">
+          <div class="t-body" style="max-width:30ch;color:var(--text-secondary)">Five people, one product, one clear finish.</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2vw">
+            <div style="padding-top:1.2vh;border-top:1px solid var(--border-subtle)">
+              <div class="t-meta">TEAM</div>
+              <div class="t-body-emp" style="margin-top:.7vh">5 people</div>
+            </div>
+            <div style="padding-top:1.2vh;border-top:1px solid var(--border-subtle)">
+              <div class="t-meta">BUILD</div>
+              <div class="t-body-emp" style="margin-top:.7vh">One service</div>
+            </div>
+            <div style="padding-top:1.2vh;border-top:1px solid var(--border-subtle)">
+              <div class="t-meta">FINISH</div>
+              <div class="t-body-emp" style="margin-top:.7vh">Ready for Q&amp;A</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x9 swiss-lined" data-anim="img">
+        <img src="assets/team/06.jpg" alt="Team CLOSEAI group photo">
+      </figure>
+    </div>
+  </div>
 </section>
 
 </div>
@@ -2092,7 +2137,7 @@
   <button id="download-toggle" class="control-action" type="button" title="Download edited copy">⇩</button>
 </div>
 <div id="deck-status" aria-live="polite">
-  <span id="slide-counter" class="slide-count">01 / 14</span>
+  <span id="slide-counter" class="slide-count">01 / 15</span>
 </div>
 
 <script>

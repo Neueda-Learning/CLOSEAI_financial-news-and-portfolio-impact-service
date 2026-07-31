@@ -22,7 +22,7 @@
 | 6–7 | Timothy Xue | Run the live demo walkthrough |
 | 8–9 | Evan Li | Explain architecture and data reliability |
 | 10–12 | Ethan Sun | Explain sentiment, impact states, and failure design |
-| 13–14 | Timothy Xue | Close with build plan and takeaways |
+| 13–15 | Timothy Xue | Close with build plan, takeaways, and team photo |
 
 ---
 
@@ -35,9 +35,9 @@
 | Timothy Xue | 5:30–7:30 | 6–7 |
 | Evan Li | 7:30–10:15 | 8–9 |
 | Ethan Sun | 10:15–13:00 | 10–12 |
-| Timothy Xue | 13:00–15:00 | 13–14 |
+| Timothy Xue | 13:00–15:00 | 13–15 |
 
-Tip: the deck has 14 slides, but it still fills 15 minutes because the demo transition gets more time.
+Tip: the deck has 15 slides, but it still fills 15 minutes because the closing photo page is a short final beat.
 
 ---
 
@@ -237,22 +237,48 @@ Timothy will close us out with the build plan and the final takeaway.”
 
 ---
 
-## Timothy Xue script · Slides 13–14
+## Timothy Xue script · Slides 13–15
 
 ### Slide 13 — 5-Day Sprint
 
 “As we close, this slide shows the five-day sprint.
 Each day left us with a working slice, not a pile of unfinished pieces.”
 
-“Day one was the foundation: Flyway migrations, JPA entities, portfolio CRUD, CI foundation, and Docker Compose.”
+“Day one was Schema + CRUD + CI.”
 
-“Day two was provider pipelines: news fetch and dedup, a 3-provider quote chain, daily close snapshots, and stale/asOf.”
+- Flyway V1–V9
+- JPA entities
+- Portfolio CRUD
+- CI foundation
+- Docker Compose
 
-“Day three connected the LLM sentiment engine, impact mapping and verification, and the React dashboard.”
+“Day two was Provider pipelines.”
 
-“Day four was polish and release: Mock fallback, batch optimization, 258 commits, 46 PRs, and rehearsal.”
+- News fetch + dedup
+- 3-provider quote chain
+- Daily close snapshot
+- Stale/asOf handling
 
-“Day five is today: the presentation, the live demo, the story walkthrough, and Q&A.”
+“Day three was Agent + impact + frontend.”
+
+- LLM sentiment engine
+- Impact mapping + verification
+- React dashboard
+
+“Day four was Polish + v0.1.1 release.”
+
+- 250+ commits
+- 50 PRs
+- 150 JIRA tasks
+- All 9 JIRA stories told
+- 10+ project documents
+
+“Day five is Today presentation.”
+
+- Live demo
+- Story walkthrough
+- Final Q&A
+- Delivery
 
 ### Slide 14 — Closing
 
@@ -260,6 +286,11 @@ Each day left us with a working slice, not a pile of unfinished pieces.”
 The product connects one headline, one holding, one market move, and one honest state.”
 
 “Thank you — we’re happy to take questions.”
+
+### Slide 15 — Team Photo
+
+“This is Team CLOSEAI.
+Five people, one product, one clear finish.”
 
 ---
 

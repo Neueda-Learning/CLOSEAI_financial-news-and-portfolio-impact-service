@@ -67,9 +67,9 @@ export const impactService = {
     const requested = new Set(tickers.map((ticker) => ticker.toUpperCase()))
     return { ...result, content: result.content.filter((event) => event.affectedTickers.some((ticker) => requested.has(ticker))) }
   },
-  async getImpactEvent(id: number, portfolioId: number) {
+  async getImpactEvent(id: number, portfolioId: number, range: 'intraday' | 'weekly' = 'intraday') {
     const [view, detail] = await Promise.all([
-      apiFetch<ImpactView>(`/news/${id}/impact-view?portfolioId=${portfolioId}`),
+      apiFetch<ImpactView>(`/news/${id}/impact-view?portfolioId=${portfolioId}&range=${range}`),
       apiFetch<NewsDetail>(`/news/${id}`),
     ])
     return mapView(view, detail)
