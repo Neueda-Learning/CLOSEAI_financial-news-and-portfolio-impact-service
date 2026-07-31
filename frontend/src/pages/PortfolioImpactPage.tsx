@@ -164,8 +164,6 @@ export function PortfolioImpactPage() {
   const [events, setEvents] = useState<ImpactEvent[]>([])
   const [newsTotalElements, setNewsTotalElements] = useState(0)
   const [newsTotalPages, setNewsTotalPages] = useState(1)
-  const [impactDate, setImpactDate] = useState(new Date().toISOString().slice(0, 10))
-  const [impactDates, setImpactDates] = useState<string[]>([])
   const [impactSummary, setImpactSummary] = useState<Awaited<ReturnType<typeof impactService.getImpactSummary>>>(null)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
@@ -182,11 +180,6 @@ export function PortfolioImpactPage() {
   const displayEvents = tickerFilter === 'OTHER'
     ? events.filter((e) => !e.affectedTickers.some((t) => holdingSymbols.has(t)))
     : events
-
-  useEffect(() => {
-    if (!activePortfolioId) return
-    impactService.getImpactDates(activePortfolioId).then(setImpactDates).catch(() => setImpactDates([]))
-  }, [activePortfolioId])
 
   useEffect(() => {
     if (!activePortfolioId) return

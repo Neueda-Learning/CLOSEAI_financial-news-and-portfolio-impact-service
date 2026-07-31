@@ -124,7 +124,6 @@ export const impactService = {
     const url = `/portfolios/${portfolioId}/impact-summary` + (symbol ? `?symbol=${encodeURIComponent(symbol)}` : '')
     return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; topImpacted?: Array<{ symbol: string; valueImpact: string }>; asOf: string | null }>(url)
   },
-  async getImpactDates(portfolioId: number) { return apiFetch<string[]>(`/portfolios/${portfolioId}/impact-dates`) },
   async refreshNews() { return apiFetch<{ fetched: number; inserted: number; skippedDuplicates: number }>('/news/refresh', { method: 'POST' }) },
   async refreshSentiment() { return apiFetch<{ analysed: number; stored: number }>('/sentiment/refresh', { method: 'POST' }) },
 }

@@ -8,7 +8,6 @@ import com.fnpis.service.ImpactQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
-import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,12 +60,6 @@ public class ImpactController {
      * One session's roll-up, including the direction agreement rate demo script
      * step 5 shows (E5).
      */
-    @GetMapping("/{id}/impact-dates")
-    @Operation(summary = "该组合有影响数据的所有交易日")
-    public List<LocalDate> impactDates(@PathVariable Long id) {
-        return service.availableDates(id);
-    }
-
     @GetMapping("/{id}/impact-summary")
     @Operation(summary = "日度汇总，含方向一致率与样本数 (E5)")
     public ImpactSummaryResponse summary(
