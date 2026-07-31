@@ -177,8 +177,7 @@ Transition:
 > Four reveals on the right. Say the line, then click.
 
 “We use an LLM here, but we give it a very small job.
-It reads one headline and gives us three things back: a label, a score, and a confidence.
-Nothing else.”
+It reads one headline and gives us three things back: a label, a score, and a confidence.”
 
 *(click)* “The model is Claude Opus, and we run it at temperature zero — so the same headline gives us the same answer every time.”
 
