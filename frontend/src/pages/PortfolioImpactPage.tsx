@@ -393,12 +393,6 @@ export function PortfolioImpactPage() {
                 <strong className="positive">{currency(largestImpact)}</strong>
               </div>
               <div>
-                <small>Session</small>
-                <select value={impactDate} onChange={(e) => setImpactDate(e.target.value)} style={{fontSize:'0.85rem',fontWeight:600,padding:'4px 6px',border:'1px solid var(--line)',borderRadius:'6px',background:'var(--surface-strong)',color:'var(--text)'}}>
-                  {impactDates.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
                 <small>Last refresh</small>
                 <strong>{lastRefresh}</strong>
               </div>
