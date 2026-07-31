@@ -18,7 +18,6 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
   const [chartSymbol, setChartSymbol] = useState('')
   const [chartHoldings, setChartHoldings] = useState<Array<{ ticker: string }>>([])
   const pickerRef = useRef<HTMLDivElement>(null)
-  const didSyncHistory = useRef(false)
 
   useEffect(() => {
     if (!activePortfolioId) return
@@ -28,11 +27,10 @@ export function DashboardPage({ themeVariant }: { themeVariant?: 'forest' } = {}
   }, [activePortfolioId])
 
   useEffect(() => {
-    if (activePortfolioId && !didSyncHistory.current) {
+    if (activePortfolioId && historyPortfolioId === 0) {
       setHistoryPortfolioId(activePortfolioId)
-      didSyncHistory.current = true
     }
-  }, [activePortfolioId])
+  }, [activePortfolioId, historyPortfolioId])
 
   useEffect(() => {
     if (!historyPortfolioId) return
