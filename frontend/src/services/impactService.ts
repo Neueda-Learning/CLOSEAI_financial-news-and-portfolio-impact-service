@@ -120,8 +120,9 @@ export const impactService = {
 
     return null
   },
-  async getImpactSummary(portfolioId: number) {
-    return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; asOf: string | null }>(`/portfolios/${portfolioId}/impact-summary`)
+  async getImpactSummary(portfolioId: number, symbol?: string) {
+    const url = `/portfolios/${portfolioId}/impact-summary` + (symbol ? `?symbol=${encodeURIComponent(symbol)}` : '')
+    return apiFetch<{ weightedSentiment: number | null; newsCoverage: number | null; directionAgreementRate: number | null; sampleSize: number; counts: { confirmed: number; divergent: number; inconclusive: number }; topImpacted?: Array<{ symbol: string; valueImpact: string }>; asOf: string | null }>(url)
   },
   async refreshNews() { return apiFetch<{ fetched: number; inserted: number; skippedDuplicates: number }>('/news/refresh', { method: 'POST' }) },
   async refreshSentiment() { return apiFetch<{ analysed: number; stored: number }>('/sentiment/refresh', { method: 'POST' }) },
