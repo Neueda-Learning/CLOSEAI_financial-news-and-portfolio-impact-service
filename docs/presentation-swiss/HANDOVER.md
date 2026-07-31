@@ -11,10 +11,10 @@ This folder contains the **Swiss Modernist style presentation deck** for the Fin
 
 ### Files
 
-- `index.html` — Complete presentation (14 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
+- `index.html` — Complete presentation (15 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
 - `HANDOVER.md` — This document
 - `SPEAKER_RUNBOOK.md` — Team page ownership, timing, and rehearsal scripts
-- `images/` — Image assets folder (currently empty; deck uses CSS-drawn graphics)
+- `assets/` — Image assets folder used by the deck
 
 ---
 
@@ -98,6 +98,7 @@ To publish on GitHub Pages:
 | 12 | How It Fails | S04/Grid | Six failure decisions: fail-fast boot, provider fallback, write-once verdict, edge cases, refresh lock, Testcontainers |
 | 13 | 5-Day Sprint | S02/Timing | Day 5 is today’s presentation |
 | 14 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 15 | Team Photo | S12 Image | Team CLOSEAI finish beat |
 
 ## Team Speaker Ownership
 
@@ -107,9 +108,9 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 |---------|--------|
 | Venessa Feng | 1–3 |
 | David Hu | 4–5 |
-| Timothy Xue | 6, 12–13 |
-| Evan Li | 7–8 |
-| Ethan Sun | 9–11 |
+| Timothy Xue | 6–7, 13–15 |
+| Evan Li | 8–9 |
+| Ethan Sun | 10–12 |
 
 ---
 
@@ -121,7 +122,7 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 
 3. **No external images currently** — All diagrams/charts are CSS-drawn (grid layouts, color blocks, SVG icons). To add photos/screenshots, place them in `images/` and reference with `<img src="images/filename.png">`.
 
-4. **Slide count fixed at 13** — Modifying the deck structure (adding/removing slides) requires updating:
+4. **Slide count fixed at 15** — Modifying the deck structure (adding/removing slides) requires updating:
    - The slide counter display
    - Navigation dot count
    - Timeline/progression logic (if you add custom timing)

@@ -1,6 +1,6 @@
 # Presentation Speaker Runbook · FNPIS
 
-> Based on the 13-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
+> Based on the 15-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
 > Goal: a complete 15-minute team presentation with Timothy owning the demo and Evan owning architecture.
 
 ---
@@ -190,50 +190,36 @@ Transition:
 
 > Four reveals on the right. Say the line, then click.
 
-“The agent is powerful only because it is boxed in.
-Three fields, nothing else: label, score, confidence.
-The headline is untrusted third-party text, so we fence it as data.”
+“We use an LLM here, but we give it a very small job.
+It reads one headline and gives us three things back: a label, a score, and a confidence.
+Nothing else.”
 
-*(click)* “Claude Opus at temperature zero, and we store the model and prompt version on every row — so any verdict traces back to what produced it.”
+*(click)* “The model is Claude Opus, and we run it at temperature zero — so the same headline gives us the same answer every time.”
 
-*(click)* “One headline in, one JSON object out, capped at 256 tokens. A small task is hard to get wrong.”
+*(click)* “The job itself is small. One headline in, one JSON object out, with a token limit. There is not much room to go wrong.”
 
-*(click)* “Then a self-check: the sign of the score must match the label. If they disagree, we trust the number and rewrite the word.”
+*(click)* “Then we check its work. If the score says negative but the label says positive, we keep the number and fix the label.”
 
-*(click)* “And a gate — code decides what gets stored, not the model. However the model is talked around, nothing lands unless it fits the schema.”
+*(click)* “And the last word is ours, not the model's. It proposes an answer; our code decides whether to save it.”
 
-“Stored once, one verdict per article, so the answer cannot drift between refreshes.”
+“We save that answer once, and we never rewrite it. So what you see on the page does not change behind your back.”
 
 ### Slide 11 — Honest Output
 
-“Direction and alignment are separate, and we never merge them.
-Direction comes from sentiment: positive, negative, or neutral.
-Alignment comes from the price: confirmed, divergent, or inconclusive.”
+> Three cards. Say all three.
 
-“Divergent is not a bug. Bad news, stock rises — that disagreement is the interesting part, and averaging it into one score would destroy it.”
+“Things go wrong. So we decided in advance how they should go wrong.”
 
-“Both describe what happened. Neither says buy or sell. A system allowed to answer ‘cannot tell’ is not giving advice.”
+“If a key is missing, or the database does not match the code, the app refuses to start. We would rather find out now than in the middle of this demo.”
 
 ### Slide 12 — How It Fails
 
-> Six cards. Do not read all six — land 01, then pick two, then close on 06.
-
-“Everything on this slide is a decision we made about failing, taken before the demo instead of during it.”
-
-“If a key is missing, or the schema drifted from the entities, the app refuses to start — so it fails here, not on slide seven.”
-
-“A dead quote source falls through to a backup, and the service layer never sees a vendor type — which is what makes swapping a provider cheap.”
-
-“A verdict is written once. So a network failure fails loudly rather than storing a fabricated NEUTRAL that would mislabel the story permanently.”
-
-“Twenty-four edge cases are listed, seventeen have a test, and three of those are divide-by-zero traps — zero cost basis, missing previous close, zero portfolio value.”
-
-“And the tests run against real MySQL, not H2, because DECIMAL precision and index limits only behave like production on the real thing.”
+“And our tests run against a real MySQL. A fake one would be faster, but it rounds money differently — and we would rather find that out here than in front of you.”
 
 Transition:
 
-“We’ve shown the product, the architecture, and the honest output.
-Timothy will close us out with the build plan and the final takeaway.”
+“That's how the system behaves when things break.
+Timothy will take it from here.”
 
 ---
 
