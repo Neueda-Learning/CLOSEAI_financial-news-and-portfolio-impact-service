@@ -5,6 +5,7 @@ import { AddHoldingModal } from '../components/portfolio/AddHoldingModal'
 import { Button } from '../components/common/Button'
 import { SentimentBadge } from '../components/impact/SentimentBadge'
 import { impactService } from '../services/impactService'
+import { asNumber } from '../services/apiClient'
 import { usePortfolio } from '../hooks/usePortfolio'
 import { currency, dateTime, percent } from '../utils/formatters'
 import type { Holding, ImpactEvent } from '../types/domain'
@@ -163,14 +164,16 @@ export function PortfolioImpactPage() {
   const [events, setEvents] = useState<ImpactEvent[]>([])
   const [newsTotalElements, setNewsTotalElements] = useState(0)
   const [newsTotalPages, setNewsTotalPages] = useState(1)
+  const [impactSummary, setImpactSummary] = useState<Awaited<ReturnType<typeof impactService.getImpactSummary>>>(null)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
   const holdingSymbols = useMemo(() => new Set(holdings.map((h) => h.ticker)), [holdings])
   const tickers = useMemo(() => ['ALL', ...holdings.map((h) => h.ticker), 'OTHER'], [holdings])
   const largestImpact = useMemo(() => {
-    const impacts = events.filter((e) => e.hasImpact).map((e) => Math.abs(e.portfolioImpact))
-    return impacts.length > 0 ? Math.max(0, ...impacts) : 0
-  }, [events])
+    const top = impactSummary?.topImpacted?.[0]
+    if (top) return Math.abs(asNumber(top.valueImpact))
+    return 0
+  }, [impactSummary])
 
   const analyzedParam = impactFilter === 'ANALYZED' ? true : impactFilter === 'PENDING' ? false : undefined
   const symbolParam = tickerFilter === 'ALL' || tickerFilter === 'OTHER' ? undefined : tickerFilter
@@ -180,6 +183,8 @@ export function PortfolioImpactPage() {
 
   useEffect(() => {
     if (!activePortfolioId) return
+    impactService.getImpactSummary(activePortfolioId, symbolParam)
+      .then(setImpactSummary).catch(() => setImpactSummary(null))
     impactService.getImpactEvents(activePortfolioId, newsPage, { symbol: symbolParam, analyzed: analyzedParam })
       .then((nextPage) => {
         setEvents(nextPage.content)

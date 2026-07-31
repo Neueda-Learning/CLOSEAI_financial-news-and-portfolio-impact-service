@@ -65,8 +65,9 @@ public class ImpactController {
     public ImpactSummaryResponse summary(
             @PathVariable Long id,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                    LocalDate date) {
-        return service.summary(id, orToday(date));
+                    LocalDate date,
+            @RequestParam(required = false) String symbol) {
+        return service.summary(id, orToday(date), symbol);
     }
 
     /**

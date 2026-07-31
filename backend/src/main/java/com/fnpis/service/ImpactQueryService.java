@@ -115,10 +115,19 @@ public class ImpactQueryService {
      */
     @Transactional(readOnly = true)
     public ImpactSummaryResponse summary(Long portfolioId, LocalDate session) {
+        return summary(portfolioId, session, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ImpactSummaryResponse summary(Long portfolioId, LocalDate session, String filterSymbol) {
         requirePortfolio(portfolioId);
 
         List<ImpactAssessment> rows =
                 assessments.findByPortfolioIdAndAttributionDate(portfolioId, session);
+        if (filterSymbol != null && !filterSymbol.isBlank()) {
+            String s = filterSymbol.toUpperCase(java.util.Locale.ROOT);
+            rows = rows.stream().filter(r -> s.equals(r.getSymbol())).toList();
+        }
 
         int confirmed = countOf(rows, Alignment.CONFIRMED);
         int divergent = countOf(rows, Alignment.DIVERGENT);
