@@ -11,10 +11,10 @@ This folder contains the **Swiss Modernist style presentation deck** for the Fin
 
 ### Files
 
-- `index.html` — Complete presentation (13 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
+- `index.html` — Complete presentation (15 slides, single-file, no external dependencies except Google Fonts + Lucide icons CDN)
 - `HANDOVER.md` — This document
 - `SPEAKER_RUNBOOK.md` — Team page ownership, timing, and rehearsal scripts
-- `images/` — Image assets folder (currently empty; deck uses CSS-drawn graphics)
+- `assets/` — Image assets folder used by the deck
 
 ---
 
@@ -89,14 +89,16 @@ To publish on GitHub Pages:
 | 3 | The Problem | S03 Split | Story-driven reason for the website |
 | 4 | What The Website Does | S11 Timeline | Plain-language product loop |
 | 5 | Breaking News Page | S08/Duo | Current finance-news demo candidate |
-| 6 | Complete Demo Flow | S06/Grid | Timothy owns the live demo run |
-| 7 | Architecture | S05 Three Layers | Evan owns the system story |
-| 8 | External Data & Fallback | S05 Three Layers | Finnhub news, Finnhub price, Mock/stale fallback |
-| 9 | Sentiment & Impact Engine | S08/Duo | Model identity + three constraint layers, revealed one at a time |
-| 10 | Honest Output | S06/KPI Tower | Direction vs alignment states, plus the no-advice boundary |
-| 11 | How It Fails | S04/Grid | Six failure decisions: fail-fast boot, provider fallback, write-once verdict, edge cases, refresh lock, Testcontainers |
-| 12 | 5-Day Build Plan | S02/Timing | Working slice every day |
-| 13 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 6 | Additional Features | S06/Center screenshot + callouts | Timothy uses arrows to explain 53% agreement, confirmed/divergent/inconclusive, sentiment, and coverage |
+| 7 | Walk Through The Frontend | S03 Demo transition | Timothy switches from slide explanation into the live frontend |
+| 8 | Three Layers System Architecture | S05 Center diagram | Evan uses the system-layers image to explain the flow |
+| 9 | Land It Fast, Read It Fast | S05 Center data-flow diagram | Evan explains provider ingestion, database-first reads, API endpoints, and impact computation |
+| 10 | Sentiment & Impact Engine | S08/Duo | Model identity + three constraint layers, revealed one at a time |
+| 11 | Honest Output | S06/KPI Tower | Direction vs alignment states, plus the no-advice boundary |
+| 12 | How It Fails | S04/Grid | Six failure decisions: fail-fast boot, provider fallback, write-once verdict, edge cases, refresh lock, Testcontainers |
+| 13 | 5-Day Sprint | S02/Timing | Day 5 is today’s presentation |
+| 14 | Closing | S10 Split Closing | 3 takeaways + thank you |
+| 15 | Team Photo | S12 Image | Team CLOSEAI finish beat |
 
 ## Team Speaker Ownership
 
@@ -106,9 +108,9 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 |---------|--------|
 | Venessa Feng | 1–3 |
 | David Hu | 4–5 |
-| Timothy Xue | 6, 12–13 |
-| Evan Li | 7–8 |
-| Ethan Sun | 9–11 |
+| Timothy Xue | 6–7, 13–15 |
+| Evan Li | 8–9 |
+| Ethan Sun | 10–12 |
 
 ---
 
@@ -120,7 +122,7 @@ Detailed scripts live in `SPEAKER_RUNBOOK.md`.
 
 3. **No external images currently** — All diagrams/charts are CSS-drawn (grid layouts, color blocks, SVG icons). To add photos/screenshots, place them in `images/` and reference with `<img src="images/filename.png">`.
 
-4. **Slide count fixed at 13** — Modifying the deck structure (adding/removing slides) requires updating:
+4. **Slide count fixed at 15** — Modifying the deck structure (adding/removing slides) requires updating:
    - The slide counter display
    - Navigation dot count
    - Timeline/progression logic (if you add custom timing)

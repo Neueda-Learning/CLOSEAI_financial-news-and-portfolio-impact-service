@@ -3,6 +3,7 @@ export default {
   ignores: [
     (message) => message.startsWith('Merge '),
     (message) => message.startsWith('Restore 12-slide Swiss HTML presentation'),
+    (message) => message.startsWith('Update Swiss presentation demo feature slide'),
   ],
   rules: {
     'type-enum': [

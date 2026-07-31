@@ -1,6 +1,6 @@
 # Presentation Speaker Runbook · FNPIS
 
-> Based on the 13-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
+> Based on the 15-slide Swiss HTML deck, `ReadMe.md`, `frontend/README.md`, and recent git comments.
 > Goal: a complete 15-minute team presentation with Timothy owning the demo and Evan owning architecture.
 
 ---
@@ -19,10 +19,10 @@
 |---|---|---|
 | 1–3 | Venessa Feng | Open the product, introduce the team, make the problem feel real |
 | 4–5 | David Hu | Explain the product loop and breaking-news example |
-| 6 | Timothy Xue | Run the live demo walkthrough |
-| 7–8 | Evan Li | Explain architecture and data reliability |
-| 9–11 | Ethan Sun | Explain sentiment, impact states, and failure design |
-| 12–13 | Timothy Xue | Close with build plan and takeaways |
+| 6–7 | Timothy Xue | Run the live demo walkthrough |
+| 8–9 | Evan Li | Explain architecture and data reliability |
+| 10–12 | Ethan Sun | Explain sentiment, impact states, and failure design |
+| 13–15 | Timothy Xue | Close with build plan, takeaways, and team photo |
 
 ---
 
@@ -32,12 +32,12 @@
 |---|---:|---|
 | Venessa Feng | 0:00–3:00 | 1–3 |
 | David Hu | 3:00–5:30 | 4–5 |
-| Timothy Xue | 5:30–7:30 | 6 |
-| Evan Li | 7:30–10:15 | 7–8 |
-| Ethan Sun | 10:15–13:00 | 9–11 |
-| Timothy Xue | 13:00–15:00 | 12–13 |
+| Timothy Xue | 5:30–7:30 | 6–7 |
+| Evan Li | 7:30–10:15 | 8–9 |
+| Ethan Sun | 10:15–13:00 | 10–12 |
+| Timothy Xue | 13:00–15:00 | 13–15 |
 
-Tip: the deck has 13 slides, but it still fills 15 minutes because the demo slide gets more time.
+Tip: the deck has 15 slides, but it still fills 15 minutes because the closing photo page is a short final beat.
 
 ---
 
@@ -57,10 +57,11 @@ Each person will cover the part of the story closest to their work, so the prese
 
 ### Slide 3 — The Problem
 
-“The problem is that headlines move faster than people can connect them to their own holdings.
-An investor might see a story about Apple, Tesla, Microsoft, or Nvidia, but they still have to manually ask: do I own this company, is the news positive or negative, did the price actually react, and how much does that matter to my position?”
+“Start with the news: imagine reading that Apple cuts its iPhone production forecast.
+The story is important, but the investor still needs the answer that matters: do I own this company, is the news positive or negative, did the price actually react, and how much does that matter to my position?”
 
-“That gap is why this website exists. We are not replacing investment judgment; we are making the first connection faster and clearer.”
+“That is the gap: a headline can move a holding before a person has time to connect the dots.
+We are not replacing investment judgment; we are making the first connection faster and clearer.”
 
 Transition:
 
@@ -76,16 +77,16 @@ Transition:
 The user starts with the stocks they actually own.
 Then the website finds news connected to those stocks.”
 
-“After that, the AI reads the headline and gives a simple signal:
+“After that, the LLM analyses the headline and gives a simple signal:
 positive, negative, or neutral.
 But we also check the market, because a headline alone is not enough.
 If the price moves in the same direction, that supports the signal.
 If it moves the other way, that disagreement is also useful.”
 
-“The final step is the impact.
+“The final step is portfolio metrics.
 Instead of showing news in one place and portfolio data somewhere else,
-the website brings them together so the user can understand what changed
-and why it matters to their own holdings.”
+the website brings them together as sentiment, confidence, portfolio impact,
+and alignment, so the user can understand what changed and why it matters.”
 
 Transition:
 
@@ -114,18 +115,46 @@ Transition:
 
 ---
 
-## Timothy Xue script · Slide 6
+## Timothy Xue script · Slides 6–7
 
-### Slide 6 — Complete Demo Flow
+### Slide 6 — Additional Features
 
-“This is the live demo path.
-We open the portfolio, trigger or show the Apple breaking-news example,
-reveal sentiment, show the chart marker, read the impact,
-and then demonstrate the fallback path if we need to.”
+“For this slide, I will not read the text on screen.
+I will use it as a map for the live demo.
+The story is simple: I hold AAPL, news breaks, and the dashboard tells me whether that news really matters to my portfolio.”
 
-“The demo should feel calm. If live provider data is slow or stale, we switch to the cached or Mock story and explain that freshness is visible by design.”
+“First I point to the 53 percent direction agreement.
+That number checks whether the news direction matches the price direction.
+In this example, 23 confirmed records out of 43 clear records gives roughly 53 percent.”
 
-“The important line to say out loud is: the user does not just read the headline — they see the headline connected to the holding, the price move, and the final impact state.”
+“Then I use the three state boxes to explain the result.
+Confirmed means the news and market price move in the same direction.
+Divergent means the news says one thing, but price action says the opposite.
+Inconclusive means the move is too small, neutral, or unclear to judge.”
+
+“Next I point to weighted sentiment.
+This is not a simple count of positive and negative news.
+It is weighted by the portfolio holding size, so a bigger position has more influence than a tiny position.”
+
+“Then I point to news coverage.
+Coverage answers: how many of my portfolio symbols had at least one analysed news item today?
+If it is 100 percent, every holding had news coverage; if it is lower, the user knows the picture is incomplete.”
+
+“The stronger story is that the system makes the result explainable:
+agreement, market confirmation, portfolio sentiment, and coverage.”
+
+Transition:
+
+“Now let’s leave the slide and walk through the frontend.”
+
+---
+
+### Slide 7 — Walk Through The Frontend
+
+“This is where we switch from explaining the feature to using it.
+I will start from the news feed, connect the headline to the portfolio impact, and then show the agreement signals.”
+
+“The goal is simple: the audience should see the same path a user would take in the frontend.”
 
 Transition:
 
@@ -133,21 +162,21 @@ Transition:
 
 ---
 
-## Evan Li script · Slides 7–8
+## Evan Li script · Slides 8–9
 
-### Slide 7 — Architecture
+### Slide 8 — Three Layers System Architecture
 
-“The architecture is cache-first.
-The UI reads from the database. Scheduled jobs fetch external data and land it before the frontend asks for it.”
+“This diagram shows the system layers from left to right.
+News and price data come in from providers, the backend normalizes and stores them, and the frontend reads the prepared result instead of calling providers directly.”
 
-“That gives us two benefits: reads stay fast, and the system can show stale/asOf labels when upstream data is limited instead of simply failing.”
+“The important point is that the user sees one clean portfolio-impact view, but underneath it we separate ingestion, sentiment analysis, impact calculation, storage, and presentation.”
 
-### Slide 8 — External Data & Fallback
+### Slide 9 — Land It Fast, Read It Fast
 
-“We deliberately split external data responsibilities.
-Finnhub company-news uses one key, Finnhub quotes and candles use another key, and sentiment uses the LLM API.”
+“This is the data flow behind the demo.
+External providers land news, quotes, and sentiment into the database first.”
 
-“That separation matters because news polling should not starve quote refresh. If a provider is unavailable, cached data plus stale/asOf keeps the page honest, and Mock providers keep the rehearsal path stable.”
+“Then the API reads prepared rows quickly, and the impact engine combines news plus price from the database before serving the portfolio impact endpoint.”
 
 Transition:
 
@@ -155,86 +184,99 @@ Transition:
 
 ---
 
-## Ethan Sun script · Slides 9–11
+## Ethan Sun script · Slides 10–12
 
-### Slide 9 — Sentiment & Impact Engine
+### Slide 10 — Sentiment & Impact Engine
 
 > Four reveals on the right. Say the line, then click.
 
-“The agent is powerful only because it is boxed in.
-Three fields, nothing else: label, score, confidence.
-The headline is untrusted third-party text, so we fence it as data.”
+“We use an LLM here, but we give it a very small job.
+It reads one headline and gives us three things back: a label, a score, and a confidence.
+Nothing else.”
 
-*(click)* “Claude Opus at temperature zero, and we store the model and prompt version on every row — so any verdict traces back to what produced it.”
+*(click)* “The model is Claude Opus, and we run it at temperature zero — so the same headline gives us the same answer every time.”
 
-*(click)* “One headline in, one JSON object out, capped at 256 tokens. A small task is hard to get wrong.”
+*(click)* “The job itself is small. One headline in, one JSON object out, with a token limit. There is not much room to go wrong.”
 
-*(click)* “Then a self-check: the sign of the score must match the label. If they disagree, we trust the number and rewrite the word.”
+*(click)* “Then we check its work. If the score says negative but the label says positive, we keep the number and fix the label.”
 
-*(click)* “And a gate — code decides what gets stored, not the model. However the model is talked around, nothing lands unless it fits the schema.”
+*(click)* “And the last word is ours, not the model's. It proposes an answer; our code decides whether to save it.”
 
-“Stored once, one verdict per article, so the answer cannot drift between refreshes.”
+“We save that answer once, and we never rewrite it. So what you see on the page does not change behind your back.”
 
-### Slide 10 — Honest Output
+### Slide 11 — Honest Output
 
-“Direction and alignment are separate, and we never merge them.
-Direction comes from sentiment: positive, negative, or neutral.
-Alignment comes from the price: confirmed, divergent, or inconclusive.”
+> Three cards. Say all three.
 
-“Divergent is not a bug. Bad news, stock rises — that disagreement is the interesting part, and averaging it into one score would destroy it.”
+“Things go wrong. So we decided in advance how they should go wrong.”
 
-“Both describe what happened. Neither says buy or sell. A system allowed to answer ‘cannot tell’ is not giving advice.”
+“If a key is missing, or the database does not match the code, the app refuses to start. We would rather find out now than in the middle of this demo.”
 
-### Slide 11 — How It Fails
+### Slide 12 — How It Fails
 
-> Six cards. Do not read all six — land 01, then pick two, then close on 06.
-
-“Everything on this slide is a decision we made about failing, taken before the demo instead of during it.”
-
-“If a key is missing, or the schema drifted from the entities, the app refuses to start — so it fails here, not on slide seven.”
-
-“A dead quote source falls through to a backup, and the service layer never sees a vendor type — which is what makes swapping a provider cheap.”
-
-“A verdict is written once. So a network failure fails loudly rather than storing a fabricated NEUTRAL that would mislabel the story permanently.”
-
-“Twenty-four edge cases are listed, seventeen have a test, and three of those are divide-by-zero traps — zero cost basis, missing previous close, zero portfolio value.”
-
-“And the tests run against real MySQL, not H2, because DECIMAL precision and index limits only behave like production on the real thing.”
+“And our tests run against a real MySQL. A fake one would be faster, but it rounds money differently — and we would rather find that out here than in front of you.”
 
 Transition:
 
-“We’ve shown the product, the architecture, and the honest output.
-Timothy will close us out with the build plan and the final takeaway.”
+“That's how the system behaves when things break.
+Timothy will take it from here.”
 
 ---
 
-## Timothy Xue script · Slides 12–13
+## Timothy Xue script · Slides 13–15
 
-### Slide 12 — 5-Day Build Plan
+### Slide 13 — 5-Day Sprint
 
-“As we close, this slide shows how we turn the idea into a working demo in five days.
-We are not trying to build everything at once. We are building in the order that unblocks the team.”
+“As we close, this slide shows the five-day sprint.
+Each day left us with a working slice, not a pile of unfinished pieces.”
 
-“On day one, we set up the workflow as well as the foundation code.
-That means Jira management for tracking tasks, CI integration so every push is checked, and the database schema, entities, and portfolio CRUD that unblock the rest of the team.”
+“Day one was Schema + CRUD + CI.”
 
-“On days two and three, we focus on getting provider data into the system.
-That means news polling, quote refresh, daily price bars, and the stale/asOf freshness state, so the frontend can read reliable cached data instead of calling APIs directly.”
+- Flyway V1–V9
+- JPA entities
+- Portfolio CRUD
+- CI foundation
+- Docker Compose
 
-“On day four, we connect the LLM sentiment agent to the impact recompute flow.
-This is where the product becomes more than a dashboard: the system can say what the news implies, what the price actually did, and whether those two things agree.”
+“Day two was Provider pipelines.”
 
-“On day five, we lock the demo.
-We run CI, prepare the Mock fallback, rehearse the timing, and make sure the presentation still works even if a live provider is slow.”
+- News fetch + dedup
+- 3-provider quote chain
+- Daily close snapshot
+- Stale/asOf handling
 
-“So the principle is simple: each day should leave us with a working slice, not a pile of unfinished pieces.”
+“Day three was Agent + impact + frontend.”
 
-### Slide 13 — Closing
+- LLM sentiment engine
+- Impact mapping + verification
+- React dashboard
+
+“Day four was Polish + v0.1.1 release.”
+
+- 250+ commits
+- 50 PRs
+- 150 JIRA tasks
+- All 9 JIRA stories told
+- 10+ project documents
+
+“Day five is Today presentation.”
+
+- Live demo
+- Story walkthrough
+- Final Q&A
+- Delivery
+
+### Slide 14 — Closing
 
 “The final takeaway is simple: read the news, see the impact.
 The product connects one headline, one holding, one market move, and one honest state.”
 
 “Thank you — we’re happy to take questions.”
+
+### Slide 15 — Team Photo
+
+“This is Team CLOSEAI.
+Five people, one product, one clear finish.”
 
 ---
 

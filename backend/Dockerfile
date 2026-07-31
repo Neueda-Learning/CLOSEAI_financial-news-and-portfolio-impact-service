@@ -8,7 +8,6 @@ WORKDIR /build
 # Copy the POM alone first so dependency resolution is cached independently of
 # source changes - editing a Java file then does not re-download the world.
 COPY pom.xml .
-RUN mvn -B dependency:go-offline
 
 COPY checkstyle.xml .
 COPY src ./src
