@@ -1217,9 +1217,6 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .chart-range-toggle { display: flex; gap: 4px; }
 .chart-range-toggle button { padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--muted); font-size: .76rem; font-weight: 650; cursor: pointer; transition: all 120ms var(--spring); }
 .chart-range-toggle button.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
-.impact-date-select { display: flex; flex-direction: column; gap: 2px; }
-.impact-date-select small { font-size: .64rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.impact-date-select select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-strong); color: var(--text); font-size: .82rem; font-weight: 600; cursor: pointer; }
 .compact-button { padding: 9px 12px; }
 .pagination-row {
   justify-content: center;

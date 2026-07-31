@@ -164,8 +164,6 @@ export function PortfolioImpactPage() {
   const [events, setEvents] = useState<ImpactEvent[]>([])
   const [newsTotalElements, setNewsTotalElements] = useState(0)
   const [newsTotalPages, setNewsTotalPages] = useState(1)
-  const [impactDate, setImpactDate] = useState(new Date().toISOString().slice(0, 10))
-  const [impactDates, setImpactDates] = useState<string[]>([])
   const [impactSummary, setImpactSummary] = useState<Awaited<ReturnType<typeof impactService.getImpactSummary>>>(null)
   const negativeCount = useMemo(() => events.filter((event) => event.sentiment === 'NEGATIVE').length, [events])
   const weightTotal = summary.allocation.reduce((sum, item) => sum + item.weight, 0)
@@ -182,11 +180,6 @@ export function PortfolioImpactPage() {
   const displayEvents = tickerFilter === 'OTHER'
     ? events.filter((e) => !e.affectedTickers.some((t) => holdingSymbols.has(t)))
     : events
-
-  useEffect(() => {
-    if (!activePortfolioId) return
-    impactService.getImpactDates(activePortfolioId).then(setImpactDates).catch(() => setImpactDates([]))
-  }, [activePortfolioId])
 
   useEffect(() => {
     if (!activePortfolioId) return
@@ -322,12 +315,6 @@ export function PortfolioImpactPage() {
           <p className="eyebrow">Portfolio Impact</p>
           <h1>News Impact</h1>
         </div>
-        <label className="impact-date-select">
-          <small>Session</small>
-          <select value={impactDate} onChange={(e) => setImpactDate(e.target.value)}>
-            {impactDates.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </label>
         <button className="view-cycle-button" onClick={cycleViewMode} aria-label={`Current view ${viewLabels[viewMode]}. Click to switch view.`}>
           <span className={`view-cycle-glyph mode-${viewMode}`} aria-hidden="true">
             <i />
@@ -404,6 +391,12 @@ export function PortfolioImpactPage() {
               <div>
                 <small>Largest impact</small>
                 <strong className="positive">{currency(largestImpact)}</strong>
+              </div>
+              <div>
+                <small>Session</small>
+                <select value={impactDate} onChange={(e) => setImpactDate(e.target.value)} style={{fontSize:'0.85rem',fontWeight:600,padding:'4px 6px',border:'1px solid var(--line)',borderRadius:'6px',background:'var(--surface-strong)',color:'var(--text)'}}>
+                  {impactDates.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
               <div>
                 <small>Last refresh</small>

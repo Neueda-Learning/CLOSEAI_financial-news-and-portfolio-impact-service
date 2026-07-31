@@ -8,8 +8,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 /**
  * Assessed impacts (E1-E4). Module E owns writes here; the read endpoints and
@@ -39,13 +37,6 @@ public interface ImpactAssessmentRepository extends JpaRepository<ImpactAssessme
 
     /** Whether any assessment exists for this article (drives hasImpact in news lists). */
     boolean existsByArticleId(Long articleId);
-
-    /** Distinct session dates that have impact data for a portfolio, newest first. */
-    @Query("""
-            SELECT DISTINCT i.attributionDate FROM ImpactAssessment i
-            WHERE i.portfolioId = :portfolioId ORDER BY i.attributionDate DESC""")
-    List<LocalDate> findDistinctAttributionDatesByPortfolioId(
-            @Param("portfolioId") Long portfolioId);
 
     /**
      * One session's assessments for a portfolio, newest-written first and paged
